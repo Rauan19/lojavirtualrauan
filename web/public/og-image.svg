@@ -1,0 +1,51 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#171a1f" />
+      <stop offset="100%" stop-color="#20242b" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)" />
+
+  <!-- Logo mark -->
+  <g transform="translate(80,72)">
+    <path d="M0 0 L14 34 L28 0" stroke="#e31c5f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <rect x="38" y="4" width="15" height="22" stroke="#e31c5f" stroke-width="3.5" fill="none" />
+    <line x1="38" y1="15" x2="53" y2="15" stroke="#e31c5f" stroke-width="3.5" />
+    <text x="64" y="27" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="800" fill="#ffffff" letter-spacing="-1">Vendira</text>
+  </g>
+
+  <!-- Headline -->
+  <text x="80" y="260" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="800" fill="#ffffff">Sua loja vende sozinha.</text>
+  <text x="80" y="330" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="800" fill="#e31c5f">Você só vê o dinheiro entrar.</text>
+
+  <!-- Subtext -->
+  <text x="80" y="392" font-family="Arial, Helvetica, sans-serif" font-size="26" fill="#b8bec8">Crie sua loja online em minutos. 14 dias grátis, sem cartão.</text>
+
+  <!-- CTA pill -->
+  <rect x="80" y="430" width="330" height="64" fill="#e31c5f" />
+  <text x="245" y="470" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#ffffff" text-anchor="middle">Criar minha loja grátis</text>
+
+  <!-- Browser mockup -->
+  <g transform="translate(760,120)">
+    <rect x="0" y="0" width="360" height="330" rx="10" fill="#fbfbfc" stroke="#2c313a" stroke-width="1" />
+    <rect x="0" y="0" width="360" height="34" rx="10" fill="#eef0f3" />
+    <rect x="0" y="24" width="360" height="10" fill="#eef0f3" />
+    <circle cx="18" cy="17" r="6" fill="#e0603d" />
+    <circle cx="38" cy="17" r="6" fill="#e0b23d" />
+    <circle cx="58" cy="17" r="6" fill="#4caf6e" />
+    <rect x="90" y="10" width="220" height="14" rx="7" fill="#ffffff" />
+
+    <rect x="0" y="34" width="360" height="42" fill="#ffffff" />
+    <rect x="16" y="49" width="20" height="20" fill="#e31c5f" />
+    <text x="44" y="63" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#171a1f">Sua Loja</text>
+
+    <rect x="16" y="90" width="160" height="115" fill="#f3d9df" />
+    <rect x="184" y="90" width="160" height="115" fill="#dbe7f2" />
+    <rect x="16" y="215" width="160" height="115" fill="#e3ecdd" />
+    <rect x="184" y="215" width="160" height="115" fill="#f2e6d3" />
+  </g>
+
+  <text x="80" y="590" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#7d8492">vendira.com.br</text>
+</svg>

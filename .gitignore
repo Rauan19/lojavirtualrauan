@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.local
+dist/
+uploads/
+coverage/
+*.log
+.DS_Store
+api/generated/
+api/.agents/
+api/.claude/
+api/.windsurf/

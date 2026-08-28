@@ -1,0 +1,605 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  STORE_ADMIN
+  CUSTOMER
+}
+
+enum StoreStatus {
+  ACTIVE
+  PAST_DUE
+  SUSPENDED
+  TRIAL
+}
+
+enum StoreType {
+  FASHION
+  SHOES
+  ELECTRONICS
+  GENERAL
+  CUSTOM
+}
+
+enum SellerDocType {
+  CPF
+  CNPJ
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REFUNDED
+  CANCELLED
+}
+
+enum DiscountType {
+  PERCENT
+  FIXED
+  FREE_SHIPPING
+}
+
+enum InvoiceStatus {
+  DRAFT
+  PENDING
+  AUTHORIZED
+  CANCELLED
+  REJECTED
+  ERROR
+}
+
+enum InvoiceModel {
+  NFCE
+  NFE
+}
+
+model Store {
+  id               String      @id @default(cuid())
+  name             String
+  slug             String      @unique
+  customDomain     String?     @unique
+  logoUrl          String?
+  primaryColor     String      @default("#111111")
+  secondaryColor   String      @default("#ffffff")
+  accentColor      String      @default("#e11d48")
+  status           StoreStatus @default(TRIAL)
+  planName         String      @default("basic")
+  planDueAt        DateTime?
+  monthlyFee       Decimal?    @db.Decimal(10, 2)
+  /** Assinatura recorrente MP (mensalidade da plataforma). */
+  mpPreapprovalId  String?
+  mpSubscriptionStatus String? // pending | authorized | paused | cancelled
+  storeType        StoreType   @default(GENERAL)
+
+  // Identidade do lojista (PF = CPF ou PJ = CNPJ)
+  sellerDocType    SellerDocType?
+  sellerDocument   String? // só dígitos
+  sellerLegalName  String? // nome completo ou razão social
+  sellerTradeName  String? // nome fantasia
+  sellerIe         String? // inscrição estadual ou ISENTO
+  sellerIm         String? // inscrição municipal
+  sellerPhone      String?
+  sellerEmail      String?
+  sellerZipCode    String?
+  sellerStreet     String?
+  sellerNumber     String?
+  sellerComplement String?
+  sellerNeighborhood String?
+  sellerCity       String?
+  sellerState      String? // UF
+
+  // Políticas (HTML/markdown simples)
+  termsHtml        String?     @db.Text
+  privacyHtml      String?     @db.Text
+  returnsHtml      String?     @db.Text
+
+  // Redes sociais (exibidas no rodapé da loja)
+  instagramUrl     String?
+  facebookUrl      String?
+  tiktokUrl        String?
+
+  // NFe / NFC-e (Focus NFe ou provedor compatível)
+  nfeEnabled       Boolean     @default(false)
+  nfeProvider      String?     @default("focusnfe")
+  nfeApiToken      String?
+  nfeEnvironment   String      @default("homologacao") // homologacao | producao
+  nfeSeries        String      @default("1")
+  nfeNextNumber    Int         @default(1)
+  nfeCscId         String? // token CSC id (NFC-e)
+  nfeCscToken      String?
+
+  mpAccessToken    String?
+  mpPublicKey      String?
+  checkoutMode     String      @default("personalized")
+  freteModo        String      @default("manual")
+  freteValorFixo   Decimal?    @db.Decimal(10, 2)
+  freteGratisAcima Decimal?    @db.Decimal(10, 2)
+  freteToken       String?
+  freteCepOrigem   String?
+  freteRuaOrigem   String?
+  freteNumeroOrigem String?
+  freteComplementoOrigem String?
+  freteBairroOrigem String?
+  freteCidadeOrigem String?
+  freteUfOrigem    String?
+  freteSandbox     Boolean     @default(false)
+  freteEmailContato String?
+  /**
+   * Gera e paga a etiqueta no Melhor Envio sozinho quando o pagamento é
+   * aprovado. Desligado por padrão: consome saldo real da conta do lojista.
+   */
+  freteEtiquetaAuto Boolean    @default(false)
+  /** Nomes/slugs das transportadoras liberadas no checkout (ex.: ["correios","jadlog"]). Vazio = todas. */
+  freteTransportadoras Json?
+  printerType      String      @default("BROWSER")
+  printerHost      String?
+  printerPort      Int         @default(9100)
+  printerName      String?
+  printerAutoPrint Boolean     @default(false)
+  printerPaperWidth Int        @default(80)
+  /** Desligado por padrão. NÃO usar dias — entrega vem do rastreio real. */
+  autoDeliverDays   Int         @default(0)
+  marqueeEnabled   Boolean     @default(true)
+  marqueeImages    Json?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  users             User[]
+  categories        Category[]
+  products          Product[]
+  orders            Order[]
+  customers         Customer[]
+  coupons           Coupon[]
+  promotions        Promotion[]
+  invoices          Invoice[]
+  platformInvoices  PlatformInvoice[]
+  reviews           Review[]
+  favorites         Favorite[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String
+  passwordHash String
+  name         String
+  role         Role
+  storeId      String?
+  active       Boolean  @default(true)
+  /** Invalida tokens JWT antigos ao trocar senha / desativar conta. */
+  tokenVersion Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  store Store? @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([storeId, email])
+  @@index([email])
+}
+
+model Customer {
+  id           String   @id @default(cuid())
+  storeId      String
+  email        String
+  passwordHash String?
+  name         String
+  phone        String?
+  cpf          String?
+  /** Invalida tokens JWT antigos ao trocar senha. */
+  tokenVersion Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  store     Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  orders    Order[]
+  addresses Address[]
+  reviews   Review[]
+  favorites Favorite[]
+
+  @@unique([storeId, email])
+  @@index([storeId])
+}
+
+model Address {
+  id           String   @id @default(cuid())
+  customerId   String
+  label        String?
+  street       String
+  number       String
+  complement   String?
+  neighborhood String
+  city         String
+  state        String
+  zipCode      String
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  storeId     String
+  name        String
+  slug        String
+  description String?
+  imageUrl    String?
+  parentId    String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  store    Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  @@unique([storeId, slug])
+  @@index([storeId])
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  storeId      String
+  categoryId   String?
+  name         String
+  slug         String
+  description  String?
+  sku          String?
+  brand        String?
+  price        Decimal  @db.Decimal(10, 2)
+  compareAt    Decimal? @db.Decimal(10, 2)
+  installments Int?
+  weightKg     Decimal? @db.Decimal(10, 3)
+  widthCm      Decimal? @db.Decimal(10, 2)
+  heightCm     Decimal? @db.Decimal(10, 2)
+  lengthCm     Decimal? @db.Decimal(10, 2)
+  stock        Int      @default(0)
+  active       Boolean  @default(true)
+  featured     Boolean  @default(false)
+  attributes   Json? // attrs do nicho { material, potencia, ... }
+  hasVariants  Boolean  @default(false)
+  ncm          String? // NCM fiscal (8 dígitos)
+  cfop         String? // default 5102/5101 etc.
+  unit         String   @default("UN")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  store      Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  category   Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  images     ProductImage[]
+  variants   ProductVariant[]
+  orderItems OrderItem[]
+  promotions Promotion[]
+  reviews    Review[]
+  favorites  Favorite[]
+
+  @@unique([storeId, slug])
+  @@index([storeId])
+  @@index([storeId, active])
+}
+
+model Review {
+  id               String   @id @default(cuid())
+  storeId          String
+  productId        String
+  customerId       String
+  rating           Int
+  comment          String?
+  hidden           Boolean  @default(false)
+  verifiedPurchase Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  store    Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, customerId])
+  @@index([storeId])
+  @@index([productId])
+}
+
+model Favorite {
+  id         String   @id @default(cuid())
+  storeId    String
+  customerId String
+  productId  String
+  createdAt  DateTime @default(now())
+
+  store    Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, productId])
+  @@index([storeId])
+  @@index([customerId])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model ProductVariant {
+  id        String   @id @default(cuid())
+  productId String
+  sku       String?
+  barcode   String?
+  label     String // ex: "M / Preto"
+  options   Json // { size: "M", color: "Preto" }
+  price     Decimal? @db.Decimal(10, 2) // null = usa preço do produto
+  compareAt Decimal? @db.Decimal(10, 2)
+  stock     Int      @default(0)
+  weightKg  Decimal? @db.Decimal(10, 3)
+  widthCm   Decimal? @db.Decimal(10, 2)
+  heightCm  Decimal? @db.Decimal(10, 2)
+  lengthCm  Decimal? @db.Decimal(10, 2)
+  imageUrl  String?
+  active    Boolean  @default(true)
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@index([productId])
+  @@index([productId, active])
+}
+
+model Order {
+  id                String        @id @default(cuid())
+  storeId           String
+  customerId        String?
+  orderNumber       String
+  status            OrderStatus   @default(PENDING)
+  paymentStatus     PaymentStatus @default(PENDING)
+  subtotal          Decimal       @db.Decimal(10, 2)
+  shippingCost      Decimal       @default(0) @db.Decimal(10, 2)
+  discount          Decimal       @default(0) @db.Decimal(10, 2)
+  total             Decimal       @db.Decimal(10, 2)
+  shippingMethod    String?
+  /** Id do serviço escolhido na cotação (ex.: "me-1"). Necessário para a etiqueta. */
+  shippingServiceId String?
+  /** URL do PDF da etiqueta gerada na transportadora. */
+  labelUrl          String?
+  trackingCode      String?
+  trackingUrl       String?
+  /** ID etiqueta Melhor Envio — webhook/polling. */
+  carrierShipmentId String?
+  customerName      String
+  customerEmail     String
+  customerPhone     String?
+  customerDocument  String? // CPF do comprador (NFe)
+  shippingAddress   Json?
+  mpPreferenceId    String?
+  mpPaymentId       String?
+  mpRefundId        String?
+  couponId          String?
+  couponCode        String?
+  notes             String?
+  paidAt            DateTime?
+  shippedAt         DateTime?
+  deliveredAt       DateTime?
+  refundRequestedAt DateTime?
+  refundReason      String?
+  refundStatus      String?
+  refundedAt        DateTime?
+  /**
+   * Estoque baixado na criação do pedido (reserva). Volta ao cancelar,
+   * expirar ou estornar. Serve de trava contra devolver estoque 2x.
+   */
+  stockReserved     Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  store    Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  customer Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  coupon   Coupon?     @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  items    OrderItem[]
+  invoice  Invoice?
+
+  @@unique([storeId, orderNumber])
+  @@index([storeId])
+  @@index([storeId, status])
+  @@index([storeId, createdAt])
+  @@index([storeId, refundStatus])
+  @@index([carrierShipmentId])
+  @@index([trackingCode])
+}
+
+model Coupon {
+  id          String       @id @default(cuid())
+  storeId     String
+  code        String
+  description String?
+  type        DiscountType @default(PERCENT)
+  value       Decimal      @db.Decimal(10, 2)
+  minSubtotal Decimal?     @db.Decimal(10, 2)
+  maxUses     Int?
+  usedCount   Int          @default(0)
+  startsAt    DateTime?
+  endsAt      DateTime?
+  active      Boolean      @default(true)
+  /** Lojista escolhe se o cupom aparece num banner na vitrine. */
+  showOnStorefront Boolean @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  store  Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@unique([storeId, code])
+  @@index([storeId])
+  @@index([storeId, active])
+}
+
+model Promotion {
+  id        String    @id @default(cuid())
+  storeId   String
+  productId String
+  title     String?
+  active    Boolean   @default(true)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([storeId, productId])
+  @@index([storeId])
+  @@index([storeId, active])
+}
+
+model OrderItem {
+  id           String  @id @default(cuid())
+  orderId      String
+  productId    String?
+  variantId    String?
+  productName  String
+  variantLabel String?
+  sku          String?
+  unitPrice    Decimal @db.Decimal(10, 2)
+  quantity     Int
+  total        Decimal @db.Decimal(10, 2)
+  attributes   Json?
+
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+}
+
+model Invoice {
+  id           String        @id @default(cuid())
+  storeId      String
+  orderId      String        @unique
+  model        InvoiceModel  @default(NFCE)
+  status       InvoiceStatus @default(DRAFT)
+  number       Int?
+  series       String?
+  accessKey    String?
+  protocol     String?
+  xmlUrl       String?
+  pdfUrl       String?
+  providerRef  String?
+  errorMessage String?       @db.Text
+  issuedAt     DateTime?
+  cancelledAt  DateTime?
+  payload      Json?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([storeId])
+  @@index([storeId, status])
+}
+
+/** Token de recuperação de senha (cliente ou admin). */
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  /** CUSTOMER | STORE_ADMIN | SUPER_ADMIN */
+  subject   String
+  email     String
+  storeId   String?
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([email, storeId])
+  @@index([expiresAt])
+}
+
+/** Mensalidade SaaS da plataforma (lojista → Vitrine), via Assinatura MP. */
+model PlatformInvoice {
+  id              String        @id @default(cuid())
+  storeId         String
+  planId          String
+  planName        String
+  amount          Decimal       @db.Decimal(10, 2)
+  periodDays      Int
+  status          PaymentStatus @default(PENDING)
+  mpPreferenceId  String?
+  mpPreapprovalId String?
+  mpPaymentId     String?       @unique
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId])
+  @@index([storeId, status])
+  @@index([mpPreferenceId])
+  @@index([mpPreapprovalId])
+}
+
+/** Configuração global da plataforma (singleton id = default). */
+model PlatformSettings {
+  id                   String   @id @default("default")
+  mpAccessToken        String?
+  mpPublicKey          String?
+  /** true = credenciais de teste → usar sandbox_init_point. */
+  mpUseSandbox         Boolean  @default(true)
+  /** E-mail do Comprador de teste (@testuser.com) — obrigatório em sandbox. */
+  mpTestPayerEmail     String?
+  /** Cache planId:amount → preapproval_plan_id do Mercado Pago. */
+  mpPreapprovalPlans   Json?
+  /** Dias de teste grátis no signup público. null = usa TRIAL_DAYS do .env (padrão 14). */
+  trialDays            Int?
+  updatedAt            DateTime @updatedAt
+  createdAt            DateTime @default(now())
+}
+
+/** Planos da mensalidade da plataforma — editáveis pelo Super Admin. */
+model PlatformPlan {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  amount      Decimal  @db.Decimal(10, 2)
+  periodDays  Int      @default(30)
+  badge       String?
+  highlight   Boolean  @default(false)
+  features    Json?
+  /** Desativado some da lista de escolha, mas não quebra loja que já usa o nome. */
+  active      Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([active, order])
+}
