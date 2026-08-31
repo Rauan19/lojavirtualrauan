@@ -5,7 +5,7 @@ import { SiteHeader } from '@/components/SiteHeader';
 import { StoreDeviceShowcase } from '@/components/StoreDeviceShowcase';
 import { BRAND } from '@/lib/brand';
 import { CONTACT, whatsappHref } from '@/lib/contact';
-import { getPlans, siteUrl } from '@/lib/seo';
+import { getDemoStoreSlug, getPlans, siteUrl } from '@/lib/seo';
 
 const faq: [string, string][] = [
   [
@@ -40,7 +40,10 @@ function money(value: number) {
 
 export default async function HomePage() {
   const wa = whatsappHref();
-  const plans = (await getPlans()) || [];
+  const [plans, demoSlug] = await Promise.all([
+    getPlans().then((list) => list || []),
+    getDemoStoreSlug(),
+  ]);
   const base = siteUrl();
 
   const orgJsonLd = {
@@ -196,12 +199,14 @@ export default async function HomePage() {
             <h2 className="max-w-[20ch] font-[family-name:var(--font-brand)] text-[1.7rem] font-700 leading-[1.15] text-[#171a1f] md:text-[2.1rem]">
               Tudo que sua loja precisa, já incluso
             </h2>
-            <Link
-              href="/loja/demo"
-              className="mt-4 inline-block text-[15px] font-semibold text-accent underline-offset-4 hover:underline md:mt-0"
-            >
-              Abrir exemplo ao vivo
-            </Link>
+            {demoSlug ? (
+              <Link
+                href={`/loja/${demoSlug}`}
+                className="mt-4 inline-block text-[15px] font-semibold text-accent underline-offset-4 hover:underline md:mt-0"
+              >
+                Abrir exemplo ao vivo
+              </Link>
+            ) : null}
           </div>
 
           <dl className="mt-10 grid gap-x-12 gap-y-8 md:grid-cols-2">

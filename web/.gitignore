@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...menos o template, que e documentacao e nao tem segredo nenhum.
+# Sem esta excecao o arquivo que o proximo dev (e a VPS) le fica de fora.
+!.env.example
 
 # vercel
 .vercel
