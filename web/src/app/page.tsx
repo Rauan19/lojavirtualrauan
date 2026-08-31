@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { BrandLogo } from '@/components/BrandLogo';
+import { LandingCta } from '@/components/LandingCta';
 import { SiteHeader } from '@/components/SiteHeader';
 import { StoreDeviceShowcase } from '@/components/StoreDeviceShowcase';
 import { BRAND } from '@/lib/brand';
@@ -32,25 +33,6 @@ const faq: [string, string][] = [
     'Sim, NFC-e integrada: emite direto do pedido quando o pagamento é aprovado.',
   ],
 ];
-
-function BagIcon() {
-  return (
-    <svg viewBox="0 0 20 20" width="17" height="17" fill="none" aria-hidden>
-      <path
-        d="M4.4 6.5h11.2l-.9 9.1a1.4 1.4 0 0 1-1.4 1.3H6.7a1.4 1.4 0 0 1-1.4-1.3L4.4 6.5Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M7.4 8.2V5.9a2.6 2.6 0 0 1 5.2 0v2.3"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
 
 function money(value: number) {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -130,13 +112,7 @@ export default async function HomePage() {
               e o valor cai direto na sua conta.
             </p>
             <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-              <Link
-                href="/criar-conta"
-                className="btn btn-accent btn-bag gap-2 px-6 py-4 text-center text-[15px] drop-shadow-[0_10px_16px_rgba(212,61,84,0.35)] sm:py-3.5"
-              >
-                <BagIcon />
-                Criar minha loja grátis
-              </Link>
+              <LandingCta href="/criar-conta" label="Criar minha loja grátis" />
               {wa ? (
                 <a
                   href={wa}

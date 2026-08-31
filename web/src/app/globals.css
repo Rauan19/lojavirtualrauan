@@ -750,3 +750,209 @@
   }
 }
 
+
+/* ---------- CTA de assinatura da landing -------------------------------- */
+
+/*
+ * O CTA do hero não é um `.btn` com padding inflado: é um controle próprio.
+ * Retângulo de canto reto (o mundo da landing é radius 0), dividido por um
+ * filete, com a célula da direita servindo de trilho para a seta. Altura fixa
+ * de 48px no mobile e 46px no desktop — a queixa era volume, não presença.
+ */
+.lp-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  width: 100%;
+  border: 0;
+  cursor: pointer;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14.5px;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  box-shadow:
+    0 1px 2px rgba(23, 26, 31, 0.18),
+    0 10px 22px -8px rgba(212, 61, 84, 0.5);
+  transition:
+    background 0.18s ease,
+    transform 0.18s cubic-bezier(0.2, 0.8, 0.3, 1),
+    box-shadow 0.18s ease;
+}
+
+@media (min-width: 640px) {
+  .lp-cta {
+    width: auto;
+  }
+}
+
+.lp-cta__body {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 3rem;
+  padding: 0 1.1rem;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .lp-cta__body {
+    height: 2.875rem;
+    padding: 0 1.2rem;
+  }
+}
+
+/*
+ * A seta vive numa janela recortada: no hover a de cima sai pela direita e a
+ * de baixo entra pela esquerda. É a troca, não um deslize, que dá a leitura
+ * de "avança".
+ */
+.lp-cta__arrow {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 3rem;
+  overflow: hidden;
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+  transition: background 0.18s ease;
+}
+
+@media (min-width: 640px) {
+  .lp-cta__arrow {
+    width: 2.875rem;
+  }
+}
+
+.lp-cta__arrow svg {
+  grid-area: 1 / 1;
+  transition:
+    transform 0.34s cubic-bezier(0.2, 0.8, 0.25, 1),
+    opacity 0.22s ease;
+}
+
+/* Cutucada ociosa: puxa o olho sem exigir que o visitante passe o mouse. */
+.lp-cta__arrow svg:first-child {
+  animation: lp-cta-nudge 4.2s ease-in-out 1.6s infinite;
+}
+
+.lp-cta__arrow svg:last-child {
+  transform: translateX(-150%);
+  opacity: 0;
+}
+
+.lp-cta:is(:hover, :focus-visible) {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow:
+    0 2px 4px rgba(23, 26, 31, 0.2),
+    0 14px 26px -8px rgba(212, 61, 84, 0.55);
+}
+
+.lp-cta:is(:hover, :focus-visible) .lp-cta__arrow {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.lp-cta:is(:hover, :focus-visible) .lp-cta__arrow svg:first-child {
+  animation: none;
+  transform: translateX(150%);
+  opacity: 0;
+}
+
+.lp-cta:is(:hover, :focus-visible) .lp-cta__arrow svg:last-child {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.lp-cta:active {
+  transform: translateY(0);
+  box-shadow:
+    0 1px 2px rgba(23, 26, 31, 0.22),
+    0 6px 14px -8px rgba(212, 61, 84, 0.5);
+}
+
+.lp-cta:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* Variante para fundo colorido (seção final, sobre o accent). */
+.lp-cta--light {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(23, 26, 31, 0.16), 0 10px 22px -10px rgba(0, 0, 0, 0.45);
+}
+
+.lp-cta--light .lp-cta__arrow {
+  border-left-color: rgba(23, 26, 31, 0.16);
+  background: rgba(23, 26, 31, 0.05);
+}
+
+.lp-cta--light:is(:hover, :focus-visible) {
+  background: #fff;
+}
+
+.lp-cta--light:is(:hover, :focus-visible) .lp-cta__arrow {
+  background: rgba(23, 26, 31, 0.1);
+}
+
+.lp-cta--light:focus-visible {
+  outline-color: #fff;
+}
+
+@keyframes lp-cta-nudge {
+  0%,
+  86%,
+  100% {
+    transform: translateX(0);
+  }
+  91% {
+    transform: translateX(3px);
+  }
+  95% {
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-cta,
+  .lp-cta__arrow svg {
+    transition: background 0.18s ease;
+  }
+
+  .lp-cta__arrow svg:first-child {
+    animation: none;
+  }
+
+  .lp-cta:is(:hover, :focus-visible) {
+    transform: none;
+  }
+}
+
+/* ---------- Hero no mobile: superfície branca --------------------------- */
+
+/*
+ * No celular o hero ocupa a tela inteira sozinho, sem os aparelhos ao lado
+ * para justificar o fundo cinza. Branco puro: o glow e a curva da base só
+ * fazem sentido quando existe a segunda coluna.
+ */
+@media (max-width: 767px) {
+  .landing .lp-hero {
+    background: #fff;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .landing .lp-hero-glow {
+    display: none;
+  }
+
+  /* Sem isso a faixa fixa do topo aparece como um degrau cinza sobre o branco. */
+  .landing header {
+    background: #fff;
+  }
+}
