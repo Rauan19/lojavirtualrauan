@@ -2,7 +2,11 @@ node_modules/
 .env
 .env.local
 dist/
-uploads/
+# Arquivos enviados pelos lojistas, não código.
+# Ancorado com o caminho: "uploads/" solto casava também com api/src/uploads/,
+# que é o módulo de upload — o código sumia do repositório e a CI quebrava
+# em "Cannot find module './uploads/uploads.module'".
+api/uploads/
 coverage/
 *.log
 .DS_Store
