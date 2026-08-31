@@ -79,7 +79,9 @@ export function getProduct(slug: string, idOrSlug: string) {
 }
 
 export function getPublicStores() {
-  return fetchJson<{ slug: string; updatedAt: string }[]>('/api/public/stores');
+  return fetchJson<
+    { slug: string; customDomain?: string | null; updatedAt: string }[]
+  >('/api/public/stores');
 }
 
 export type PublicPlan = {
