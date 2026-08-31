@@ -4,9 +4,15 @@ services:
     container_name: lojavirtual-postgres
     restart: unless-stopped
     ports:
-      - '5432:5432'
+      # Preso ao localhost de propósito. Sem o 127.0.0.1 o Docker publica em
+      # 0.0.0.0, e numa VPS isso é um Postgres aberto para a internet com
+      # usuário e senha "postgres" — bots varrem a 5432 o dia inteiro.
+      # A API roda na mesma máquina, então não precisa sair daqui.
+      - '127.0.0.1:5432:5432'
     environment:
       POSTGRES_USER: postgres
+      # Credencial de desenvolvimento. Em servidor, use Postgres nativo ou
+      # troque isto por uma senha real antes de subir.
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: lojavirtual
     volumes:
