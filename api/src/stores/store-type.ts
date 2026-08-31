@@ -15,6 +15,23 @@ export type VariantAxis = {
   options: string[];
 };
 
+/**
+ * Aparência que a vitrine assume quando o lojista não escolheu nada. Moda
+ * pede foto vertical de corpo inteiro; eletrônico e calçado pedem quadrado
+ * com o produto centralizado. É essa diferença que faz duas lojas com a
+ * mesma estrutura não parecerem a mesma loja.
+ */
+export type StoreLayoutPreset = {
+  font: StoreFontKey;
+  cardRatio: StoreCardRatioKey;
+};
+
+export const STORE_FONT_KEYS = ['padrao', 'moderna', 'amigavel', 'elegante'] as const;
+export type StoreFontKey = (typeof STORE_FONT_KEYS)[number];
+
+export const STORE_CARD_RATIO_KEYS = ['retrato', 'quadrado', 'alto'] as const;
+export type StoreCardRatioKey = (typeof STORE_CARD_RATIO_KEYS)[number];
+
 export type StoreTypeConfig = {
   type: StoreType;
   label: string;
@@ -22,6 +39,7 @@ export type StoreTypeConfig = {
   categories: { name: string; slug: string }[];
   attributes: AttributeDef[];
   variantAxes: VariantAxis[];
+  layout: StoreLayoutPreset;
 };
 
 export const STORE_TYPE_CONFIGS: Record<StoreType, StoreTypeConfig> = {
@@ -75,6 +93,7 @@ export const STORE_TYPE_CONFIGS: Record<StoreType, StoreTypeConfig> = {
         ],
       },
     ],
+    layout: { font: 'elegante', cardRatio: 'retrato' },
   },
   SHOES: {
     type: 'SHOES',
@@ -121,6 +140,7 @@ export const STORE_TYPE_CONFIGS: Record<StoreType, StoreTypeConfig> = {
         options: ['Preto', 'Branco', 'Marrom', 'Bege', 'Azul', 'Cinza'],
       },
     ],
+    layout: { font: 'moderna', cardRatio: 'quadrado' },
   },
   ELECTRONICS: {
     type: 'ELECTRONICS',
@@ -167,6 +187,7 @@ export const STORE_TYPE_CONFIGS: Record<StoreType, StoreTypeConfig> = {
         options: ['Preto', 'Prata', 'Branco', 'Único'],
       },
     ],
+    layout: { font: 'moderna', cardRatio: 'quadrado' },
   },
   GENERAL: {
     type: 'GENERAL',
@@ -189,6 +210,7 @@ export const STORE_TYPE_CONFIGS: Record<StoreType, StoreTypeConfig> = {
       },
     ],
     variantAxes: [],
+    layout: { font: 'padrao', cardRatio: 'quadrado' },
   },
   CUSTOM: {
     type: 'CUSTOM',
@@ -201,8 +223,30 @@ export const STORE_TYPE_CONFIGS: Record<StoreType, StoreTypeConfig> = {
     ],
     attributes: [],
     variantAxes: [],
+    layout: { font: 'padrao', cardRatio: 'retrato' },
   },
 };
+
+/**
+ * Aparência final da vitrine: o que o lojista escolheu vence; o que ele
+ * deixou em branco cai no preset do ramo da loja.
+ */
+export function resolveStoreLayout(
+  type: StoreType,
+  font?: string | null,
+  cardRatio?: string | null,
+): StoreLayoutPreset {
+  const preset =
+    STORE_TYPE_CONFIGS[type]?.layout ?? STORE_TYPE_CONFIGS.GENERAL.layout;
+  return {
+    font: STORE_FONT_KEYS.includes(font as StoreFontKey)
+      ? (font as StoreFontKey)
+      : preset.font,
+    cardRatio: STORE_CARD_RATIO_KEYS.includes(cardRatio as StoreCardRatioKey)
+      ? (cardRatio as StoreCardRatioKey)
+      : preset.cardRatio,
+  };
+}
 
 export function categoriesForStoreType(type: StoreType) {
   return (

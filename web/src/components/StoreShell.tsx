@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useCustomer } from '@/components/CustomerProvider';
+import { CookieConsent } from '@/components/CookieConsent';
 import { PaymentBadges } from '@/components/PaymentBadges';
 import { api, mediaUrl, money } from '@/lib/api';
+import { cardRatioValue, fontStyle } from '@/lib/store-theme';
 import { sellerWhatsappHref } from '@/lib/contact';
 
 type Suggestion = {
@@ -20,7 +22,12 @@ type Props = {
   logoUrl?: string | null;
   primaryColor: string;
   accentColor: string;
-  categories?: { id: string; name: string; slug: string }[];
+  categories?: {
+    id: string;
+    name: string;
+    slug: string;
+    parentId?: string | null;
+  }[];
   activeCategoryId?: string | null;
   onSelectCategory?: (categoryId: string | null) => void;
   search: string;
@@ -29,12 +36,43 @@ type Props = {
   accountHref?: string;
   storeSlug?: string;
   sellerPhone?: string | null;
+  legalName?: string | null;
+  sellerDocument?: string | null;
+  sellerCity?: string | null;
+  sellerState?: string | null;
   instagramUrl?: string | null;
   facebookUrl?: string | null;
   tiktokUrl?: string | null;
+  storeFont?: string | null;
+  storeCardRatio?: string | null;
+  analyticsGaId?: string | null;
+  analyticsPixelId?: string | null;
   cartCount?: number;
   onOpenCart?: () => void;
 };
+
+function formatCnpj(raw: string) {
+  const d = raw.replace(/\D/g, '');
+  if (d.length !== 14) return raw;
+  return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
+}
+
+function LockIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect x="5" y="10.5" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M8.5 10.5V8a3.5 3.5 0 017 0v2.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function WhatsappIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 2.1.55 4.06 1.6 5.79L2 22l4.44-1.68a9.85 9.85 0 005.6 1.72h.01c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.16h-.01a8.2 8.2 0 01-4.18-1.15l-.3-.18-2.63 1 .7-2.56-.2-.31a8.17 8.17 0 01-1.25-4.36c0-4.53 3.7-8.22 8.24-8.22a8.2 8.2 0 018.23 8.23c0 4.53-3.69 8.22-8.22 8.22z" />
+    </svg>
+  );
+}
 
 function firstName(full?: string | null) {
   if (!full?.trim()) return '';
@@ -46,6 +84,10 @@ export function StoreShell({
   logoUrl,
   primaryColor,
   accentColor,
+  storeFont,
+  storeCardRatio,
+  analyticsGaId,
+  analyticsPixelId,
   categories = [],
   activeCategoryId = null,
   onSelectCategory,
@@ -55,6 +97,10 @@ export function StoreShell({
   accountHref,
   storeSlug,
   sellerPhone,
+  legalName,
+  sellerDocument,
+  sellerCity,
+  sellerState,
   instagramUrl,
   facebookUrl,
   tiktokUrl,
@@ -67,6 +113,9 @@ export function StoreShell({
   const searchRef = useRef<HTMLInputElement>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [megaId, setMegaId] = useState<string | null>(null);
+  const [megaCache, setMegaCache] = useState<Record<string, Suggestion[]>>({});
+  const megaTimer = useRef<number | undefined>(undefined);
   const { customer, logout } = useCustomer();
   const helpWa = sellerPhone
     ? sellerWhatsappHref(sellerPhone, `Olá! Preciso de ajuda com um pedido na loja ${storeName}.`)
@@ -122,20 +171,78 @@ export function StoreShell({
     };
   }, [search, storeSlug]);
 
-  const navItems = categories;
+  useEffect(() => {
+    if (!megaId || !storeSlug || megaCache[megaId]) return;
+    let cancelled = false;
+    api<{ items: Suggestion[] }>(
+      `/catalog/products?categoryId=${megaId}&limit=6`,
+      { storeSlug },
+    )
+      .then((res) => {
+        if (!cancelled) setMegaCache((prev) => ({ ...prev, [megaId]: res.items }));
+      })
+      .catch(() => {
+        if (!cancelled) setMegaCache((prev) => ({ ...prev, [megaId]: [] }));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [megaId, storeSlug, megaCache]);
+
+  useEffect(() => {
+    if (!megaId) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMegaId(null);
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [megaId]);
+
+  useEffect(() => () => window.clearTimeout(megaTimer.current), []);
+
+  // Com subcategorias cadastradas a barra mostra só os departamentos-pai;
+  // sem elas, continua mostrando a lista inteira como antes.
+  const hasTree = categories.some((c) => c.parentId);
+  const navItems = hasTree ? categories.filter((c) => !c.parentId) : categories;
+
+  const megaCategory = navItems.find((c) => c.id === megaId) || null;
+  const megaSubs = megaId ? categories.filter((c) => c.parentId === megaId) : [];
+  const megaProducts = megaId ? megaCache[megaId] : undefined;
+
+  function openMega(id: string | null) {
+    window.clearTimeout(megaTimer.current);
+    if (!id) {
+      setMegaId(null);
+      return;
+    }
+    megaTimer.current = window.setTimeout(() => setMegaId(id), 140);
+  }
+
+  function closeMega() {
+    window.clearTimeout(megaTimer.current);
+    megaTimer.current = window.setTimeout(() => setMegaId(null), 120);
+  }
 
   function selectCategory(id: string | null) {
     onSelectCategory?.(id);
     setMenuOpen(false);
+    window.clearTimeout(megaTimer.current);
+    setMegaId(null);
   }
 
   return (
     <div
-      className="pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0"
+      className="store-theme pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0"
       style={
         {
           '--store-primary': primaryColor,
           '--store-accent': accentColor,
+          // Hover derivado da própria cor da loja, sem pedir um segundo campo
+          // no admin.
+          '--store-accent-hover': `color-mix(in srgb, ${accentColor} 86%, #000)`,
+          '--store-font': fontStyle(storeFont).body,
+          '--store-font-display': fontStyle(storeFont).display,
+          '--store-card-ratio': cardRatioValue(storeCardRatio),
         } as React.CSSProperties
       }
     >
@@ -279,12 +386,16 @@ export function StoreShell({
           </div>
         ) : null}
 
-        <nav className="hidden border-t border-line md:block">
+        <nav
+          className="relative hidden border-t border-line md:block"
+          onMouseLeave={closeMega}
+        >
           <ul className="mx-auto flex max-w-[1200px] gap-1 overflow-x-auto px-4">
-            <li>
+            <li onMouseEnter={() => openMega(null)}>
               <button
                 type="button"
                 onClick={() => selectCategory(null)}
+                onFocus={() => openMega(null)}
                 className={`inline-block whitespace-nowrap border-b-2 px-3 py-2.5 text-[13px] font-medium transition-colors ${
                   !activeCategoryId
                     ? 'border-[var(--store-accent)] text-[var(--store-accent)]'
@@ -295,12 +406,14 @@ export function StoreShell({
               </button>
             </li>
             {navItems.map((item) => (
-              <li key={item.id}>
+              <li key={item.id} onMouseEnter={() => openMega(item.id)}>
                 <button
                   type="button"
                   onClick={() => selectCategory(item.id)}
+                  onFocus={() => openMega(item.id)}
+                  aria-expanded={megaId === item.id}
                   className={`inline-block whitespace-nowrap border-b-2 px-3 py-2.5 text-[13px] font-medium transition-colors ${
-                    activeCategoryId === item.id
+                    activeCategoryId === item.id || megaId === item.id
                       ? 'border-[var(--store-accent)] text-[var(--store-accent)]'
                       : 'border-transparent text-ink hover:text-[var(--store-accent)]'
                   }`}
@@ -310,6 +423,98 @@ export function StoreShell({
               </li>
             ))}
           </ul>
+
+          {megaCategory && (megaSubs.length > 0 || (megaProducts?.length ?? 0) > 0) ? (
+            <div
+              className="absolute inset-x-0 top-full z-40 border-t border-line bg-white shadow-[0_20px_40px_-26px_rgba(0,0,0,0.5)]"
+              onMouseEnter={() => window.clearTimeout(megaTimer.current)}
+            >
+              <div className="mx-auto flex max-w-[1200px] gap-10 px-4 py-6">
+                <div
+                  className={
+                    megaSubs.length > 0
+                      ? 'min-w-0 flex-1'
+                      : 'w-[180px] shrink-0'
+                  }
+                >
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+                    {megaCategory.name}
+                  </p>
+                  {megaSubs.length > 0 ? (
+                    <ul className="mt-3 grid grid-cols-2 gap-x-8 gap-y-1 lg:grid-cols-3">
+                      {megaSubs.map((sub) => (
+                        <li key={sub.id}>
+                          <button
+                            type="button"
+                            onClick={() => selectCategory(sub.id)}
+                            className="block w-full py-1 text-left text-[13px] text-ink transition-colors hover:text-[var(--store-accent)]"
+                          >
+                            {sub.name}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => selectCategory(megaCategory.id)}
+                    className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--store-accent)]"
+                  >
+                    Ver tudo em {megaCategory.name}
+                    <span aria-hidden>&rarr;</span>
+                  </button>
+                </div>
+
+                {megaProducts && megaProducts.length > 0 ? (
+                  <div
+                    className={
+                      megaSubs.length > 0
+                        ? 'w-[440px] shrink-0 lg:w-[520px]'
+                        : 'min-w-0 flex-1'
+                    }
+                  >
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+                      Destaques
+                    </p>
+                    <div
+                      className={`mt-3 grid gap-3 ${
+                        megaSubs.length > 0 ? 'grid-cols-4' : 'grid-cols-6'
+                      }`}
+                    >
+                      {megaProducts
+                        .slice(0, megaSubs.length > 0 ? 4 : 6)
+                        .map((prod) => {
+                        const img = mediaUrl(prod.images?.[0]?.url);
+                        return (
+                          <Link
+                            key={prod.id}
+                            href={`/loja/${storeSlug}/p/${prod.slug || prod.id}`}
+                            onClick={() => setMegaId(null)}
+                            className="group block"
+                          >
+                            <div className="aspect-square overflow-hidden rounded-md bg-[#f3f3f3]">
+                              {img ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={img}
+                                  alt={prod.name}
+                                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+                              ) : null}
+                            </div>
+                            <p className="mt-1.5 line-clamp-2 text-[12px] leading-snug">
+                              {prod.name}
+                            </p>
+                            <strong className="text-[12px]">{money(Number(prod.price))}</strong>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
         </nav>
       </header>
 
@@ -400,18 +605,34 @@ export function StoreShell({
           >
             Todos os produtos
           </button>
-          {navItems.map((item) => (
-            <button
-              type="button"
-              key={item.id}
-              className={`block w-full border-b border-line px-4 py-3 text-left text-sm font-medium ${
-                activeCategoryId === item.id ? 'text-[var(--store-accent)]' : ''
-              }`}
-              onClick={() => selectCategory(item.id)}
-            >
-              {item.name}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const subs = categories.filter((c) => c.parentId === item.id);
+            return (
+              <div key={item.id}>
+                <button
+                  type="button"
+                  className={`block w-full border-b border-line px-4 py-3 text-left text-sm font-medium ${
+                    activeCategoryId === item.id ? 'text-[var(--store-accent)]' : ''
+                  }`}
+                  onClick={() => selectCategory(item.id)}
+                >
+                  {item.name}
+                </button>
+                {subs.map((sub) => (
+                  <button
+                    type="button"
+                    key={sub.id}
+                    className={`block w-full border-b border-line py-2.5 pl-8 pr-4 text-left text-[13px] text-muted ${
+                      activeCategoryId === sub.id ? 'text-[var(--store-accent)]' : ''
+                    }`}
+                    onClick={() => selectCategory(sub.id)}
+                  >
+                    {sub.name}
+                  </button>
+                ))}
+              </div>
+            );
+          })}
         </nav>
 
         <div className="border-t border-line p-4">
@@ -431,114 +652,159 @@ export function StoreShell({
 
       {children}
 
-      <footer className="mt-8 border-t border-line bg-[#fafafa] pb-2 md:pb-0">
-        <div className="mx-auto grid max-w-[1200px] gap-6 px-4 py-8 sm:grid-cols-3">
-          <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-wider">Institucional</p>
-            <ul className="space-y-1.5 text-sm text-muted">
-              <li>
+      <footer className="mt-10 border-t border-line bg-[#fafafa] pb-2 md:pb-0">
+        <div className="mx-auto max-w-[1200px] px-4 py-9">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <p className="mb-3 text-xs font-bold uppercase tracking-wider">Institucional</p>
+              <ul className="space-y-2 text-sm text-muted">
                 {storeSlug ? (
-                  <Link
-                    href={`/loja/${storeSlug}/politicas/termos`}
-                    className="hover:text-ink"
-                  >
-                    Termos de uso
-                  </Link>
-                ) : (
-                  'Termos de uso'
-                )}
-              </li>
-              <li>
+                  <>
+                    <li>
+                      <Link href={`/loja/${storeSlug}/politicas/termos`} className="hover:text-ink">
+                        Termos de uso
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href={`/loja/${storeSlug}/politicas/trocas`} className="hover:text-ink">
+                        Trocas e devoluções
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href={`/loja/${storeSlug}/politicas/privacidade`} className="hover:text-ink">
+                        Política de privacidade
+                      </Link>
+                    </li>
+                  </>
+                ) : null}
+              </ul>
+            </div>
+
+            <div>
+              <p className="mb-3 text-xs font-bold uppercase tracking-wider">Minha conta</p>
+              <ul className="space-y-2 text-sm text-muted">
                 {storeSlug ? (
-                  <Link
-                    href={`/loja/${storeSlug}/politicas/trocas`}
-                    className="hover:text-ink"
-                  >
-                    Trocas e devoluções
-                  </Link>
-                ) : (
-                  'Trocas e devoluções'
-                )}
-              </li>
-              <li>
-                {storeSlug ? (
-                  <Link
-                    href={`/loja/${storeSlug}/politicas/privacidade`}
-                    className="hover:text-ink"
-                  >
-                    Política de privacidade
-                  </Link>
-                ) : (
-                  'Política de privacidade'
-                )}
-              </li>
-            </ul>
+                  <>
+                    <li>
+                      <Link href={pedidosHref} className="hover:text-ink">
+                        Meus pedidos
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href={contaHref} className="hover:text-ink">
+                        Dados e endereços
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href={`/loja/${storeSlug}/favoritos`} className="hover:text-ink">
+                        Favoritos
+                      </Link>
+                    </li>
+                  </>
+                ) : null}
+              </ul>
+            </div>
+
+            <div>
+              <p className="mb-3 text-xs font-bold uppercase tracking-wider">Atendimento</p>
+              <ul className="space-y-2 text-sm text-muted">
+                <li>
+                  {helpWa ? (
+                    <a
+                      href={helpWa}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 hover:text-ink"
+                    >
+                      <WhatsappIcon />
+                      Falar no WhatsApp
+                    </a>
+                  ) : (
+                    'Atendimento pelos canais da loja'
+                  )}
+                </li>
+                <li>Frete e prazo calculados pelo seu CEP</li>
+                <li>Nota fiscal em todo pedido</li>
+              </ul>
+            </div>
+
+            <div>
+              <p className="mb-3 text-xs font-bold uppercase tracking-wider">
+                Formas de pagamento
+              </p>
+              <PaymentBadges />
+
+              {instagramUrl || facebookUrl || tiktokUrl ? (
+                <>
+                  <p className="mb-2 mt-5 text-xs font-bold uppercase tracking-wider">
+                    Siga a loja
+                  </p>
+                  <div className="flex items-center gap-2">
+                    {instagramUrl ? (
+                      <a
+                        href={instagramUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Instagram"
+                        className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition hover:border-ink hover:text-ink"
+                      >
+                        <InstagramIcon />
+                      </a>
+                    ) : null}
+                    {facebookUrl ? (
+                      <a
+                        href={facebookUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Facebook"
+                        className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition hover:border-ink hover:text-ink"
+                      >
+                        <FacebookIcon />
+                      </a>
+                    ) : null}
+                    {tiktokUrl ? (
+                      <a
+                        href={tiktokUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="TikTok"
+                        className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition hover:border-ink hover:text-ink"
+                      >
+                        <TiktokIcon />
+                      </a>
+                    ) : null}
+                  </div>
+                </>
+              ) : null}
+            </div>
           </div>
-          <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-wider">Ajuda</p>
-            <ul className="space-y-1.5 text-sm text-muted">
-              <li>
-                {helpWa ? (
-                  <a
-                    href={helpWa}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-ink"
-                  >
-                    Falar com a loja no WhatsApp
-                  </a>
-                ) : (
-                  'Atendimento pelos canais da loja'
-                )}
-              </li>
-              <li>Prazo de entrega calculado no checkout, pelo CEP</li>
-              <li>Pagamento por Pix ou cartão</li>
-            </ul>
-          </div>
-          <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-wider">{storeName}</p>
-            <p className="text-sm text-muted">Loja online · pagamento seguro</p>
-            <PaymentBadges className="mt-2" />
-            {instagramUrl || facebookUrl || tiktokUrl ? (
-              <div className="mt-3 flex items-center gap-3">
-                {instagramUrl ? (
-                  <a
-                    href={instagramUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Instagram"
-                    className="text-muted hover:text-ink"
-                  >
-                    <InstagramIcon />
-                  </a>
-                ) : null}
-                {facebookUrl ? (
-                  <a
-                    href={facebookUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Facebook"
-                    className="text-muted hover:text-ink"
-                  >
-                    <FacebookIcon />
-                  </a>
-                ) : null}
-                {tiktokUrl ? (
-                  <a
-                    href={tiktokUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="TikTok"
-                    className="text-muted hover:text-ink"
-                  >
-                    <TiktokIcon />
-                  </a>
-                ) : null}
-              </div>
-            ) : null}
+
+          {/* Assinatura legal: razão social e CNPJ são exigidos na vitrine */}
+          <div className="mt-8 flex flex-col gap-2 border-t border-line pt-5 text-[12px] leading-relaxed text-muted sm:flex-row sm:items-center sm:justify-between">
+            <p>
+              {legalName || storeName}
+              {sellerDocument ? ` · CNPJ ${formatCnpj(sellerDocument)}` : ''}
+              {sellerCity && sellerState ? ` · ${sellerCity}/${sellerState}` : ''}
+            </p>
+            <p className="flex items-center gap-1.5">
+              <LockIcon />
+              Compra segura · seus dados protegidos
+            </p>
           </div>
         </div>
       </footer>
+
+      {/*
+        Aviso de cookies: o próprio componente decide se aparece — sem medição
+        configurada na loja, não há o que consentir.
+      */}
+      {storeSlug ? (
+        <CookieConsent
+          storeSlug={storeSlug}
+          gaId={analyticsGaId}
+          pixelId={analyticsPixelId}
+        />
+      ) : null}
 
       {/* Navegação mobile inferior */}
       <nav

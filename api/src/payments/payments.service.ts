@@ -10,6 +10,10 @@ import { ConfigService } from '@nestjs/config';
 import { PaymentStatus, OrderStatus } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { OrdersService } from '../orders/orders.service';
+import {
+  deveDevolverEstoque,
+  exigeDevolucao,
+} from '../orders/refund-rules';
 import { PrismaService } from '../prisma/prisma.service';
 import { SecretsService } from '../common/secrets/secrets.service';
 import { buildMercadoPagoWebhookUrl } from '../common/utils/mercadopago-webhook-url';
@@ -303,6 +307,7 @@ export class PaymentsService {
         });
         // Devolve o estoque que estava reservado para este pedido
         await this.ordersService.restockOrderItems(storeId, order.id);
+        await this.ordersService.releaseOrderCoupon(storeId, order.id);
         throw new BadRequestException(
           'Este pedido expirou (1h sem pagamento). Faça um novo checkout.',
         );
@@ -810,12 +815,14 @@ export class PaymentsService {
             mpPaymentId: String(payment.id),
             status: OrderStatus.REFUNDED,
             paymentStatus: PaymentStatus.REFUNDED,
+            refundVia: 'GATEWAY_EXTERNAL',
             refundStatus: 'APPROVED',
             refundedAt: order.refundedAt || new Date(),
           },
         });
         if (!wasRefunded) {
           await this.ordersService.restockOrderItems(store.id, order.id);
+          await this.ordersService.releaseOrderCoupon(store.id, order.id);
         }
         return {
           ok: true,
@@ -843,12 +850,14 @@ export class PaymentsService {
             mpPaymentId: String(payment.id),
             status: OrderStatus.REFUNDED,
             paymentStatus: PaymentStatus.REFUNDED,
+            refundVia: 'GATEWAY_EXTERNAL',
             refundStatus: 'APPROVED',
             refundedAt: order.refundedAt || new Date(),
           },
         });
         if (!wasRefunded) {
           await this.ordersService.restockOrderItems(store.id, order.id);
+          await this.ordersService.releaseOrderCoupon(store.id, order.id);
         }
         return {
           ok: true,
@@ -889,6 +898,33 @@ export class PaymentsService {
     }
 
     return { ok: true };
+  }
+
+  /**
+   * Aprova o pedido de reembolso.
+   *
+   * Quando o motivo exige o produto de volta, isto NÃO devolve dinheiro: só
+   * autoriza a devolução e passa a esperar a peça. Antes, aprovar estornava e
+   * recolocava o item no estoque na mesma hora, com o produto ainda na casa
+   * do cliente — se ele não devolvesse, o lojista perdia os dois.
+   */
+  async approveRefund(storeId: string, orderId: string) {
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, storeId },
+      select: { refundReasonType: true, returnReceivedAt: true },
+    });
+    if (!order) throw new NotFoundException('Pedido não encontrado');
+
+    if (exigeDevolucao(order.refundReasonType) && !order.returnReceivedAt) {
+      return this.ordersService.markReturnPending(storeId, orderId);
+    }
+    return this.refundOrder(storeId, orderId);
+  }
+
+  /** Produto voltou: registra o recebimento e estorna na sequência. */
+  async confirmReturnAndRefund(storeId: string, orderId: string) {
+    await this.ordersService.markReturnReceived(storeId, orderId);
+    return this.refundOrder(storeId, orderId);
   }
 
   async refundOrder(storeId: string, orderId: string) {
@@ -957,12 +993,23 @@ export class PaymentsService {
         paymentStatus: PaymentStatus.REFUNDED,
         refundStatus: 'APPROVED',
         refundedAt: new Date(),
+        refundVia: 'GATEWAY',
         mpRefundId: mpRefundId || undefined,
       },
       include: { items: true },
     });
 
-    await this.ordersService.restockOrderItems(storeId, order.id);
+    /*
+     * Estoque só volta quando a peça voltou de fato, ou quando ela nunca
+     * chegou a sair. Em extravio o produto não retorna — devolver ao estoque
+     * criaria peça fantasma, que a loja vende e não consegue entregar.
+     */
+    if (deveDevolverEstoque(updated)) {
+      await this.ordersService.restockOrderItems(storeId, order.id);
+    }
+    await this.ordersService.releaseOrderCoupon(storeId, order.id);
+
+    void this.ordersService.notifyRefundDone(order.id);
 
     return {
       order: updated,

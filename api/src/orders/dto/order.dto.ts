@@ -3,6 +3,7 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsIn,
   IsNumber,
   IsObject,
   IsOptional,
@@ -10,6 +11,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
+import { REFUND_REASONS } from '../refund-rules';
 import { OrderStatus } from '@prisma/client';
 
 export class OrderItemInputDto {
@@ -84,6 +86,16 @@ export class CreateOrderDto {
   @Type(() => Boolean)
   @IsBoolean()
   saveAddress?: boolean;
+
+  /**
+   * Aceite das condições de venda. Decreto 7.962/2013 art. 4º, I manda
+   * apresentar o sumário do contrato antes da contratação — o pedido só é
+   * aceito com essa confirmação, e o momento fica gravado como prova.
+   */
+  @IsOptional()
+  @Type(() => Boolean)
+  @IsBoolean()
+  acceptTerms?: boolean;
 }
 
 export class UpdateOrderStatusDto {
@@ -113,6 +125,13 @@ export class BulkUpdateOrderStatusDto {
 }
 
 export class RequestRefundDto {
+  /**
+   * Motivo estruturado. Define se o produto precisa voltar e se o lojista
+   * pode recusar — ver refund-rules.ts.
+   */
+  @IsIn(REFUND_REASONS as unknown as string[])
+  reasonType!: string;
+
   @IsOptional()
   @IsString()
   reason?: string;

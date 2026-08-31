@@ -41,6 +41,7 @@ export class CouponsService {
               ? new Prisma.Decimal(dto.minSubtotal)
               : undefined,
           maxUses: dto.maxUses,
+          maxPerCustomer: dto.maxPerCustomer,
           startsAt: dto.startsAt ? new Date(dto.startsAt) : undefined,
           endsAt: dto.endsAt ? new Date(dto.endsAt) : undefined,
           active: dto.active ?? true,
@@ -86,6 +87,9 @@ export class CouponsService {
               }
             : {}),
           ...(dto.maxUses !== undefined ? { maxUses: dto.maxUses } : {}),
+          ...(dto.maxPerCustomer !== undefined
+            ? { maxPerCustomer: dto.maxPerCustomer }
+            : {}),
           ...(dto.startsAt !== undefined
             ? { startsAt: dto.startsAt ? new Date(dto.startsAt) : null }
             : {}),
@@ -149,10 +153,44 @@ export class CouponsService {
     return { coupon, discount, freeShipping };
   }
 
-  async incrementUsage(tx: Prisma.TransactionClient, couponId: string) {
-    await tx.coupon.update({
-      where: { id: couponId },
+  /**
+   * Reserva um uso do cupom. Compare-and-swap: só incrementa se ainda houver
+   * saldo, então N pedidos simultâneos não furam o limite. Devolve false
+   * quando o cupom esgotou entre a validação e a reserva.
+   */
+  async reserveUsage(tx: Prisma.TransactionClient, couponId: string) {
+    const res = await tx.coupon.updateMany({
+      where: {
+        id: couponId,
+        OR: [
+          { maxUses: null },
+          { usedCount: { lt: this.prisma.coupon.fields.maxUses } },
+        ],
+      },
       data: { usedCount: { increment: 1 } },
+    });
+    return res.count === 1;
+  }
+
+  /** Devolve o uso quando o pedido é cancelado, expira ou é estornado. */
+  async releaseUsage(couponId: string) {
+    await this.prisma.coupon.updateMany({
+      where: { id: couponId, usedCount: { gt: 0 } },
+      data: { usedCount: { decrement: 1 } },
+    });
+  }
+
+  /**
+   * Quantas vezes este cliente já usou o cupom. Pedido cancelado não conta —
+   * senão desistir de uma compra queimaria o direito ao desconto.
+   */
+  async usageByCustomer(couponId: string, customerId: string) {
+    return this.prisma.order.count({
+      where: {
+        couponId,
+        customerId,
+        status: { not: 'CANCELLED' },
+      },
     });
   }
 

@@ -97,8 +97,12 @@ export class InvoicesService {
     if (!order) throw new NotFoundException('Pedido não encontrado');
 
     const ref = `order-${order.id}`;
-    const payload = this.buildNfcePayload(store, order);
     const baseUrl = this.focusBaseUrl(store.nfeEnvironment);
+
+    // Só reserva depois de toda validação passar: erro de configuração da
+    // loja não pode queimar número da sequência fiscal.
+    const numero = await this.reserveInvoiceNumber(storeId);
+    const payload = this.buildNfcePayload(store, order, numero);
 
     let invoice = existing
       ? await this.prisma.invoice.update({
@@ -110,6 +114,7 @@ export class InvoicesService {
             errorMessage: null,
             model: InvoiceModel.NFCE,
             series: store.nfeSeries || '1',
+            number: numero,
           },
         })
       : await this.prisma.invoice.create({
@@ -120,7 +125,7 @@ export class InvoicesService {
             status: InvoiceStatus.PENDING,
             providerRef: ref,
             series: store.nfeSeries || '1',
-            number: store.nfeNextNumber,
+            number: numero,
             payload: payload as Prisma.InputJsonValue,
           },
         });
@@ -193,13 +198,6 @@ export class InvoicesService {
           } as Prisma.InputJsonValue,
         },
       });
-
-      if (status === InvoiceStatus.AUTHORIZED) {
-        await this.prisma.store.update({
-          where: { id: storeId },
-          data: { nfeNextNumber: { increment: 1 } },
-        });
-      }
 
       return invoice;
     } catch (err) {
@@ -318,6 +316,39 @@ export class InvoicesService {
     return InvoiceStatus.PENDING;
   }
 
+  /*
+   * Reserva o próximo número da NFC-e de forma atômica.
+   *
+   * Antes o número era lido de store.nfeNextNumber para montar a nota e só
+   * incrementado depois que a SEFAZ autorizava — com uma ida e volta HTTP no
+   * meio. Dois pedidos pagos ao mesmo tempo pegavam o mesmo número e a
+   * segunda nota era rejeitada, deixando pedido pago sem nota. E se a
+   * resposta se perdesse depois da autorização, o incremento não acontecia e
+   * a nota seguinte nascia com um número já usado, travando toda emissão
+   * dali em diante.
+   *
+   * UPDATE ... RETURNING resolve em uma instrução só: quem chegar primeiro
+   * leva o número, ninguém repete.
+   *
+   * Cada tentativa de transmissão queima um número, mesmo se falhar. É de
+   * propósito: buraco na numeração se resolve com inutilização na SEFAZ,
+   * número repetido não se resolve.
+   */
+  private async reserveInvoiceNumber(storeId: string): Promise<number> {
+    const rows = await this.prisma.$queryRaw<{ nfeNextNumber: number }[]>`
+      UPDATE "Store"
+      SET "nfeNextNumber" = "nfeNextNumber" + 1
+      WHERE id = ${storeId}
+      RETURNING "nfeNextNumber"
+    `;
+    const proximo = rows[0]?.nfeNextNumber;
+    if (proximo == null) {
+      throw new NotFoundException('Loja não encontrada');
+    }
+    // o valor devolvido já é o próximo; o reservado é o anterior
+    return Number(proximo) - 1;
+  }
+
   private buildNfcePayload(
     store: {
       sellerDocType: SellerDocType | null;
@@ -362,6 +393,8 @@ export class InvoicesService {
         } | null;
       }>;
     },
+    /** Número já reservado para esta transmissão. */
+    numero: number,
   ) {
     const doc = onlyDigits(store.sellerDocument);
     const isCnpj = store.sellerDocType === SellerDocType.CNPJ;
@@ -422,7 +455,7 @@ export class InvoicesService {
         : {}),
       ...(store.sellerEmail ? { email_emitente: store.sellerEmail } : {}),
       serie: store.nfeSeries || '1',
-      numero: store.nfeNextNumber,
+      numero,
       items,
       formas_pagamento: [
         {

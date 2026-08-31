@@ -49,6 +49,8 @@ export function StoreMarquee({ images, storeName, intervalMs = 5000 }: Props) {
 
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  /** Proporção real da arte: sem isso o container corta a imagem no desktop. */
+  const [ratio, setRatio] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
 
   const go = useCallback(
@@ -77,6 +79,9 @@ export function StoreMarquee({ images, storeName, intervalMs = 5000 }: Props) {
   return (
     <section
       className="store-promo-marquee relative w-full overflow-hidden bg-[#111]"
+      style={
+        ratio ? ({ '--promo-ratio': String(ratio) } as React.CSSProperties) : undefined
+      }
       aria-roledescription="carrossel"
       aria-label={storeName ? `Promoções ${storeName}` : 'Promoções'}
       onMouseEnter={() => setPaused(true)}
@@ -103,16 +108,37 @@ export function StoreMarquee({ images, storeName, intervalMs = 5000 }: Props) {
         {urls.map((src, i) => (
           <div
             key={`${src}-${i}`}
-            className="store-promo-carousel-slide"
+            className="store-promo-carousel-slide relative overflow-hidden"
             aria-hidden={i !== index}
           >
+            {/*
+              Fundo: a própria arte ampliada e desfocada, só para preencher a
+              sobra quando a proporção do banner não é a da imagem.
+            */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={src}
               alt=""
-              className="h-full w-full object-cover"
+              aria-hidden
+              className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl"
+              draggable={false}
+            />
+            {/* Arte real: inteira, sem corte. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={src}
+              alt=""
+              className="relative h-full w-full object-contain"
               loading={i === 0 ? 'eager' : 'lazy'}
               draggable={false}
+              onLoad={(e) => {
+                // A primeira arte define a proporção do carrossel inteiro.
+                if (i !== 0 || ratio) return;
+                const el = e.currentTarget;
+                if (el.naturalWidth && el.naturalHeight) {
+                  setRatio(el.naturalWidth / el.naturalHeight);
+                }
+              }}
             />
           </div>
         ))}

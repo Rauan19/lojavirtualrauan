@@ -26,6 +26,7 @@ export function refundStatusLabel(status?: string | null) {
   if (!status) return null;
   const map: Record<string, string> = {
     REQUESTED: 'Reembolso solicitado',
+    RETURN_PENDING: 'Aguardando o produto voltar',
     APPROVED: 'Reembolso aprovado',
     REJECTED: 'Reembolso recusado',
   };

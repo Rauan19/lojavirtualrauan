@@ -8,6 +8,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { OrderStatus, PaymentStatus, Prisma } from '@prisma/client';
+import {
+  REFUND_STATUS,
+  dentroDoPrazoArrependimento,
+  exigeDevolucao,
+  podeRecusarPedido,
+  prazoArrependimento,
+} from './refund-rules';
 import { CouponsService } from '../coupons/coupons.service';
 import { InvoicesService } from '../invoices/invoices.service';
 import { OrderMailService } from '../mail/order-mail.service';
@@ -83,6 +90,7 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
 
       for (const order of stale) {
         await this.restockOrderItems(order.storeId, order.id);
+        await this.releaseOrderCoupon(order.storeId, order.id);
       }
 
       this.logger.log(
@@ -106,6 +114,12 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
   async create(storeId: string, dto: CreateOrderDto, customerId: string) {
     if (!dto.items?.length) {
       throw new BadRequestException('Pedido sem itens');
+    }
+
+    if (!dto.acceptTerms) {
+      throw new BadRequestException(
+        'É preciso aceitar as condições de venda para finalizar a compra',
+      );
     }
 
     const customer = await this.prisma.customer.findFirst({
@@ -247,6 +261,17 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
         dto.couponCode,
         Number(subtotal),
       );
+      if (applied.coupon.maxPerCustomer != null) {
+        const jaUsou = await this.couponsService.usageByCustomer(
+          applied.coupon.id,
+          customer.id,
+        );
+        if (jaUsou >= applied.coupon.maxPerCustomer) {
+          throw new BadRequestException(
+            'Você já usou este cupom o número máximo de vezes',
+          );
+        }
+      }
       discount = applied.discount;
       couponId = applied.coupon.id;
       couponCode = applied.coupon.code;
@@ -331,7 +356,19 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
       // falhava na aprovação e o cliente ficava pagando sem produto.
       await this.reserveStock(tx, storeId, itemsData);
 
-      // Cupom só é consumido quando o pagamento for aprovado.
+      /*
+       * Cupom é reservado aqui, junto do estoque, e devolvido nas mesmas
+       * situações. Consumir só na aprovação do pagamento deixava N pedidos
+       * passarem pela validação com o contador ainda baixo: um cupom de 10
+       * usos saía 100 vezes, e o desconto todo saía do bolso do lojista.
+       */
+      if (couponId) {
+        const reservado = await this.couponsService.reserveUsage(tx, couponId);
+        if (!reservado) {
+          throw new BadRequestException('Cupom esgotado');
+        }
+      }
+
       return tx.order.create({
         data: {
           storeId,
@@ -352,6 +389,8 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
           couponCode,
           notes: dto.notes,
           stockReserved: true,
+          couponReserved: Boolean(couponId),
+          termsAcceptedAt: new Date(),
           items: { create: itemsData },
         },
         include: { items: true },
@@ -528,6 +567,19 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
       );
     }
 
+    /*
+     * "Reembolsado" não é status que se marca na mão. Antes marcava, e isso
+     * gravava o pedido como estornado sem nunca chamar o gateway: o cliente
+     * lia "Reembolsado" e o dinheiro continuava com o lojista. Pior, o
+     * estorno de verdade passava a ser recusado com "pedido já reembolsado",
+     * deixando o pedido preso. Quem estorna é o fluxo de reembolso.
+     */
+    if (dto.status === OrderStatus.REFUNDED) {
+      throw new BadRequestException(
+        'Para estornar, use o botão Estornar pedido — marcar o status aqui não devolve o dinheiro ao cliente',
+      );
+    }
+
     if (
       dto.status === OrderStatus.PAID &&
       current.paymentStatus !== PaymentStatus.APPROVED
@@ -579,12 +631,6 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
       data.deliveredAt = new Date();
       if (!current.shippedAt) data.shippedAt = new Date();
     }
-    if (dto.status === OrderStatus.REFUNDED) {
-      data.paymentStatus = PaymentStatus.REFUNDED;
-      data.refundedAt = new Date();
-      data.refundStatus = 'APPROVED';
-    }
-
     await this.prisma.order.update({
       where: { id },
       data,
@@ -594,14 +640,13 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
       await this.orderMail.notifyTrackingIfNew(id, current.trackingCode);
     }
 
-    // Estorno e cancelamento devolvem o estoque reservado (a própria
-    // restockOrderItems trava contra devolver duas vezes)
-    if (
-      (dto.status === OrderStatus.REFUNDED ||
-        dto.status === OrderStatus.CANCELLED) &&
-      current.status !== dto.status
-    ) {
+    // Cancelamento devolve o estoque reservado (a própria restockOrderItems
+    // trava contra devolver duas vezes). Estorno não passa por aqui: quem
+    // devolve o estoque nesse caso é o fluxo de reembolso, depois de o
+    // dinheiro sair de verdade.
+    if (dto.status === OrderStatus.CANCELLED && current.status !== dto.status) {
       await this.restockOrderItems(storeId, id);
+      await this.releaseOrderCoupon(storeId, id);
     }
 
     return this.getOne(storeId, id);
@@ -621,17 +666,16 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
         'Não é possível voltar pedidos em massa para aguardando pagamento',
       );
     }
+    if (status === OrderStatus.REFUNDED) {
+      throw new BadRequestException(
+        'Estorno não é troca de status: use Reembolsos, um pedido por vez',
+      );
+    }
 
     const data: Prisma.OrderUpdateManyMutationInput = { status };
     if (status === OrderStatus.SHIPPED) {
       data.shippedAt = new Date();
     }
-    if (status === OrderStatus.REFUNDED) {
-      data.paymentStatus = PaymentStatus.REFUNDED;
-      data.refundedAt = new Date();
-      data.refundStatus = 'APPROVED';
-    }
-
     const result = await this.prisma.order.updateMany({
       where: {
         storeId,
@@ -659,9 +703,10 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
       data,
     });
 
-    if (status === OrderStatus.REFUNDED || status === OrderStatus.CANCELLED) {
+    if (status === OrderStatus.CANCELLED) {
       for (const id of unique) {
         await this.restockOrderItems(storeId, id).catch(() => undefined);
+        await this.releaseOrderCoupon(storeId, id).catch(() => undefined);
       }
     }
 
@@ -792,11 +837,6 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
       });
     }
 
-    if (firstApproval && current.couponId) {
-      await this.prisma.$transaction(async (tx) => {
-        await this.couponsService.incrementUsage(tx, current.couponId!);
-      });
-    }
 
     if (firstApproval) {
       void this.orderMail.notifyOrder(orderId, 'paid');
@@ -926,6 +966,27 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
    * A flag `stockReserved` é apagada na mesma condição do update, então duas
    * chamadas simultâneas não devolvem o estoque em dobro.
    */
+  /**
+   * Devolve o uso do cupom reservado pelo pedido. Mesmo compare-and-swap do
+   * estoque: a flag é apagada na condição do update, então duas chamadas
+   * concorrentes não devolvem duas vezes.
+   */
+  async releaseOrderCoupon(storeId: string, orderId: string) {
+    const claimed = await this.prisma.order.updateMany({
+      where: { id: orderId, storeId, couponReserved: true },
+      data: { couponReserved: false },
+    });
+    if (claimed.count === 0) return;
+
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, storeId },
+      select: { couponId: true },
+    });
+    if (order?.couponId) {
+      await this.couponsService.releaseUsage(order.couponId);
+    }
+  }
+
   async restockOrderItems(storeId: string, orderId: string) {
     // Compare-and-swap: só quem conseguir virar a flag devolve o estoque
     const claimed = await this.prisma.order.updateMany({
@@ -1066,6 +1127,7 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
     storeId: string,
     customerId: string,
     orderId: string,
+    reasonType: string,
     reason?: string,
   ) {
     const order = await this.getForCustomer(storeId, customerId, orderId);
@@ -1078,30 +1140,115 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
     if (order.status === OrderStatus.REFUNDED) {
       throw new BadRequestException('Pedido já reembolsado');
     }
-    if (order.refundStatus === 'REQUESTED') {
-      throw new BadRequestException('Reembolso já solicitado');
+    if (
+      order.refundStatus === REFUND_STATUS.REQUESTED ||
+      order.refundStatus === REFUND_STATUS.RETURN_PENDING
+    ) {
+      throw new BadRequestException('Já existe um pedido de reembolso aberto');
     }
-    if (order.refundStatus === 'APPROVED') {
+    if (order.refundStatus === REFUND_STATUS.APPROVED) {
       throw new BadRequestException('Reembolso já aprovado');
     }
 
-    return this.prisma.order.update({
+    /*
+     * Arrependimento tem prazo (CDC art. 49): 7 dias corridos do recebimento.
+     * Fora dele o consumidor não perde tudo — muda o enquadramento, e é isso
+     * que a mensagem explica, em vez de só dizer "não pode".
+     */
+    if (
+      reasonType === 'ARREPENDIMENTO' &&
+      !dentroDoPrazoArrependimento(order.deliveredAt)
+    ) {
+      throw new BadRequestException(
+        'O prazo de 7 dias para desistir da compra já passou. Se o produto veio com defeito, escolha essa opção — a garantia legal é de 30 ou 90 dias.',
+      );
+    }
+
+    const updated = await this.prisma.order.update({
       where: { id: order.id },
       data: {
         refundRequestedAt: new Date(),
         refundReason: reason?.trim() || null,
-        refundStatus: 'REQUESTED',
+        refundReasonType: reasonType,
+        refundStatus: REFUND_STATUS.REQUESTED,
       },
       include: this.customerOrderInclude,
     });
+
+    // Decreto 7.962/2013 art. 5º, §1º: confirmação imediata do recebimento da
+    // manifestação. Sem await, como as outras — e-mail não derruba a operação.
+    void this.orderMail.notifyRefund(order.id, 'requested');
+
+    return updated;
+  }
+
+  /**
+   * Autoriza a devolução e passa a esperar o produto. O dinheiro só sai
+   * depois que o lojista confirmar o recebimento — antes, aprovar devolvia o
+   * valor e recolocava o item no estoque com a peça ainda na casa do cliente.
+   */
+  async markReturnPending(storeId: string, orderId: string) {
+    const order = await this.getOne(storeId, orderId);
+    if (order.refundStatus !== REFUND_STATUS.REQUESTED) {
+      throw new BadRequestException(
+        'Só é possível autorizar devolução de um pedido com reembolso solicitado',
+      );
+    }
+
+    const updated = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { refundStatus: REFUND_STATUS.RETURN_PENDING },
+    });
+    void this.orderMail.notifyRefund(orderId, 'return_pending');
+    return updated;
+  }
+
+  /** Lojista confirma que o produto voltou. Libera o estorno. */
+  async markReturnReceived(storeId: string, orderId: string) {
+    const order = await this.getOne(storeId, orderId);
+    if (order.refundStatus !== REFUND_STATUS.RETURN_PENDING) {
+      throw new BadRequestException(
+        'Este pedido não está aguardando devolução',
+      );
+    }
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: { returnReceivedAt: new Date() },
+    });
+  }
+
+  /** Ponte para o serviço de pagamentos avisar o cliente que o dinheiro saiu. */
+  notifyRefundDone(orderId: string) {
+    return this.orderMail.notifyRefund(orderId, 'done');
+  }
+
+  /** Dados que a vitrine e o admin usam para mostrar prazo e próximos passos. */
+  refundInfo(order: {
+    refundReasonType: string | null;
+    deliveredAt: Date | null;
+  }) {
+    return {
+      exigeDevolucao: exigeDevolucao(order.refundReasonType),
+      podeRecusar: podeRecusarPedido(
+        order.refundReasonType,
+        order.deliveredAt,
+      ),
+      prazoArrependimento: prazoArrependimento(order.deliveredAt),
+    };
   }
 
   async listRefundRequests(storeId: string, onlyPending = true) {
-    return this.prisma.order.findMany({
+    const rows = await this.prisma.order.findMany({
       where: {
         storeId,
         ...(onlyPending
-          ? { refundStatus: 'REQUESTED' }
+          ? {
+              // pendente = precisa de ação do lojista: analisar o pedido ou
+              // confirmar que o produto voltou
+              refundStatus: {
+                in: [REFUND_STATUS.REQUESTED, REFUND_STATUS.RETURN_PENDING],
+              },
+            }
           : {
               OR: [
                 { refundStatus: { not: null } },
@@ -1112,11 +1259,19 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
       include: { items: true, customer: true },
       orderBy: [{ refundRequestedAt: 'desc' }, { createdAt: 'desc' }],
     });
+    // O admin precisa saber se pode recusar e se tem que esperar devolução
+    return rows.map((order) => ({ ...order, ...this.refundInfo(order) }));
   }
 
   async countPendingRefunds(storeId: string) {
     const pending = await this.prisma.order.count({
-      where: { storeId, refundStatus: 'REQUESTED' },
+      where: {
+        storeId,
+        // pendente = precisa de ação: analisar, ou confirmar a devolução
+        refundStatus: {
+          in: [REFUND_STATUS.REQUESTED, REFUND_STATUS.RETURN_PENDING],
+        },
+      },
     });
     return { pending };
   }
@@ -1134,17 +1289,31 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
 
   async rejectRefund(storeId: string, orderId: string, reason?: string) {
     const order = await this.getOne(storeId, orderId);
-    if (order.refundStatus !== 'REQUESTED') {
+    if (order.refundStatus !== REFUND_STATUS.REQUESTED) {
       throw new BadRequestException('Não há solicitação pendente');
     }
-    return this.prisma.order.update({
+
+    /*
+     * Arrependimento dentro dos 7 dias é direito do consumidor (CDC art. 49),
+     * não pedido sujeito a análise. Recusar seria ilegal, então nem a API
+     * aceita — o admin também não mostra o botão.
+     */
+    if (!podeRecusarPedido(order.refundReasonType, order.deliveredAt)) {
+      throw new BadRequestException(
+        'Desistência dentro dos 7 dias do recebimento é direito do consumidor (CDC art. 49) e não pode ser recusada',
+      );
+    }
+
+    const updated = await this.prisma.order.update({
       where: { id: order.id },
       data: {
-        refundStatus: 'REJECTED',
+        refundStatus: REFUND_STATUS.REJECTED,
         refundReason: reason?.trim() || order.refundReason,
       },
       include: { items: true },
     });
+    void this.orderMail.notifyRefund(order.id, 'rejected', reason);
+    return updated;
   }
 
   async getReceipt(storeId: string, id: string) {
@@ -1299,8 +1468,24 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
 </body></html>`;
   }
 
+  /*
+   * Número do pedido vem de um contador na própria loja, incrementado em uma
+   * instrução só. Antes era count(*) + 1: dois checkouts simultâneos liam a
+   * mesma contagem, e como (storeId, orderNumber) é único, um dos clientes
+   * tomava erro no último passo da compra — justamente no pico de uma
+   * campanha, que é quando os checkouts concorrem.
+   */
   private async nextOrderNumber(storeId: string) {
-    const count = await this.prisma.order.count({ where: { storeId } });
-    return String(count + 1).padStart(6, '0');
+    const rows = await this.prisma.$queryRaw<{ orderSeq: number }[]>`
+      UPDATE "Store"
+      SET "orderSeq" = "orderSeq" + 1
+      WHERE id = ${storeId}
+      RETURNING "orderSeq"
+    `;
+    const seq = rows[0]?.orderSeq;
+    if (seq == null) {
+      throw new NotFoundException('Loja não encontrada');
+    }
+    return String(Number(seq)).padStart(6, '0');
   }
 }

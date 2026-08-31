@@ -38,12 +38,14 @@ import {
   UpdateStoreProfileDto,
   UpdateStoreStatusDto,
 } from './dto/store.dto';
+import { comPadrao, defaultPolicies } from './default-policies';
 import {
   STORE_TYPE_CONFIGS,
   categoriesForStoreType,
   isValidCnpj,
   isValidCpf,
   onlyDigits,
+  resolveStoreLayout,
 } from './store-type';
 
 const BRAZILIAN_STATES = new Set([
@@ -341,8 +343,9 @@ export class StoresService {
       if (dto.name !== undefined) data.name = dto.name;
       if (dto.slug !== undefined) data.slug = slugify(dto.slug);
       if (dto.status !== undefined) data.status = dto.status;
-      // Plataforma unificada: loja sempre geral (variações por produto)
-      data.storeType = StoreType.GENERAL;
+      // Ramo da loja escolhe as sugestões de categoria e o estilo padrão da
+      // vitrine. Variações/atributos continuam por produto.
+      if (dto.storeType !== undefined) data.storeType = dto.storeType;
       if (dto.planName !== undefined) data.planName = dto.planName;
       if (dto.planDueAt !== undefined) {
         data.planDueAt = dto.planDueAt ? new Date(dto.planDueAt) : null;
@@ -410,12 +413,28 @@ export class StoresService {
         customDomain: true,
         status: true,
         storeType: true,
+        storeFont: true,
+        storeCardRatio: true,
+        analyticsGaId: true,
+        analyticsPixelId: true,
         sellerTradeName: true,
         sellerLegalName: true,
         sellerDocType: true,
+        sellerDocument: true,
         sellerCity: true,
         sellerState: true,
         sellerPhone: true,
+        /*
+         * Endereço e e-mail do lojista alimentam o texto padrão das
+         * políticas. O Decreto 7.962/2013 art. 2º, II exige endereço físico e
+         * eletrônico do fornecedor no site — diferente do CPF, que continua
+         * fora da vitrine por ser dado pessoal sem exigência de publicação.
+         */
+        sellerStreet: true,
+        sellerNumber: true,
+        sellerNeighborhood: true,
+        sellerZipCode: true,
+        sellerEmail: true,
         termsHtml: true,
         privacyHtml: true,
         returnsHtml: true,
@@ -444,6 +463,13 @@ export class StoresService {
     const hasPk = Boolean(store.mpPublicKey?.trim());
     const paymentsEnabled = mode === 'pro' ? hasToken : hasToken && hasPk;
 
+    const layout = resolveStoreLayout(
+      store.storeType,
+      store.storeFont,
+      store.storeCardRatio,
+    );
+    const padrao = defaultPolicies(store);
+
     return {
       id: store.id,
       name: store.name,
@@ -455,17 +481,48 @@ export class StoresService {
       customDomain: store.customDomain,
       status: store.status,
       storeType: store.storeType,
+      // Vitrine recebe a aparência já resolvida: nunca precisa saber que
+      // existe preset por trás. Mesmos nomes do admin, para os dois lados
+      // falarem a mesma língua.
+      storeFont: layout.font,
+      storeCardRatio: layout.cardRatio,
+      /*
+       * A vitrine precisa saber se há medição configurada para decidir se
+       * pede consentimento. Sem nenhum id, só roda cookie essencial e o
+       * aviso não aparece.
+       */
+      analyticsGaId: store.analyticsGaId,
+      analyticsPixelId: store.analyticsPixelId,
       sellerTradeName: store.sellerTradeName,
       sellerLegalName: store.sellerLegalName,
       sellerDocType: store.sellerDocType,
+      /*
+       * CNPJ é informação obrigatória na vitrine (Decreto 7.962/2013), mas
+       * CPF é dado pessoal do lojista: só o documento de empresa sai daqui.
+       */
+      sellerDocument:
+        store.sellerDocType === SellerDocType.CNPJ ? store.sellerDocument : null,
       sellerCity: store.sellerCity,
       sellerState: store.sellerState,
       sellerPhone: store.sellerPhone,
-      // Sanitiza também na saída: linhas gravadas antes da sanitização na
-      // entrada continuam cruas no banco.
-      termsHtml: sanitizeStoreHtml(store.termsHtml),
-      privacyHtml: sanitizeStoreHtml(store.privacyHtml),
-      returnsHtml: sanitizeStoreHtml(store.returnsHtml),
+      /*
+       * Sanitiza também na saída: linhas gravadas antes da sanitização na
+       * entrada continuam cruas no banco.
+       *
+       * Política em branco cai no texto padrão. Loja não pode ir ao ar sem
+       * essas informações — Decreto 7.962/2013 para as condições de venda e
+       * trocas, LGPD para a privacidade —, e o lojista não deveria precisar
+       * escrever as três antes da primeira venda.
+       */
+      termsHtml: comPadrao(sanitizeStoreHtml(store.termsHtml), padrao.terms),
+      privacyHtml: comPadrao(
+        sanitizeStoreHtml(store.privacyHtml),
+        padrao.privacy,
+      ),
+      returnsHtml: comPadrao(
+        sanitizeStoreHtml(store.returnsHtml),
+        padrao.returns,
+      ),
       nfeEnabled: store.nfeEnabled,
       nfeEnvironment: store.nfeEnvironment,
       mpPublicKey: store.mpPublicKey,
@@ -500,6 +557,20 @@ export class StoresService {
         ...(dto.customDomain !== undefined
           ? { customDomain: normalizeCustomDomain(dto.customDomain) }
           : {}),
+        ...(dto.storeType !== undefined ? { storeType: dto.storeType } : {}),
+        // Vazio limpa a escolha manual e volta a herdar do ramo da loja.
+        ...(dto.storeFont !== undefined
+          ? { storeFont: dto.storeFont.trim() || null }
+          : {}),
+        ...(dto.storeCardRatio !== undefined
+          ? { storeCardRatio: dto.storeCardRatio.trim() || null }
+          : {}),
+        ...(dto.analyticsGaId !== undefined
+          ? { analyticsGaId: dto.analyticsGaId.trim() || null }
+          : {}),
+        ...(dto.analyticsPixelId !== undefined
+          ? { analyticsPixelId: dto.analyticsPixelId.trim() || null }
+          : {}),
         ...(dto.marqueeEnabled !== undefined
           ? { marqueeEnabled: dto.marqueeEnabled }
           : {}),
@@ -527,8 +598,8 @@ export class StoresService {
 
     const data: Prisma.StoreUpdateInput = {};
 
-    // Tipo de loja fixo: variações/atributos são definidos por produto
-    data.storeType = StoreType.GENERAL;
+    // Ramo da loja é editado em Identidade visual — o formulário de perfil
+    // não mexe nele, senão salvar o endereço desfazia a escolha de estilo.
 
     const seller = this.normalizeSellerFields(
       {

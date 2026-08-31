@@ -8,6 +8,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from './mail.service';
 import { buildOrderEmail } from './order-status-email';
 import {
+  buildRefundEmail,
+  type RefundMailKind,
+} from './refund-email';
+import {
   buildTrackingAvailableEmail,
   resolvePublicTrackingUrl,
 } from './tracking-email';
@@ -117,6 +121,79 @@ export class OrderMailService {
    * Nunca lança: e-mail que falha não pode derrubar um checkout nem um webhook
    * do Mercado Pago — o pedido já é válido sem o aviso.
    */
+  /**
+   * Avisos do fluxo de reembolso. O `requested` é obrigação legal (Decreto
+   * 7.962/2013 art. 5º, §1º), os demais evitam que o cliente fique no escuro.
+   *
+   * Nunca lança, como os outros: e-mail que falha não pode derrubar a
+   * operação que já aconteceu.
+   */
+  async notifyRefund(
+    orderId: string,
+    kind: RefundMailKind,
+    rejectReason?: string | null,
+  ): Promise<void> {
+    try {
+      const order = await this.prisma.order.findUnique({
+        where: { id: orderId },
+        select: {
+          id: true,
+          orderNumber: true,
+          customerEmail: true,
+          customerName: true,
+          refundReasonType: true,
+          customer: {
+            select: {
+              id: true,
+              email: true,
+              storeId: true,
+              tokenVersion: true,
+              passwordHash: true,
+            },
+          },
+          store: {
+            select: {
+              name: true,
+              slug: true,
+              customDomain: true,
+              accentColor: true,
+            },
+          },
+        },
+      });
+      if (!order?.customerEmail?.trim()) return;
+
+      const mail = buildRefundEmail({
+        kind,
+        storeName: order.store.name,
+        customerName: order.customerName,
+        orderNumber: order.orderNumber,
+        reasonType: order.refundReasonType,
+        rejectReason,
+        orderUrl: await this.trackingUrlFor(order.store, order),
+        accentColor: order.store.accentColor || undefined,
+      });
+
+      const result = await this.mail.send({
+        to: order.customerEmail.trim(),
+        subject: mail.subject,
+        text: mail.text,
+        html: mail.html,
+      });
+      if (result.sent) {
+        this.logger.log(
+          `E-mail de reembolso "${kind}" enviado order=${order.orderNumber}`,
+        );
+      }
+    } catch (err) {
+      this.logger.warn(
+        `Falha ao enviar e-mail de reembolso (order=${orderId}): ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+    }
+  }
+
   async notifyOrder(
     orderId: string,
     kind: 'received' | 'paid',

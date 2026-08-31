@@ -211,6 +211,27 @@ export class UpdateStoreBrandingDto {
   @IsOptional()
   @IsString()
   tiktokUrl?: string;
+
+  @IsOptional()
+  @IsEnum(StoreType)
+  storeType?: StoreType;
+
+  // String vazia devolve o campo ao preset do ramo da loja.
+  @IsOptional()
+  @IsString()
+  storeFont?: string;
+
+  @IsOptional()
+  @IsString()
+  storeCardRatio?: string;
+
+  @IsOptional()
+  @IsString()
+  analyticsGaId?: string;
+
+  @IsOptional()
+  @IsString()
+  analyticsPixelId?: string;
 }
 
 export class UpdateStoreStatusDto {

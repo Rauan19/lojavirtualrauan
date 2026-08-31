@@ -52,8 +52,9 @@ export class ProductsService {
     });
   }
 
-  createCategory(storeId: string, dto: CreateCategoryDto) {
+  async createCategory(storeId: string, dto: CreateCategoryDto) {
     const slug = slugify(dto.slug || dto.name);
+    const parentId = await this.resolveParentId(storeId, dto.parentId);
     return this.prisma.category.create({
       data: {
         storeId,
@@ -61,9 +62,53 @@ export class ProductsService {
         slug,
         description: dto.description,
         imageUrl: dto.imageUrl,
-        parentId: dto.parentId,
+        borderColor: dto.borderColor?.trim() || null,
+        parentId,
       },
     });
+  }
+
+  /*
+   * A vitrine trabalha com dois níveis (departamento > subcategoria), então o
+   * pai precisa ser sempre um departamento e uma categoria que já tem filhas
+   * não pode virar filha de ninguém. Isso mantém o mega-menu previsível e
+   * elimina a chance de ciclo na árvore.
+   */
+  private async resolveParentId(
+    storeId: string,
+    raw: string | undefined,
+    selfId?: string,
+  ): Promise<string | null | undefined> {
+    if (raw === undefined) return undefined;
+    const parentId = raw.trim();
+    if (!parentId) return null;
+    if (selfId && parentId === selfId) {
+      throw new BadRequestException(
+        'Uma categoria não pode ser subcategoria dela mesma',
+      );
+    }
+    const parent = await this.prisma.category.findFirst({
+      where: { id: parentId, storeId },
+    });
+    if (!parent) {
+      throw new NotFoundException('Categoria pai não encontrada');
+    }
+    if (parent.parentId) {
+      throw new BadRequestException(
+        `"${parent.name}" já é uma subcategoria. Escolha um departamento principal.`,
+      );
+    }
+    if (selfId) {
+      const children = await this.prisma.category.count({
+        where: { storeId, parentId: selfId },
+      });
+      if (children > 0) {
+        throw new BadRequestException(
+          'Esta categoria já tem subcategorias. Mova-as antes de transformá-la em subcategoria.',
+        );
+      }
+    }
+    return parentId;
   }
 
   async listCategories(storeId: string, activeOnly = false) {
@@ -79,10 +124,17 @@ export class ProductsService {
 
   async updateCategory(storeId: string, id: string, dto: UpdateCategoryDto) {
     await this.ensureCategory(storeId, id);
+    const { parentId: rawParentId, borderColor, ...rest } = dto;
+    const parentId = await this.resolveParentId(storeId, rawParentId, id);
     return this.prisma.category.update({
       where: { id },
       data: {
-        ...dto,
+        ...rest,
+        // string vazia limpa a cor e devolve o anel à cor da loja
+        ...(borderColor !== undefined
+          ? { borderColor: borderColor.trim() || null }
+          : {}),
+        ...(parentId !== undefined ? { parentId } : {}),
         ...(dto.name ? { slug: slugify(dto.name) } : {}),
       },
     });
@@ -90,6 +142,14 @@ export class ProductsService {
 
   async removeCategory(storeId: string, id: string) {
     await this.ensureCategory(storeId, id);
+    const children = await this.prisma.category.count({
+      where: { storeId, parentId: id },
+    });
+    if (children > 0) {
+      throw new BadRequestException(
+        'Remova ou mova as subcategorias antes de excluir este departamento',
+      );
+    }
     await this.prisma.category.delete({ where: { id } });
     return { ok: true };
   }
@@ -177,6 +237,20 @@ export class ProductsService {
     });
   }
 
+  /**
+   * Ids que um filtro de categoria deve alcançar: a própria e as filhas.
+   *
+   * Sem isso, clicar num departamento cujos produtos estão nas subcategorias
+   * devolvia lista vazia — a árvore aparecia no menu e não filtrava nada.
+   */
+  private async categoriaComFilhas(storeId: string, categoryId: string) {
+    const filhas = await this.prisma.category.findMany({
+      where: { storeId, parentId: categoryId },
+      select: { id: true },
+    });
+    return [categoryId, ...filhas.map((f) => f.id)];
+  }
+
   async listProducts(
     storeId: string,
     query: ProductQueryDto,
@@ -185,10 +259,13 @@ export class ProductsService {
     const page = query.page && query.page > 0 ? query.page : 1;
     const limit =
       query.limit && query.limit > 0 ? Math.min(query.limit, 100) : 20;
+    const categoriaIds = query.categoryId
+      ? await this.categoriaComFilhas(storeId, query.categoryId)
+      : null;
     const where: Prisma.ProductWhereInput = {
       storeId,
       ...(publicOnly ? { active: true } : {}),
-      ...(query.categoryId ? { categoryId: query.categoryId } : {}),
+      ...(categoriaIds ? { categoryId: { in: categoriaIds } } : {}),
       ...(query.active !== undefined && !publicOnly
         ? { active: query.active === 'true' }
         : {}),
@@ -215,6 +292,7 @@ export class ProductsService {
       // produto está em promoção (o "de/por"), então usamos isso como
       // proxy pra "com desconto" sem comparar duas colunas no SQL.
       ...(query.onSale === 'true' ? { compareAt: { not: null } } : {}),
+      ...(query.featured === 'true' ? { featured: true } : {}),
     };
 
     const orderBy: Prisma.ProductOrderByWithRelationInput =

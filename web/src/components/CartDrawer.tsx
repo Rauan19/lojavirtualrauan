@@ -48,10 +48,28 @@ function EmptyBagIcon() {
   );
 }
 
-export function CartDrawer({ checkoutHref }: { checkoutHref: string }) {
+/**
+ * `accentColor` vem por prop porque o drawer é renderizado fora do
+ * StoreShell — sem isso ele não herda a cor da loja e o botão de finalizar
+ * sai com o rosa da plataforma.
+ */
+export function CartDrawer({
+  checkoutHref,
+  accentColor,
+}: {
+  checkoutHref: string;
+  accentColor?: string | null;
+}) {
   const { items, open, setOpen, updateQty, remove, subtotal, count } = useCart();
 
   if (!open) return null;
+
+  const themeVars = accentColor
+    ? ({
+        '--store-accent': accentColor,
+        '--store-accent-hover': `color-mix(in srgb, ${accentColor} 86%, #000)`,
+      } as React.CSSProperties)
+    : undefined;
 
   return (
     <>
@@ -62,6 +80,7 @@ export function CartDrawer({ checkoutHref }: { checkoutHref: string }) {
       />
       <aside
         className="fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col border-l border-line bg-white shadow-xl"
+        style={themeVars}
         role="dialog"
         aria-label="Sacola"
       >

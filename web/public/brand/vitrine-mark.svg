@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" fill="none" role="img" aria-label="Vitrine">
-  <path d="M8 8 L20 40 L32 8" stroke="#e31c5f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M38 14 H52 V34 H38 V14Z" stroke="#e31c5f" stroke-width="3.5" stroke-linejoin="round"/>
-  <path d="M38 22 H52" stroke="#e31c5f" stroke-width="3.5"/>
-  <text x="64" y="34" font-family="Syne, Arial Black, Arial, sans-serif" font-size="30" font-weight="800" fill="#171a1f" letter-spacing="-0.04em">Vitrine</text>
-</svg>

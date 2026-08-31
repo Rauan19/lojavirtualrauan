@@ -2,6 +2,11 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  OrdersBarChart,
+  RevenueAreaChart,
+  StatusBarChart,
+} from '@/components/admin/DashboardCharts';
 import { api, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 import { orderStatusLabel } from '@/lib/order-status';
@@ -121,9 +126,6 @@ export default function AdminDashboardPage() {
 
   const series = data?.series ?? [];
   const byStatus = data?.byStatus ?? [];
-  const maxRevenue = Math.max(...series.map((s) => s.revenue), 1);
-  const maxOrders = Math.max(...series.map((s) => s.orders), 1);
-  const maxStatus = Math.max(...byStatus.map((s) => s.count), 1);
 
   const rangeLabel = useMemo(
     () => formatRangeLabel(data?.from, data?.to, data?.date || specificDate || null),
@@ -139,7 +141,7 @@ export default function AdminDashboardPage() {
     <div className="admin-page">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h1>Dashboard</h1>
+          <h1>Painel</h1>
           <p className="text-sm text-muted">
             Faturamento e pedidos
             {rangeLabel ? (
@@ -240,87 +242,23 @@ export default function AdminDashboardPage() {
           ) : null}
 
           <section className="card !p-3">
-            <h2 className="mb-2 text-sm font-bold">Faturamento no período</h2>
-            <div className="flex h-40 items-end gap-1 border-b border-line pb-1">
-              {series.length === 0 ? (
-                <p className="text-sm text-muted">Sem dados</p>
-              ) : (
-                series.map((point, i) => (
-                  <div
-                    key={`${point.label}-${i}`}
-                    className="flex min-w-0 flex-1 flex-col items-center gap-1"
-                  >
-                    <div
-                      className="w-full max-w-[28px] rounded-t bg-accent"
-                      style={{
-                        height: `${Math.max(3, (point.revenue / maxRevenue) * 140)}px`,
-                      }}
-                      title={`${point.label}: ${money(point.revenue)} · ${point.orders} pedidos`}
-                    />
-                  </div>
-                ))
-              )}
-            </div>
-            <div className="mt-1 flex gap-1 overflow-hidden text-[10px] text-muted">
-              {series.map((point, i) => (
-                <span
-                  key={`l-${point.label}-${i}`}
-                  className="min-w-0 flex-1 truncate text-center"
-                >
-                  {point.label}
-                </span>
-              ))}
-            </div>
+            <h2 className="mb-1 text-sm font-bold">Faturamento no período</h2>
+            <RevenueAreaChart data={series} />
           </section>
 
           <div className="grid gap-2 lg:grid-cols-2">
             <section className="card !p-3">
-              <h2 className="mb-2 text-sm font-bold">
+              <h2 className="mb-1 text-sm font-bold">
                 {usingSpecificDate || period === 'day'
                   ? 'Pedidos por hora'
                   : 'Pedidos por dia'}
               </h2>
-              <div className="space-y-1.5">
-                {series.slice(-8).map((point, i) => (
-                  <div
-                    key={`o-${point.label}-${i}`}
-                    className="flex items-center gap-2 text-xs"
-                  >
-                    <span className="w-12 shrink-0 text-muted">{point.label}</span>
-                    <div className="h-2 flex-1 bg-[#eef0f3]">
-                      <div
-                        className="h-2 bg-ink"
-                        style={{ width: `${(point.orders / maxOrders) * 100}%` }}
-                      />
-                    </div>
-                    <strong className="w-6 text-right">{point.orders}</strong>
-                  </div>
-                ))}
-              </div>
+              <OrdersBarChart data={series} />
             </section>
 
             <section className="card !p-3">
-              <h2 className="mb-2 text-sm font-bold">Por status</h2>
-              <ul className="space-y-1.5">
-                {byStatus.length === 0 ? (
-                  <li className="text-sm text-muted">Sem pedidos</li>
-                ) : (
-                  byStatus.map((s) => (
-                    <li key={s.status} className="flex items-center gap-2 text-xs">
-                      <span className="w-28 shrink-0 truncate">
-                        {orderStatusLabel(s.status)}
-                      </span>
-                      <div className="h-2 flex-1 bg-[#eef0f3]">
-                        <div
-                          className="h-2 bg-accent"
-                          style={{ width: `${(s.count / maxStatus) * 100}%` }}
-                        />
-                      </div>
-                      <strong className="w-6 text-right">{s.count}</strong>
-                    </li>
-                  ))
-                )}
-              </ul>
+              <h2 className="mb-1 text-sm font-bold">Por status</h2>
+              <StatusBarChart data={byStatus} />
             </section>
           </div>
 

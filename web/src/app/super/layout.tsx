@@ -124,7 +124,7 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-[#f4f5f7] text-[#171a1f] md:grid md:grid-cols-[220px_1fr]">
       <header className="sticky top-0 z-20 flex h-12 items-center justify-between border-b border-[#d9dde3] bg-white px-3 md:hidden">
         <div className="flex items-center gap-2">
-          <BrandLogo height={22} />
+          <BrandLogo height={30} />
           <strong className="text-sm">Super admin</strong>
         </div>
         <button
@@ -146,7 +146,7 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
 
       <aside className="hidden border-r border-[#d9dde3] bg-white md:flex md:flex-col">
         <div className="border-b border-[#d9dde3] px-4 py-4">
-          <BrandLogo height={26} />
+          <BrandLogo height={34} />
         </div>
         {side}
       </aside>

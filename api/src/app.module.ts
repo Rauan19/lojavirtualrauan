@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { join } from 'path';
@@ -9,6 +9,7 @@ import { SecretsModule } from './common/secrets/secrets.module';
 import { AuthModule } from './auth/auth.module';
 import { BillingModule } from './billing/billing.module';
 import { CouponsModule } from './coupons/coupons.module';
+import { CustomersModule } from './customers/customers.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { MailModule } from './mail/mail.module';
@@ -22,6 +23,9 @@ import { ShippingModule } from './shipping/shipping.module';
 import { StorefrontModule } from './storefront/storefront.module';
 import { StoresModule } from './stores/stores.module';
 import { UploadsModule } from './uploads/uploads.module';
+
+import { AccessLogService } from './common/access-log.service';
+import { AccessLogInterceptor } from './common/interceptors/access-log.interceptor';
 
 @Module({
   imports: [
@@ -54,6 +58,7 @@ import { UploadsModule } from './uploads/uploads.module';
     PaymentsModule,
     BillingModule,
     CouponsModule,
+    CustomersModule,
     PromotionsModule,
     StorefrontModule,
   ],
@@ -61,6 +66,16 @@ import { UploadsModule } from './uploads/uploads.module';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    AccessLogService,
+    /*
+     * Marco Civil art. 15: guarda dos registros de acesso por 6 meses. Fica
+     * global de propósito — obrigação legal não pode depender de alguém
+     * lembrar de anotar o interceptor em cada controller novo.
+     */
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AccessLogInterceptor,
     },
   ],
 })

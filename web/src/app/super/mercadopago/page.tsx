@@ -5,6 +5,16 @@ import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 import { PlatformMpSettings, SuperSection } from '../_lib';
 
+type WebhookCheck = {
+  ok: boolean;
+  motivo: string | null;
+  detalhe: string;
+  url?: string;
+  tunel?: boolean;
+  webhookPedidos: string | null;
+  webhookMensalidade: string | null;
+};
+
 export default function SuperMercadoPagoPage() {
   const [settings, setSettings] = useState<PlatformMpSettings | null>(null);
   const [mpAccessToken, setMpAccessToken] = useState('');
@@ -16,6 +26,8 @@ export default function SuperMercadoPagoPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [webhook, setWebhook] = useState<WebhookCheck | null>(null);
+  const [checando, setChecando] = useState(false);
 
   async function load() {
     const token = getToken();
@@ -76,6 +88,33 @@ export default function SuperMercadoPagoPage() {
       setError(err instanceof Error ? err.message : 'Erro ao salvar');
     } finally {
       setSaving(false);
+    }
+  }
+
+  /*
+   * PUBLIC_URL errada não gera erro em lugar nenhum: o cliente paga e o
+   * pedido fica parado. Por isso o teste é ativo — a API tenta alcançar a
+   * própria URL pública de fora.
+   */
+  async function checarWebhook() {
+    const token = getToken();
+    if (!token) return;
+    setChecando(true);
+    try {
+      const r = await api<WebhookCheck>('/billing/platform/webhook-check', {
+        token,
+      });
+      setWebhook(r);
+    } catch (e) {
+      setWebhook({
+        ok: false,
+        motivo: 'erro',
+        detalhe: e instanceof Error ? e.message : 'Falha ao verificar',
+        webhookPedidos: null,
+        webhookMensalidade: null,
+      });
+    } finally {
+      setChecando(false);
     }
   }
 
@@ -178,16 +217,90 @@ export default function SuperMercadoPagoPage() {
         </p>
       ) : null}
 
-      {settings?.billingWebhookUrl ? (
-        <div className="border border-[#d9dde3] bg-white px-4 py-3 text-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
-            Webhook de billing
-          </p>
-          <code className="mt-1 block break-all text-xs">
-            {settings.billingWebhookUrl}
-          </code>
+      {/*
+        Diagnóstico da URL pública. Fica antes das credenciais de propósito:
+        token certo com PUBLIC_URL errada é o cenário em que tudo parece
+        configurado e nenhum pagamento é confirmado.
+      */}
+      <div className="border border-[#d9dde3] bg-white px-4 py-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
+              URL pública e webhooks
+            </p>
+            <p className="mt-0.5 text-sm">
+              Sem uma URL que o Mercado Pago alcance, o cliente paga e o pedido
+              fica parado em “aguardando pagamento”.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="btn btn-ghost shrink-0"
+            disabled={checando}
+            onClick={() => void checarWebhook()}
+          >
+            {checando ? 'Verificando…' : 'Testar URL pública'}
+          </button>
         </div>
-      ) : null}
+
+        {webhook ? (
+          <div
+            className={`mt-3 border-l-2 px-3 py-2 text-sm ${
+              webhook.ok && !webhook.tunel
+                ? 'border-emerald-500 bg-emerald-50 text-emerald-950'
+                : webhook.ok
+                  ? 'border-amber-400 bg-amber-50 text-amber-950'
+                  : 'border-rose-500 bg-rose-50 text-rose-950'
+            }`}
+          >
+            <p className="font-semibold">
+              {webhook.ok && !webhook.tunel
+                ? 'Webhooks conseguem chegar'
+                : webhook.ok
+                  ? 'Funciona, mas é túnel de desenvolvimento'
+                  : 'Webhooks não estão chegando'}
+            </p>
+            <p className="mt-0.5 leading-snug">{webhook.detalhe}</p>
+          </div>
+        ) : null}
+
+        {webhook?.webhookPedidos ? (
+          <div className="mt-3 space-y-2 text-xs">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
+                Pedidos das lojas
+              </p>
+              <code className="mt-0.5 block break-all">
+                {webhook.webhookPedidos}
+              </code>
+              <p className="mt-0.5 text-[11px] text-muted">
+                Enviada em cada cobrança — o lojista não precisa cadastrar nada
+                na conta dele.
+              </p>
+            </div>
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
+                Mensalidade da plataforma
+              </p>
+              <code className="mt-0.5 block break-all">
+                {webhook.webhookMensalidade}
+              </code>
+              <p className="mt-0.5 text-[11px] text-muted">
+                Esta você cadastra uma vez, na sua conta do Mercado Pago.
+              </p>
+            </div>
+          </div>
+        ) : settings?.billingWebhookUrl ? (
+          <div className="mt-3 text-xs">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
+              Webhook de billing
+            </p>
+            <code className="mt-0.5 block break-all">
+              {settings.billingWebhookUrl}
+            </code>
+          </div>
+        ) : null}
+      </div>
 
       <form
         onSubmit={onSave}

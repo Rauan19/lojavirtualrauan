@@ -9,6 +9,7 @@ import { PrismaClient } from '@prisma/client';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { buildMercadoPagoWebhookUrl } from './common/utils/mercadopago-webhook-url';
+import { analisarPublicUrl } from './common/utils/public-url-check';
 import { normalizeCustomDomain } from './common/utils/normalize-domain';
 
 function parseCorsOrigins(raw: string | undefined): string[] {
@@ -121,9 +122,26 @@ async function bootstrap() {
   const port = config.get<number>('PORT') || 3000;
   await app.listen(port);
   console.log(`API rodando em http://localhost:${port}/api`);
+  /*
+   * PUBLIC_URL errada é a falha mais cara do sistema e a mais silenciosa: o
+   * cliente paga e o pedido fica parado em "aguardando pagamento" para
+   * sempre, sem nenhum erro em lugar nenhum. Por isso o aviso é gritado no
+   * boot, e não escondido atrás de um if de produção.
+   */
+  const diagUrl = analisarPublicUrl(config.get<string>('PUBLIC_URL'));
   const webhook = buildMercadoPagoWebhookUrl(config);
-  if (webhook) {
+  if (diagUrl.ok) {
     console.log(`Webhook Mercado Pago: ${webhook}`);
+    if (diagUrl.tunel) {
+      console.warn(
+        `[webhook] PUBLIC_URL é um túnel de desenvolvimento (${diagUrl.url}). Quando ele cair, os pagamentos param de ser confirmados sozinhos e nada avisa. Em produção use um domínio fixo.`,
+      );
+    }
+  } else {
+    console.warn(`[webhook] ${diagUrl.detalhe}`);
+    console.warn(
+      '[webhook] Confira em Super Admin › Mercado Pago › Testar URL pública.',
+    );
   }
   if (isProd && staticOrigins.length === 0) {
     console.warn(

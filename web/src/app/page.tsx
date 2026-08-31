@@ -1,64 +1,10 @@
 import Link from 'next/link';
 import { BrandLogo } from '@/components/BrandLogo';
 import { SiteHeader } from '@/components/SiteHeader';
+import { StoreDeviceShowcase } from '@/components/StoreDeviceShowcase';
 import { BRAND } from '@/lib/brand';
 import { CONTACT, whatsappHref } from '@/lib/contact';
 import { getPlans, siteUrl } from '@/lib/seo';
-
-// Mockup do hero: representa a própria vitrine, não é foto de banco de
-// imagem. Ilustrações vetoriais geradas por nós, com fundo em cor lisa —
-// não fingem ser fotografia de produto.
-const mockupProducts = [
-  { tone: 'bg-[#f3d9df]', icon: 'camiseta', name: 'Camiseta Básica', price: 'R$ 79,90' },
-  { tone: 'bg-[#dbe7f2]', icon: 'bone', name: 'Boné Aba Reta', price: 'R$ 59,90' },
-  { tone: 'bg-[#e3ecdd]', icon: 'mochila', name: 'Mochila Urbana', price: 'R$ 199,90' },
-  { tone: 'bg-[#f2e6d3]', icon: 'tenis', name: 'Tênis Casual', price: 'R$ 249,90' },
-] as const;
-
-function ProductIcon({ type }: { type: (typeof mockupProducts)[number]['icon'] }) {
-  const stroke = '#171a1f';
-  const common = { fill: 'none', stroke, strokeWidth: 1.6, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
-
-  if (type === 'camiseta') {
-    return (
-      <svg viewBox="0 0 64 64" className="h-full w-full" aria-hidden>
-        <path
-          {...common}
-          d="M22 10 L14 16 L8 24 L15 29 L20 25 L20 54 L44 54 L44 25 L49 29 L56 24 L50 16 L42 10 C42 15 37 18 32 18 C27 18 22 15 22 10 Z"
-        />
-      </svg>
-    );
-  }
-  if (type === 'bone') {
-    return (
-      <svg viewBox="0 0 64 64" className="h-full w-full" aria-hidden>
-        <path {...common} d="M14 34 C14 20 22 12 33 12 C44 12 51 20 51 32" />
-        <path {...common} d="M12 34 C20 30 44 30 52 34 C52 38 46 40 32 40 C18 40 12 38 12 34 Z" />
-        <path {...common} d="M12 34 L6 36" />
-      </svg>
-    );
-  }
-  if (type === 'mochila') {
-    return (
-      <svg viewBox="0 0 64 64" className="h-full w-full" aria-hidden>
-        <path {...common} d="M22 22 C22 14 42 14 42 22 L42 24" />
-        <rect x="16" y="24" width="32" height="30" rx="4" {...common} />
-        <path {...common} d="M24 24 L24 34 L40 34 L40 24" />
-        <path {...common} d="M28 40 L36 40" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 64 64" className="h-full w-full" aria-hidden>
-      <path
-        {...common}
-        d="M8 44 L8 36 C12 36 15 34 18 30 C21 27 24 26 28 27 L28 33 L40 33 C46 33 52 36 56 40 L56 44 Z"
-      />
-      <path {...common} d="M8 44 L56 44" />
-      <path {...common} d="M20 33 L20 27" />
-    </svg>
-  );
-}
 
 const faq: [string, string][] = [
   [
@@ -66,8 +12,8 @@ const faq: [string, string][] = [
     'Não. Você cadastra produto, define cor e logo, e a loja fica no ar. Quem cuida do resto é a gente.',
   ],
   [
-    'O que acontece depois dos 14 dias grátis?',
-    'Se não escolher um plano, o painel fica só de leitura até você assinar. A vitrine continua vendendo normalmente, e nada é cobrado sem sua confirmação.',
+    'Quando começo a pagar?',
+    'Você cria a loja e testa sem pagar nada. Se não escolher um plano, o painel fica só de leitura até você assinar. A vitrine continua vendendo normalmente, e nada é cobrado sem sua confirmação.',
   ],
   [
     'Tem taxa por venda, além da mensalidade?',
@@ -86,6 +32,25 @@ const faq: [string, string][] = [
     'Sim, NFC-e integrada: emite direto do pedido quando o pagamento é aprovado.',
   ],
 ];
+
+function BagIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="17" height="17" fill="none" aria-hidden>
+      <path
+        d="M4.4 6.5h11.2l-.9 9.1a1.4 1.4 0 0 1-1.4 1.3H6.7a1.4 1.4 0 0 1-1.4-1.3L4.4 6.5Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M7.4 8.2V5.9a2.6 2.6 0 0 1 5.2 0v2.3"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
 function money(value: number) {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -141,23 +106,35 @@ export default async function HomePage() {
       />
       <SiteHeader solid />
 
-      <section className="overflow-hidden border-b border-[#d9dde3] bg-[#f7f8fa]">
-        <div className="mx-auto flex max-w-[1180px] flex-col md:min-h-[min(52vh,440px)] md:flex-row md:items-stretch">
-          <div className="flex flex-1 flex-col justify-center px-4 pb-6 pt-[4rem] md:max-w-[48%] md:px-6 md:pb-8 md:pt-20 lg:pr-8">
-            <h1 className="max-w-[16ch] font-[family-name:var(--font-brand)] text-[2.35rem] font-800 leading-[1.03] tracking-tight text-[#171a1f] md:text-[3.4rem]">
-              Sua loja vende sozinha.{' '}
-              <span style={{ color: 'var(--accent)' }}>Você só vê o dinheiro entrar.</span>
+      {/*
+        Hero sem o corte vertical duro que dividia a tela em dois blocos: agora
+        é uma superfície só, com brilho difuso atrás dos aparelhos e a base
+        arredondada apoiando na seção seguinte. Os aparelhos ganham inclinação
+        em perspectiva, que é o que dá a sensação de profundidade.
+      */}
+      <section className="lp-hero relative overflow-hidden bg-[#f7f8fa]">
+        <div className="lp-hero-glow" aria-hidden />
+        <div className="relative mx-auto flex max-w-[1180px] flex-col items-center gap-6 px-4 pb-14 pt-[4rem] md:flex-row md:gap-8 md:px-6 md:pb-20 md:pt-24 lg:gap-12">
+          <div className="flex flex-1 flex-col justify-center md:max-w-[47%]">
+            <span className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-[#d9dde3] bg-white px-3 py-1.5 text-[12px] font-semibold text-[#4a5560]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--ok)]" />
+              Sua loja no ar hoje mesmo
+            </span>
+            <h1 className="max-w-[19ch] font-[family-name:var(--font-brand)] text-[2.2rem] font-800 leading-[1.04] tracking-tight text-[#171a1f] md:text-[3.05rem]">
+              Sua loja virtual vende 24 horas por dia.{' '}
+              <span style={{ color: 'var(--accent)' }}>Sem depender do seu atendimento.</span>
             </h1>
             <p className="mt-3.5 max-w-[38ch] text-[15px] leading-relaxed text-[#4a5560] md:mt-4 md:text-[16px]">
-              Cliente compra a qualquer hora, sem você responder um por um no
-              WhatsApp. Sem teto de atendimento, sem ponto caro pra abrir.
-              Mais vendas com o mesmo esforço.
+              Catálogo, checkout, Pix, cartão e frete calculado em uma
+              plataforma só. O cliente escolhe e paga sozinho, a qualquer hora,
+              e o valor cai direto na sua conta.
             </p>
             <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
               <Link
                 href="/criar-conta"
-                className="btn btn-accent relative px-6 py-4 text-center text-[15px] drop-shadow-[0_10px_16px_rgba(227,28,95,0.35)] before:absolute before:left-0 before:top-0 before:h-4 before:w-4 before:content-[''] before:[background:radial-gradient(circle_at_bottom_right,transparent_16px,#f7f8fa_16px)] after:absolute after:right-0 after:top-0 after:h-4 after:w-4 after:content-[''] after:[background:radial-gradient(circle_at_bottom_left,transparent_16px,#f7f8fa_16px)] sm:py-3.5"
+                className="btn btn-accent btn-bag gap-2 px-6 py-4 text-center text-[15px] drop-shadow-[0_10px_16px_rgba(212,61,84,0.35)] sm:py-3.5"
               >
+                <BagIcon />
                 Criar minha loja grátis
               </Link>
               {wa ? (
@@ -172,55 +149,12 @@ export default async function HomePage() {
               ) : null}
             </div>
             <p className="mt-3 text-[12px] font-medium text-[#4a5560]">
-              14 dias grátis · sem cartão de crédito
+              Comece sem pagar nada · sem cartão de crédito
             </p>
           </div>
 
-          <div
-            className="relative flex min-h-[300px] w-full items-center justify-center border-t border-[#d9dde3] bg-[#eef0f3] p-5 py-8 md:h-auto md:min-h-0 md:w-[52%] md:border-l md:border-t-0 md:p-8"
-            aria-hidden
-          >
-            <div className="w-full max-w-[380px] overflow-hidden rounded-lg border border-[#d9dde3] bg-[#fbfbfc] shadow-[0_20px_50px_-20px_rgba(23,26,31,0.35)]">
-              <div className="flex items-center gap-2 border-b border-[#d9dde3] bg-[#f1f2f4] px-3 py-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-[#e0603d]" />
-                <span className="h-2.5 w-2.5 rounded-full bg-[#e0b23d]" />
-                <span className="h-2.5 w-2.5 rounded-full bg-[#4caf6e]" />
-                <span className="ml-2 flex-1 truncate rounded-full bg-white px-3 py-1 text-center text-[10px] text-[#8a92a0]">
-                  suaLoja.com.br
-                </span>
-              </div>
-              <div className="flex items-center justify-between border-b border-[#d9dde3] bg-white px-3 py-2.5">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center bg-accent text-[11px] font-bold text-white">
-                    S
-                  </span>
-                  <span className="text-[13px] font-bold text-[#171a1f]">
-                    Sua Loja
-                  </span>
-                </div>
-                <span className="text-[11px] text-[#4a5560]">Carrinho (2)</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-px bg-[#d9dde3] p-px">
-                {mockupProducts.map((p) => (
-                  <div key={p.name} className="bg-white p-2.5">
-                    <div className={`h-16 w-full p-3 ${p.tone}`}>
-                      <ProductIcon type={p.icon} />
-                    </div>
-                    <p className="mt-2 text-[11px] font-semibold text-[#171a1f]">
-                      {p.name}
-                    </p>
-                    <p className="text-[11px] text-[#4a5560]">{p.price}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t border-[#d9dde3] bg-white px-3 py-2.5">
-                <span className="inline-block bg-accent px-3 py-1.5 text-[11px] font-bold text-white">
-                  Finalizar compra
-                </span>
-              </div>
-            </div>
+          <div className="lp-hero-devices w-full md:w-[53%]" aria-hidden>
+            <StoreDeviceShowcase />
           </div>
         </div>
       </section>
@@ -337,8 +271,9 @@ export default async function HomePage() {
               Comece de graça. Sem pegadinha, sem cartão.
             </h2>
             <p className="mt-3 max-w-[48ch] text-[1.05rem] leading-relaxed text-[#4a5560]">
-              Testa 14 dias sem gastar nada. Cartão só entra se você decidir
-              ficar — e mesmo assim, o preço que você vê é o que você paga.
+              Monta a loja e testa sem gastar nada. Cartão só entra se você
+              decidir ficar — e mesmo assim, o preço que você vê é o que você
+              paga.
             </p>
 
             <div className="mt-10 grid gap-4 md:grid-cols-3">
@@ -402,8 +337,8 @@ export default async function HomePage() {
               Não perca mais uma venda. Crie sua loja hoje.
             </h2>
             <p className="mt-3 text-[1.05rem] leading-relaxed text-white/90">
-              14 dias grátis, sem cartão. Sua loja pode estar no ar em poucos
-              minutos — quanto antes começar, antes vende. Se preferir
+              Comece sem cartão de crédito. Sua loja pode estar no ar em
+              poucos minutos — quanto antes começar, antes vende. Se preferir
               conversar antes, também respondemos no WhatsApp.
             </p>
           </div>
@@ -431,7 +366,7 @@ export default async function HomePage() {
       <footer className="bg-[#171a1f] text-[#9aa3ad]">
         <div className="mx-auto flex max-w-[1080px] flex-col gap-3 px-4 py-8 text-sm md:flex-row md:items-center md:justify-between md:px-6">
           <div className="max-w-[160px]">
-            <BrandLogo height={30} onDark />
+            <BrandLogo height={38} />
           </div>
           <div className="flex flex-wrap gap-x-5 gap-y-2">
             {wa ? (

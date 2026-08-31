@@ -30,8 +30,69 @@ const emptyForm = {
 export default function ContaPage() {
   const params = useParams<{ slug: string }>();
   const { confirm, dialog: confirmDialog } = useConfirm();
-  const { customer, token, addresses, loading, refresh, setAddresses } =
+  const { customer, token, addresses, loading, refresh, setAddresses, logout } =
     useCustomer();
+  const [lgpdBusy, setLgpdBusy] = useState(false);
+  const [lgpdErro, setLgpdErro] = useState('');
+
+  async function baixarMeusDados() {
+    if (!token) return;
+    setLgpdBusy(true);
+    setLgpdErro('');
+    try {
+      const dados = await api<Record<string, unknown>>(
+        '/storefront/account/dados-pessoais',
+        { token, storeSlug: params.slug },
+      );
+      const blob = new Blob([JSON.stringify(dados, null, 2)], {
+        type: 'application/json',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'meus-dados.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setLgpdErro(err instanceof Error ? err.message : 'Erro ao baixar');
+    } finally {
+      setLgpdBusy(false);
+    }
+  }
+
+  async function excluirConta() {
+    if (!token) return;
+    const ok = await confirm({
+      title: 'Excluir sua conta?',
+      message:
+        'Seus dados pessoais são removidos e o acesso é encerrado. Os pedidos já feitos ficam registrados sem identificação, por obrigação fiscal da loja. Não tem como desfazer.',
+      confirmLabel: 'Quero excluir',
+      danger: true,
+    });
+    if (!ok) return;
+
+    // a senha é pedida de novo: a ação é irreversível
+    const senha = window.prompt('Confirme sua senha para excluir a conta:');
+    if (!senha) return;
+
+    setLgpdBusy(true);
+    setLgpdErro('');
+    try {
+      await api('/storefront/account/excluir', {
+        method: 'POST',
+        token,
+        storeSlug: params.slug,
+        body: { password: senha },
+      });
+      logout();
+      window.location.href = `/loja/${params.slug}`;
+    } catch (err) {
+      setLgpdErro(err instanceof Error ? err.message : 'Erro ao excluir');
+    } finally {
+      setLgpdBusy(false);
+    }
+  }
+
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -424,6 +485,46 @@ export default function ContaPage() {
             </div>
           </form>
         ) : null}
+      </section>
+
+      {/*
+        LGPD art. 18: acesso, portabilidade e exclusão são direitos do titular
+        e precisam de um caminho próprio — não dá para depender de o cliente
+        escrever para a loja e alguém lembrar de atender.
+      */}
+      <section className="mt-8 border-t border-line pt-5">
+        <h2 className="text-sm font-bold">Meus dados</h2>
+        <p className="mt-1 text-[13px] leading-relaxed text-muted">
+          Você pode baixar tudo o que a loja guarda sobre você, ou pedir a
+          exclusão dos seus dados a qualquer momento.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="btn btn-ghost text-[13px]"
+            disabled={lgpdBusy}
+            onClick={() => void baixarMeusDados()}
+          >
+            Baixar meus dados
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost text-[13px] text-accent"
+            disabled={lgpdBusy}
+            onClick={() => void excluirConta()}
+          >
+            Excluir minha conta
+          </button>
+        </div>
+        {lgpdErro ? (
+          <p className="mt-2 text-[13px] text-accent">{lgpdErro}</p>
+        ) : null}
+        <p className="mt-3 text-[11px] leading-relaxed text-muted">
+          A exclusão remove seu nome, e-mail, telefone, CPF e endereços, e
+          encerra seu acesso. Os pedidos já feitos continuam registrados sem
+          identificação, porque a loja é obrigada a guardá-los pela legislação
+          fiscal.
+        </p>
       </section>
       {confirmDialog}
     </main>

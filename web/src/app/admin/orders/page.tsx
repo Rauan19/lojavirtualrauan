@@ -48,6 +48,7 @@ type Order = {
   shippingAddress?: Record<string, unknown> | null;
   createdAt: string;
   notes?: string | null;
+  refundVia?: string | null;
   items?: OrderItem[];
 };
 
@@ -101,6 +102,13 @@ const STATUS_FILTER = [
   'CANCELLED',
   'REFUNDED',
 ];
+
+/*
+ * Status que o lojista troca na mão. "Reembolsado" fica de fora de propósito:
+ * marcar aqui não devolvia o dinheiro ao cliente, só mudava o rótulo. Estorno
+ * tem botão próprio, que chama o gateway.
+ */
+const STATUS_EDITAVEL = STATUS_FILTER.filter((s) => s !== 'REFUNDED');
 
 function isOrderPaid(order: { paymentStatus: string }) {
   return order.paymentStatus === 'APPROVED';
@@ -422,6 +430,38 @@ export default function AdminOrdersPage() {
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao cancelar');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function refundOrder(order: Order) {
+    const ok = await confirm({
+      title: 'Estornar pedido?',
+      message:
+        `O valor de ${money(Number(order.total))} do pedido #${order.orderNumber} ` +
+        'volta para o cliente pelo Mercado Pago. A ação não tem desfazer, e o ' +
+        'estoque dos itens retorna para a loja.',
+      confirmLabel: 'Estornar agora',
+      danger: true,
+    });
+    if (!ok) return;
+    const { token, storeSlug } = auth();
+    if (!token) return;
+    setBusyId(order.id);
+    setError('');
+    setMessage('');
+    try {
+      await api(`/admin/orders/${order.id}/refund/approve`, {
+        method: 'POST',
+        token,
+        storeSlug,
+      });
+      setMessage(`Pedido #${order.orderNumber} estornado no Mercado Pago`);
+      setDetail(null);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao estornar');
     } finally {
       setBusyId(null);
     }
@@ -1092,7 +1132,7 @@ export default function AdminOrdersPage() {
                     disabled={busyId === detail.id}
                     onChange={(e) => void updateStatus(detail.id, e.target.value)}
                   >
-                    {STATUS_FILTER.filter((s) => {
+                    {STATUS_EDITAVEL.filter((s) => {
                       const paid =
                         detail.paymentStatus === 'APPROVED' ||
                         detail.status === 'PAID' ||
@@ -1228,6 +1268,16 @@ export default function AdminOrdersPage() {
                               : 'Emitir NFC-e'}
                     </button>
                   ) : null}
+                  {isOrderPaid(detail) && detail.status !== 'REFUNDED' ? (
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      disabled={busyId === detail.id}
+                      onClick={() => void refundOrder(detail)}
+                    >
+                      Estornar pedido
+                    </button>
+                  ) : null}
                   {detail.status !== 'CANCELLED' && detail.status !== 'REFUNDED' ? (
                     <button
                       type="button"
@@ -1239,6 +1289,15 @@ export default function AdminOrdersPage() {
                     </button>
                   ) : null}
                 </div>
+                {detail.status === 'REFUNDED' ? (
+                  <p className="mt-2 text-xs text-muted">
+                    {detail.refundVia === 'GATEWAY'
+                      ? 'Estornado pelo painel, via Mercado Pago.'
+                      : detail.refundVia === 'GATEWAY_EXTERNAL'
+                        ? 'Estornado direto no Mercado Pago — chegou aqui pelo webhook.'
+                        : 'Marcado como reembolsado antes de o estorno passar a ser obrigatório pelo gateway. Confira no Mercado Pago se o dinheiro saiu.'}
+                  </p>
+                ) : null}
                 {invoice ? (
                   <div className="mt-3 border border-line bg-[#fafafa] p-3 text-xs">
                     <p className="font-semibold">

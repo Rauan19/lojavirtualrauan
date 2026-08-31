@@ -42,6 +42,13 @@ export class CreateCouponDto {
   @Min(1)
   maxUses?: number;
 
+  /** Quantas vezes o MESMO cliente pode usar. Nulo = sem limite. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  maxPerCustomer?: number;
+
   @IsOptional()
   @IsString()
   startsAt?: string;
@@ -90,6 +97,12 @@ export class UpdateCouponDto {
   @IsNumber()
   @Min(1)
   maxUses?: number | null;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  maxPerCustomer?: number | null;
 
   @IsOptional()
   @IsString()

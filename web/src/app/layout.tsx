@@ -1,5 +1,11 @@
 import type { Metadata } from 'next';
-import { Barlow, Manrope } from 'next/font/google';
+import {
+  Barlow,
+  DM_Sans,
+  Manrope,
+  Playfair_Display,
+  Poppins,
+} from 'next/font/google';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { BRAND } from '@/lib/brand';
 import { siteUrl } from '@/lib/seo';
@@ -19,8 +25,34 @@ const manrope = Manrope({
   variable: '--font-brand',
 });
 
+/*
+ * Fontes que o lojista pode escolher para a vitrine. preload: false porque
+ * cada loja usa só uma — sem isso toda página carregaria as quatro. O
+ * arquivo só é baixado quando a família é de fato aplicada.
+ */
+const storeModern = DM_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-store-modern',
+  preload: false,
+});
+
+const storeFriendly = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-store-friendly',
+  preload: false,
+});
+
+const storeElegant = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-store-elegant',
+  preload: false,
+});
+
 const description =
-  'Crie sua loja virtual em minutos: catálogo, pedidos, pagamento por Pix e cartão, nota fiscal e domínio próprio. Teste grátis por 14 dias, sem cartão de crédito.';
+  'Crie sua loja virtual em minutos: catálogo, pedidos, pagamento por Pix e cartão, frete calculado e domínio próprio. Comece grátis, sem cartão de crédito.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
@@ -63,7 +95,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`${barlow.variable} ${manrope.variable} antialiased`}>
+      <body
+        className={`${barlow.variable} ${manrope.variable} ${storeModern.variable} ${storeFriendly.variable} ${storeElegant.variable} antialiased`}
+      >
         <ScrollToTop />
         {children}
       </body>

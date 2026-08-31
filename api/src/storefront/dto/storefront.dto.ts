@@ -100,3 +100,13 @@ export class CreateReviewDto {
   @MaxLength(1000)
   comment?: string;
 }
+
+/**
+ * Exclusão da conta pelo titular (LGPD art. 18, VI). A senha é pedida de
+ * novo: a ação não tem desfazer, e token roubado não pode bastar.
+ */
+export class DeleteAccountDto {
+  @IsString()
+  @MinLength(1)
+  password!: string;
+}

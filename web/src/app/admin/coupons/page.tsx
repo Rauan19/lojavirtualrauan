@@ -13,6 +13,7 @@ type Coupon = {
   value: string;
   minSubtotal?: string | null;
   maxUses?: number | null;
+  maxPerCustomer?: number | null;
   usedCount: number;
   endsAt?: string | null;
   active: boolean;
@@ -26,6 +27,7 @@ const empty = {
   value: '',
   minSubtotal: '',
   maxUses: '',
+  maxPerCustomer: '',
   endsAt: '',
   showOnStorefront: false,
 };
@@ -72,6 +74,9 @@ export default function AdminCouponsPage() {
           value: form.type === 'FREE_SHIPPING' ? 0 : Number(form.value),
           minSubtotal: form.minSubtotal ? Number(form.minSubtotal) : undefined,
           maxUses: form.maxUses ? Number(form.maxUses) : undefined,
+          maxPerCustomer: form.maxPerCustomer
+            ? Number(form.maxPerCustomer)
+            : undefined,
           endsAt: form.endsAt || undefined,
           showOnStorefront: form.showOnStorefront,
         },
@@ -212,6 +217,24 @@ export default function AdminCouponsPage() {
             value={form.maxUses}
             onChange={(e) => setForm({ ...form, maxUses: e.target.value })}
           />
+          <p className="mt-1 text-[11px] text-muted">
+            Total somando todos os clientes.
+          </p>
+        </div>
+        <div>
+          <label className="label">Limite por cliente (opcional)</label>
+          <input
+            className="field"
+            type="number"
+            min="1"
+            value={form.maxPerCustomer}
+            onChange={(e) =>
+              setForm({ ...form, maxPerCustomer: e.target.value })
+            }
+          />
+          <p className="mt-1 text-[11px] text-muted">
+            Sem isso, a mesma pessoa usa o cupom quantas vezes quiser.
+          </p>
         </div>
         <div>
           <label className="label">Validade (opcional)</label>
@@ -283,6 +306,9 @@ export default function AdminCouponsPage() {
                   <p className="mt-1 text-sm text-muted">
                     {c.description || 'Sem descrição'} · usado {c.usedCount}
                     {c.maxUses != null ? `/${c.maxUses}` : ''} vezes
+                    {c.maxPerCustomer != null
+                      ? ` · máx. ${c.maxPerCustomer} por cliente`
+                      : ''}
                     {c.endsAt
                       ? ` · vale até ${new Date(c.endsAt).toLocaleDateString('pt-BR')}`
                       : ''}

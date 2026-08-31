@@ -52,6 +52,7 @@ describe('Segurança e multi-tenant (e2e)', () => {
           items: [{ productId: lojaB.product.id, quantity: 1 }],
           shippingAddress: ADDRESS,
           shippingOptionId: 'padrao',
+          acceptTerms: true,
         })
         .expect(201);
 
@@ -93,6 +94,7 @@ describe('Segurança e multi-tenant (e2e)', () => {
           items: [{ productId: lojaB.product.id, quantity: 1 }],
           shippingAddress: ADDRESS,
           shippingOptionId: 'padrao',
+          acceptTerms: true,
         })
         .expect(401);
     });
@@ -109,6 +111,7 @@ describe('Segurança e multi-tenant (e2e)', () => {
           items: [{ productId: lojaB.product.id, quantity: 1 }],
           shippingAddress: ADDRESS,
           shippingOptionId: 'padrao',
+          acceptTerms: true,
         })
         .expect(201);
 
@@ -190,6 +193,7 @@ describe('Segurança e multi-tenant (e2e)', () => {
           items: [{ productId: lojaA.product.id, quantity: 1 }],
           shippingAddress: ADDRESS,
           shippingOptionId: 'padrao',
+          acceptTerms: true,
         })
         .expect(201);
     });

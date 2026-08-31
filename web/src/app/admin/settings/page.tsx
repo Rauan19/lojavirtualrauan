@@ -9,6 +9,7 @@ import {
   FRETE_CARRIER_OPTIONS,
   asCarrierIds,
 } from '@/lib/frete-carriers';
+import { STORE_CARD_RATIOS, STORE_FONTS } from '@/lib/store-theme';
 
 type Store = {
   id: string;
@@ -53,6 +54,10 @@ type Store = {
   facebookUrl?: string | null;
   tiktokUrl?: string | null;
   storeType?: string | null;
+  storeFont?: string | null;
+  storeCardRatio?: string | null;
+  analyticsGaId?: string | null;
+  analyticsPixelId?: string | null;
   sellerDocType?: 'CPF' | 'CNPJ' | null;
   sellerDocument?: string | null;
   sellerLegalName?: string | null;
@@ -266,7 +271,8 @@ export default function AdminSettingsPage() {
         token,
         storeSlug,
         body: {
-          storeType: 'GENERAL',
+          // Ramo da loja fica em Identidade visual: mandar daqui desfazia a
+          // escolha de estilo toda vez que o lojista salvasse o endereço.
           sellerDocType: store.sellerDocType || null,
           sellerDocument: store.sellerDocument || null,
           sellerLegalName: store.sellerLegalName || null,
@@ -370,6 +376,11 @@ export default function AdminSettingsPage() {
         secondaryColor: store.secondaryColor,
         accentColor: store.accentColor,
         customDomain: store.customDomain || undefined,
+        storeType: store.storeType || undefined,
+        storeFont: store.storeFont ?? '',
+        storeCardRatio: store.storeCardRatio ?? '',
+        analyticsGaId: store.analyticsGaId ?? '',
+        analyticsPixelId: store.analyticsPixelId ?? '',
         marqueeEnabled: store.marqueeEnabled !== false,
         marqueeImages: asImages(store.marqueeImages),
         instagramUrl: store.instagramUrl || '',
@@ -897,6 +908,106 @@ export default function AdminSettingsPage() {
             onChange={(e) => setStore({ ...store, accentColor: e.target.value })}
           />
         </div>
+        <div className="md:col-span-2 border-t border-line pt-3">
+          <p className="text-[13px] font-semibold">Estilo da vitrine</p>
+          <p className="mt-0.5 text-[11px] text-muted">
+            Deixe em “Automático” para seguir o ramo da loja. Trocar o ramo
+            muda a cara da vitrine sozinho.
+          </p>
+        </div>
+        <div>
+          <label className="label">Ramo da loja</label>
+          <select
+            className="field"
+            value={store.storeType || 'GENERAL'}
+            onChange={(e) => setStore({ ...store, storeType: e.target.value })}
+          >
+            <option value="GENERAL">Geral / variedades</option>
+            <option value="FASHION">Moda e roupas</option>
+            <option value="SHOES">Calçados</option>
+            <option value="ELECTRONICS">Eletrônicos e acessórios</option>
+            <option value="CUSTOM">Personalizado</option>
+          </select>
+          <p className="mt-1 text-[11px] text-muted">
+            Define as sugestões de categoria e o estilo padrão da vitrine.
+          </p>
+        </div>
+        <div>
+          <label className="label">Formato da foto do produto</label>
+          <select
+            className="field"
+            value={store.storeCardRatio || ''}
+            onChange={(e) =>
+              setStore({ ...store, storeCardRatio: e.target.value })
+            }
+          >
+            <option value="">Automático (pelo ramo da loja)</option>
+            {STORE_CARD_RATIOS.map((r) => (
+              <option key={r.key} value={r.key}>
+                {r.label} — {r.hint}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-[11px] text-muted">
+            Vale para a vitrine, as prateleiras e a página do produto.
+          </p>
+        </div>
+        <div>
+          <label className="label">Fonte da loja</label>
+          <select
+            className="field"
+            value={store.storeFont || ''}
+            onChange={(e) => setStore({ ...store, storeFont: e.target.value })}
+          >
+            <option value="">Automático (pelo ramo da loja)</option>
+            {STORE_FONTS.map((f) => (
+              <option key={f.key} value={f.key}>
+                {f.label} — {f.hint}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-end">
+          <a
+            href={`/loja/${store.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-ghost w-full"
+          >
+            Ver na vitrine
+          </a>
+        </div>
+
+        <div className="md:col-span-2 border-t border-line pt-3">
+          <p className="text-[13px] font-semibold">Medição de audiência</p>
+          <p className="mt-0.5 text-[11px] leading-snug text-muted">
+            Opcional. Preenchendo qualquer um dos dois, a vitrine passa a pedir
+            consentimento de cookies ao visitante, como manda a LGPD — e os
+            scripts só carregam depois do aceite. Deixando em branco, a loja usa
+            só cookie essencial e nenhum aviso aparece.
+          </p>
+        </div>
+        <div>
+          <label className="label">Google Analytics (opcional)</label>
+          <input
+            className="field"
+            placeholder="G-XXXXXXXXXX"
+            value={store.analyticsGaId || ''}
+            onChange={(e) => setStore({ ...store, analyticsGaId: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="label">Meta Pixel (opcional)</label>
+          <input
+            className="field"
+            placeholder="123456789012345"
+            value={store.analyticsPixelId || ''}
+            onChange={(e) =>
+              setStore({ ...store, analyticsPixelId: e.target.value })
+            }
+          />
+        </div>
+
         <div className="md:col-span-2">
           <label className="label">Logo da loja</label>
           <p className="mb-1 text-xs text-muted">

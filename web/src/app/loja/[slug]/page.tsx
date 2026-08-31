@@ -8,6 +8,7 @@ import { CartProvider, useCart } from '@/components/CartProvider';
 import { InstallmentsBlock } from '@/components/InstallmentsBlock';
 import { PaginationBar } from '@/components/PaginationBar';
 import { StoreMarquee } from '@/components/StoreMarquee';
+import { ProductShelf } from '@/components/ProductShelf';
 import { StoreShell } from '@/components/StoreShell';
 import { StarRating } from '@/components/StarRating';
 import { WishlistButton } from '@/components/WishlistButton';
@@ -32,6 +33,14 @@ type Store = {
   freteGratisAcima?: string | number | null;
   freteModo?: string;
   sellerPhone?: string | null;
+  storeFont?: string | null;
+  storeCardRatio?: string | null;
+  analyticsGaId?: string | null;
+  analyticsPixelId?: string | null;
+  sellerLegalName?: string | null;
+  sellerDocument?: string | null;
+  sellerCity?: string | null;
+  sellerState?: string | null;
   instagramUrl?: string | null;
   facebookUrl?: string | null;
   tiktokUrl?: string | null;
@@ -50,6 +59,8 @@ type Category = {
   slug: string;
   active?: boolean;
   imageUrl?: string | null;
+  borderColor?: string | null;
+  parentId?: string | null;
 };
 
 type Product = {
@@ -85,7 +96,7 @@ function asImageList(value: unknown): string[] {
 function ProductCardSkeleton() {
   return (
     <div className="flex animate-pulse flex-col">
-      <div className="aspect-[3/4] bg-[#ececec]" />
+      <div className="store-card-media bg-[#ececec]" />
       <div className="mt-2.5 h-2.5 w-1/2 bg-[#ececec]" />
       <div className="mt-2 h-3.5 w-4/5 bg-[#ececec]" />
       <div className="mt-2 h-4 w-1/3 bg-[#ececec]" />
@@ -320,8 +331,12 @@ function StorefrontInner({ slug }: { slug: string }) {
     [categories, categoryId],
   );
 
+  /** Cor do anel: a da categoria, ou a de destaque da loja. */
+  const anelDaCategoria = (c: Category) =>
+    c.borderColor?.trim() || 'var(--store-accent)';
+
   const categoriesWithImage = useMemo(
-    () => categories.filter((c) => c.imageUrl),
+    () => categories.filter((c) => c.imageUrl && !c.parentId),
     [categories],
   );
 
@@ -365,6 +380,14 @@ function StorefrontInner({ slug }: { slug: string }) {
         homeHref={`/loja/${slug}`}
         storeSlug={slug}
         sellerPhone={store.sellerPhone}
+        storeFont={store.storeFont}
+        storeCardRatio={store.storeCardRatio}
+        analyticsGaId={store.analyticsGaId}
+        analyticsPixelId={store.analyticsPixelId}
+        legalName={store.sellerLegalName}
+        sellerDocument={store.sellerDocument}
+        sellerCity={store.sellerCity}
+        sellerState={store.sellerState}
         instagramUrl={store.instagramUrl}
         facebookUrl={store.facebookUrl}
         tiktokUrl={store.tiktokUrl}
@@ -394,12 +417,23 @@ function StorefrontInner({ slug }: { slug: string }) {
                     }}
                     className="flex w-[76px] shrink-0 flex-col items-center gap-1.5 md:w-[92px]"
                   >
+                    {/*
+                      O anel é sempre visível, não só quando selecionado.
+                      Antes ficava transparente em repouso: com arte de fundo
+                      transparente o círculo perdia o contorno e a fileira
+                      virava um monte de imagem solta. Selecionado ele
+                      engrossa e fecha a cor.
+                    */}
                     <span
-                      className={`h-16 w-16 overflow-hidden rounded-full border-2 md:h-20 md:w-20 ${
-                        categoryId === c.id
-                          ? 'border-[var(--store-accent)]'
-                          : 'border-transparent'
-                      }`}
+                      className="h-16 w-16 overflow-hidden rounded-full md:h-20 md:w-20"
+                      style={{
+                        borderStyle: 'solid',
+                        borderWidth: categoryId === c.id ? 2.5 : 1.5,
+                        borderColor:
+                          categoryId === c.id
+                            ? anelDaCategoria(c)
+                            : `color-mix(in srgb, ${anelDaCategoria(c)} 45%, transparent)`,
+                      }}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -478,6 +512,28 @@ function StorefrontInner({ slug }: { slug: string }) {
               {couponBanner.code}
             </strong>
           </div>
+        ) : null}
+
+        {/*
+          Vitrines curadas só na home "limpa": quem está buscando ou filtrando
+          quer o resultado, não prateleira temática no caminho.
+        */}
+        {!hasActiveFilters ? (
+          <>
+            <ProductShelf
+              storeSlug={slug}
+              storeName={store.name}
+              title="Ofertas da semana"
+              query="onSale=true"
+              seeAllHref={`/loja/${slug}?onSale=true`}
+            />
+            <ProductShelf
+              storeSlug={slug}
+              storeName={store.name}
+              title="Novidades"
+              query="sort=newest"
+            />
+          </>
         ) : null}
 
         <div className="mx-auto max-w-[1200px] px-3 py-3 pb-24 md:px-4 md:py-4">
@@ -650,7 +706,7 @@ function StorefrontInner({ slug }: { slug: string }) {
 
                 return (
                   <article key={p.id} className="product-card group flex flex-col">
-                    <Link href={href} className="relative aspect-[3/4] overflow-hidden bg-[#f3f3f3]">
+                    <Link href={href} className="relative store-card-media overflow-hidden bg-[#f3f3f3]">
                       {img ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -776,7 +832,7 @@ function StorefrontInner({ slug }: { slug: string }) {
           />
         </div>
       </StoreShell>
-      <CartDrawer checkoutHref={`/loja/${slug}/checkout`} />
+      <CartDrawer checkoutHref={`/loja/${slug}/checkout`} accentColor={store.accentColor} />
     </>
   );
 }

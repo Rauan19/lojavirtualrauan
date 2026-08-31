@@ -78,7 +78,7 @@ export function mapApiOptionsToPlan(
       ? o.count === 1
         ? `${money(o.installmentAmount)} à vista`
         : `${o.count}x de ${money(o.installmentAmount)} sem juros`
-      : `${o.count}x de ${money(o.installmentAmount)} com juros`,
+      : `${o.count}x de ${money(o.installmentAmount)} · total ${money(o.totalAmount)}`,
   }));
 }
 
@@ -104,14 +104,19 @@ export function installmentHeadlineFromPlan(
   if (freeMax >= 2 && free) {
     cardLine = `ou no cartão em até ${free.count}x de ${money(free.installmentAmount)} sem juros`;
   } else if (withInterest) {
-    cardLine = `ou no cartão em até ${withInterest.count}x de ${money(withInterest.installmentAmount)} com juros`;
+    cardLine = `ou no cartão em até ${withInterest.count}x de ${money(withInterest.installmentAmount)} com juros · total ${money(withInterest.totalAmount)}`;
   } else if (freeMax >= 2) {
     cardLine = `ou no cartão em até ${freeMax}x sem juros`;
   }
 
+  /*
+   * CDC art. 52, II e III: parcelamento com juros tem que informar o montante
+   * dos acréscimos e a soma total a pagar. Mostrar só o valor da parcela é
+   * infração — e o total já vem calculado na cotação.
+   */
   const cardExtraLine =
-    freeMax >= 2 && withInterest
-      ? `ou em até ${withInterest.count}x de ${money(withInterest.installmentAmount)} com juros`
+    freeMax >= 2 && free && withInterest
+      ? `ou em até ${withInterest.count}x de ${money(withInterest.installmentAmount)} com juros · total ${money(withInterest.totalAmount)}`
       : null;
 
   return {

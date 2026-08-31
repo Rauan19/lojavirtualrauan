@@ -111,6 +111,7 @@ function CheckoutInner({ slug }: { slug: string }) {
   const [quoting, setQuoting] = useState(false);
 
   const [couponCode, setCouponCode] = useState('');
+  const [aceitou, setAceitou] = useState(false);
   const [coupon, setCoupon] = useState<CouponResult | null>(null);
 
   useEffect(() => {
@@ -432,6 +433,7 @@ function CheckoutInner({ slug }: { slug: string }) {
             shippingMethod: selectedShip.name,
             shippingOptionId: selectedShip.id,
             couponCode: coupon?.code || undefined,
+            acceptTerms: true,
             ...(customer.cpf ? { customerDocument: customer.cpf } : {}),
           },
         });
@@ -557,6 +559,7 @@ function CheckoutInner({ slug }: { slug: string }) {
         {
           '--store-primary': store.primaryColor,
           '--store-accent': store.accentColor,
+          '--store-accent-hover': `color-mix(in srgb, ${store.accentColor} 86%, #000)`,
         } as React.CSSProperties
       }
     >
@@ -1053,10 +1056,70 @@ function CheckoutInner({ slug }: { slug: string }) {
                       Configurações.
                     </p>
                   ) : null}
+                  {/*
+                    Decreto 7.962/2013 art. 4º, I: o sumário do contrato tem
+                    que ser apresentado antes da contratação. Os links abrem em
+                    aba nova de propósito — sair do checkout para ler a política
+                    e perder o carrinho seria pior para todo mundo.
+                  */}
+                  <div className="border border-line bg-[#fafafa] p-3">
+                    <ul className="space-y-1 text-[12px] leading-relaxed text-muted">
+                      {selectedShip ? (
+                        <li>
+                          Entrega por {selectedShip.name}, prazo de{' '}
+                          {formatDeliveryEstimate(selectedShip.days)} após a
+                          aprovação do pagamento.
+                        </li>
+                      ) : null}
+                      <li>
+                        Você pode desistir da compra em até 7 dias corridos do
+                        recebimento e receber o valor de volta.
+                      </li>
+                      <li>
+                        Produtos com defeito têm garantia legal de 30 ou 90
+                        dias, conforme o tipo.
+                      </li>
+                    </ul>
+                    <label className="mt-3 flex cursor-pointer items-start gap-2 text-[13px] leading-snug">
+                      <input
+                        type="checkbox"
+                        className="mt-0.5 shrink-0"
+                        checked={aceitou}
+                        onChange={(e) => setAceitou(e.target.checked)}
+                      />
+                      <span>
+                        Li e concordo com as{' '}
+                        <Link
+                          href={`/loja/${slug}/politicas/termos`}
+                          target="_blank"
+                          className="font-semibold underline"
+                        >
+                          condições de venda
+                        </Link>
+                        , a{' '}
+                        <Link
+                          href={`/loja/${slug}/politicas/trocas`}
+                          target="_blank"
+                          className="font-semibold underline"
+                        >
+                          política de trocas
+                        </Link>{' '}
+                        e a{' '}
+                        <Link
+                          href={`/loja/${slug}/politicas/privacidade`}
+                          target="_blank"
+                          className="font-semibold underline"
+                        >
+                          política de privacidade
+                        </Link>
+                        .
+                      </span>
+                    </label>
+                  </div>
                   <button
                     type="submit"
                     className="btn btn-accent w-full"
-                    disabled={busy || store.paymentsEnabled === false}
+                    disabled={busy || !aceitou || store.paymentsEnabled === false}
                   >
                     {busy ? 'Abrindo Mercado Pago...' : `Pagar ${money(total)}`}
                   </button>

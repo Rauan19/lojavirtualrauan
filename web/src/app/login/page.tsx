@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { BrandLogo } from '@/components/BrandLogo';
+import { AuthShell } from '@/components/AuthShell';
 import { api, AuthUser } from '@/lib/api';
 import { getToken, getUser, saveSession } from '@/lib/auth';
 import { clearAllCustomerSessions } from '@/lib/customer-auth';
@@ -19,15 +19,6 @@ const perks = [
   'Pagamento direto na sua conta',
   'Nota fiscal (NFC-e) emitida automaticamente',
 ];
-
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" aria-hidden className="mt-0.5 shrink-0">
-      <circle cx="10" cy="10" r="9" stroke="var(--accent)" strokeWidth="1.4" />
-      <path d="M6 10.2l2.4 2.4L14 7" stroke="var(--accent)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
 
 function EyeIcon({ open }: { open: boolean }) {
   if (open) {
@@ -103,109 +94,88 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="grid min-h-screen md:grid-cols-2">
-      <section className="hidden flex-col justify-between bg-[#171a1f] p-10 text-white md:flex lg:p-14">
-        <div>
-          <Link href="/" className="inline-block">
-            <BrandLogo height={30} onDark />
-          </Link>
-          <h1 className="mt-12 max-w-[14ch] font-[family-name:var(--font-brand)] text-[2.4rem] font-800 leading-[1.08] lg:text-[2.75rem]">
-            Sua loja, sempre aberta.
-          </h1>
-          <p className="mt-4 max-w-[34ch] text-[15px] leading-relaxed text-white/70">
-            Entre e acompanhe pedidos, produtos e vendas em um painel só,
-            enquanto sua vitrine continua vendendo sozinha.
-          </p>
-          <ul className="mt-10 space-y-3.5">
-            {perks.map((perk) => (
-              <li key={perk} className="flex items-start gap-2.5 text-[14px] leading-snug text-white/85">
-                <CheckIcon />
-                {perk}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <p className="text-[13px] text-white/45">
+    <AuthShell
+      headline="Sua loja, sempre aberta."
+      subhead="Entre e acompanhe pedidos, produtos e vendas em um painel só, enquanto sua vitrine continua vendendo sozinha."
+      perks={perks}
+      footNote={
+        <>
           Ainda não tem loja?{' '}
-          <Link href="/criar-conta" className="font-semibold text-white underline-offset-4 hover:underline">
+          <Link
+            href="/criar-conta"
+            className="font-semibold text-accent underline-offset-4 hover:underline"
+          >
             Crie a sua agora mesmo
           </Link>
+        </>
+      }
+    >
+      <form onSubmit={onSubmit}>
+        <h2 className="font-[family-name:var(--font-brand)] text-[1.7rem] font-800 leading-tight tracking-tight text-[#171a1f]">
+          Entrar
+        </h2>
+        <p className="mt-1.5 text-[15px] text-[#4a5560]">
+          Acesse o painel da sua loja.
         </p>
-      </section>
 
-      <section className="flex items-center justify-center bg-[#f7f8fa] px-4 py-10 md:bg-white md:px-10">
-        <form onSubmit={onSubmit} className="w-full max-w-sm">
-          <Link href="/" className="inline-block md:hidden">
-            <BrandLogo height={26} />
-          </Link>
-
-          <h2 className="mt-6 font-[family-name:var(--font-brand)] text-[1.6rem] font-800 leading-tight text-[#171a1f] md:mt-0">
-            Entrar
-          </h2>
-          <p className="mt-1.5 text-sm text-muted">Acesse o painel da sua loja.</p>
-
-          <div className="mt-7 space-y-4">
-            <div>
-              <label className="label">E-mail</label>
+        <div className="mt-7 space-y-4">
+          <div>
+            <label className="label">E-mail</label>
+            <input
+              className="field h-11"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="username"
+              placeholder="voce@email.com"
+              required
+            />
+          </div>
+          <div>
+            <div className="flex items-baseline justify-between">
+              <label className="label">Senha</label>
+              <Link
+                href="/esqueci-senha"
+                className="text-[11px] font-medium text-[#4a5560] underline-offset-2 hover:text-accent hover:underline"
+              >
+                Esqueci a senha
+              </Link>
+            </div>
+            <div className="relative">
               <input
-                className="field"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="username"
-                placeholder="voce@email.com"
+                className="field h-11 pr-10"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-[#8a92a0] hover:text-ink"
+              >
+                <EyeIcon open={showPassword} />
+              </button>
             </div>
-            <div>
-              <div className="flex items-baseline justify-between">
-                <label className="label">Senha</label>
-                <Link
-                  href="/esqueci-senha"
-                  className="text-[11px] font-medium text-muted underline-offset-2 hover:text-accent hover:underline"
-                >
-                  Esqueci a senha
-                </Link>
-              </div>
-              <div className="relative">
-                <input
-                  className="field pr-9"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                  className="absolute inset-y-0 right-0 flex w-9 items-center justify-center text-muted hover:text-ink"
-                >
-                  <EyeIcon open={showPassword} />
-                </button>
-              </div>
-            </div>
-
-            {error ? (
-              <p className="border border-accent/25 bg-accent/5 px-3 py-2 text-[13px] leading-snug text-accent">
-                {error}
-              </p>
-            ) : null}
-
-            <button className="btn btn-accent btn-block py-2.5 text-[13px]" disabled={loading}>
-              {loading ? 'Entrando...' : 'Entrar'}
-            </button>
           </div>
 
-          <p className="mt-6 text-center text-sm text-muted md:hidden">
-            Ainda não tem loja?{' '}
-            <Link href="/criar-conta" className="font-semibold text-accent underline-offset-2 hover:underline">
-              Criar minha loja
-            </Link>
-          </p>
-        </form>
-      </section>
-    </main>
+          {error ? (
+            <p className="border border-accent/25 bg-accent/5 px-3 py-2 text-[13px] leading-snug text-accent">
+              {error}
+            </p>
+          ) : null}
+
+          <button
+            className="btn btn-accent btn-bag btn-block py-3.5 text-[15px]"
+            style={{ '--bag-bg': '#fff' } as React.CSSProperties}
+            disabled={loading}
+          >
+            {loading ? 'Entrando...' : 'Entrar'}
+          </button>
+        </div>
+      </form>
+    </AuthShell>
   );
 }

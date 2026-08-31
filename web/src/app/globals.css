@@ -6,8 +6,18 @@
   --ink: #171a1f;
   --muted: #4a5560;
   --line: #d9dde3;
-  --accent: #e31c5f;
-  --accent-hover: #c41852;
+  /*
+   * Paleta da marca, tirada da logo: coral #ea5e6d e turquesa #3fa2b4.
+   * As duas são claras demais para texto branco em cima (3,3:1 e 3,0:1,
+   * abaixo dos 4,5:1 da WCAG AA), então servem de identidade — logo,
+   * brilhos, detalhes — e cada uma tem um par escurecido, de mesma matiz,
+   * para o que é clicável ou é texto.
+   */
+  --brand-coral: #ea5e6d;
+  --brand-teal: #3fa2b4;
+  --accent: #d43d54;
+  --accent-hover: #bc3348;
+  --teal: #2b7f8e;
   --ok: #1b8f4a;
   --header-h: 72px;
 }
@@ -19,6 +29,9 @@
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-accent: var(--accent);
+  --color-teal: var(--teal);
+  --color-brand-coral: var(--brand-coral);
+  --color-brand-teal: var(--brand-teal);
   --font-sans: var(--font-display);
 }
 
@@ -91,13 +104,18 @@
     cursor: not-allowed;
   }
 
+  /*
+   * Dentro da vitrine o StoreShell define --store-accent com a cor que o
+   * lojista escolheu; fora dela (admin, landing) cai no accent da
+   * plataforma. Assim o botão de compra segue a marca de cada loja.
+   */
   .btn-accent {
-    background: var(--accent);
+    background: var(--store-accent, var(--accent));
     color: #fff;
   }
 
   .btn-accent:hover {
-    background: var(--accent-hover);
+    background: var(--store-accent-hover, var(--accent-hover));
     opacity: 1;
   }
 
@@ -129,6 +147,40 @@
 
   .btn-block {
     width: 100%;
+  }
+
+  /*
+   * Botão-assinatura da marca: as duas quinas de cima têm um recorte
+   * côncavo, lembrando a alça de uma sacola. O recorte é pintado com a cor
+   * do fundo onde o botão está — quem usa informa em --bag-bg.
+   */
+  .btn-bag {
+    position: relative;
+  }
+  .btn-bag::before,
+  .btn-bag::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    height: 1rem;
+    width: 1rem;
+    pointer-events: none;
+  }
+  .btn-bag::before {
+    left: 0;
+    background: radial-gradient(
+      circle at bottom right,
+      transparent 16px,
+      var(--bag-bg, #f7f8fa) 16px
+    );
+  }
+  .btn-bag::after {
+    right: 0;
+    background: radial-gradient(
+      circle at bottom left,
+      transparent 16px,
+      var(--bag-bg, #f7f8fa) 16px
+    );
   }
 
   .field {
@@ -293,12 +345,245 @@
 }
 
 /* Vendira: carrossel de promoção full-bleed (loja de roupa) */
+/*
+ * O banner acompanha a proporção da arte (5:2 ≈ 2,5:1, o formato usual de
+ * banner de loja) em vez de ter altura fixa. Com altura fixa, numa tela larga
+ * o container ficava 3,7:1 e o `object-cover` cortava ~35% da imagem.
+ */
+/*
+ * A proporção vem da própria arte (medida no componente e injetada em
+ * --promo-ratio): com altura fixa, uma tela larga virava 3,7:1 e o
+ * `object-cover` comia ~35% do banner. O teto de altura evita que uma arte
+ * muito "alta" empurre o catálogo inteiro para fora da primeira tela.
+ */
 .store-promo-marquee {
-  height: min(42vh, 380px);
-  min-height: 220px;
+  aspect-ratio: var(--promo-ratio, 5 / 2);
+  max-height: 460px;
+  min-height: 200px;
 }
 
 /* Rola sem mostrar a barra (fileira de categorias, trilhos horizontais) */
+/* ---------- Forma da hero da landing ------------------------------------ */
+
+/*
+ * Base arredondada: a hero termina numa curva apoiada na seção branca, em vez
+ * de um filete reto atravessando a tela.
+ */
+.lp-hero {
+  border-bottom-left-radius: 40px;
+  border-bottom-right-radius: 40px;
+}
+
+/* Brilho difuso atrás dos aparelhos, no lugar do painel cinza chapado. */
+.lp-hero-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      620px 420px at 78% 30%,
+      color-mix(in srgb, var(--accent) 13%, transparent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      500px 360px at 96% 84%,
+      color-mix(in srgb, var(--brand-teal) 16%, transparent) 0%,
+      transparent 72%
+    );
+}
+
+/* Inclinação em perspectiva: é o que tira a cara de print colado na página. */
+.lp-hero-devices {
+  perspective: 1400px;
+}
+
+@media (min-width: 768px) {
+  .lp-hero-devices .lp-stage {
+    transform: rotateY(-9deg) rotateX(3deg) translateZ(0);
+    transform-style: preserve-3d;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-hero-devices .lp-stage {
+    transform: none;
+  }
+}
+
+/* ---------- Hero da landing: notebook + celular com a vitrine dentro ----- */
+
+.lp-stage {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  padding-bottom: 30px;
+}
+
+.lp-laptop-screen {
+  overflow: hidden;
+  border: 9px solid #1f2430;
+  border-radius: 13px 13px 3px 3px;
+  background: #1f2430;
+  box-shadow: 0 26px 60px -28px rgba(23, 26, 31, 0.55);
+}
+
+/* Tampa fechando no formato do notebook, sem depender de imagem. */
+.lp-laptop-base {
+  height: 11px;
+  width: 109%;
+  transform: translateX(-4.5%);
+  border-radius: 0 0 11px 11px;
+  background: linear-gradient(#cdd2d9, #a9b0ba);
+  clip-path: polygon(3.5% 0, 96.5% 0, 100% 100%, 0 100%);
+}
+
+.lp-laptop-bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #f1f2f4;
+  padding: 6px 9px;
+}
+
+.lp-dot {
+  height: 7px;
+  width: 7px;
+  border-radius: 999px;
+}
+
+.lp-url {
+  margin-left: 6px;
+  flex: 1;
+  border-radius: 999px;
+  background: #fff;
+  padding: 3px 8px;
+  text-align: center;
+  font-size: 8px;
+  color: #8a92a0;
+}
+
+/* Janela que corta a vitrine: é aqui que a rolagem acontece. */
+.lp-viewport {
+  height: 258px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.lp-phone .lp-viewport {
+  height: 216px;
+}
+
+.lp-scroll {
+  /* A escala vem do componente; o keyframe repete o scale porque transform é
+     uma propriedade só e a animação substituiria o valor base. */
+  transform: scale(var(--lp-scale, 1));
+  transform-origin: top left;
+  animation: lp-scroll 30s linear infinite;
+}
+
+.lp-scroll-slow {
+  animation-duration: 40s;
+}
+
+.lp-stage:hover .lp-scroll {
+  animation-play-state: paused;
+}
+
+/*
+ * O conteúdo é a mesma página duas vezes, então voltar a -50% cai exatamente
+ * no começo da segunda cópia — o laço não tem emenda visível.
+ */
+@keyframes lp-scroll {
+  from {
+    transform: scale(var(--lp-scale, 1)) translateY(0);
+  }
+  to {
+    transform: scale(var(--lp-scale, 1)) translateY(-50%);
+  }
+}
+
+.lp-phone {
+  position: absolute;
+  right: -10px;
+  bottom: 0;
+  width: 140px;
+  overflow: hidden;
+  border: 7px solid #1f2430;
+  border-radius: 22px;
+  background: #1f2430;
+  box-shadow: 0 20px 40px -16px rgba(23, 26, 31, 0.6);
+}
+
+.lp-phone-notch {
+  position: absolute;
+  left: 50%;
+  top: 5px;
+  z-index: 2;
+  height: 4px;
+  width: 40px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #1f2430;
+}
+
+.lp-dots {
+  position: absolute;
+  bottom: 6px;
+  left: 3px;
+  display: flex;
+  gap: 4px;
+}
+
+.lp-dots-item {
+  height: 6px;
+  border-radius: 999px;
+  transition:
+    width 0.35s ease,
+    background 0.35s ease;
+}
+
+@media (max-width: 767px) {
+  .lp-stage {
+    max-width: 380px;
+  }
+  .lp-viewport {
+    height: 200px;
+  }
+  .lp-phone {
+    width: 112px;
+    right: -4px;
+  }
+  .lp-phone .lp-viewport {
+    height: 168px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-scroll {
+    animation: none;
+  }
+}
+
+/*
+ * Aparência por loja. As variáveis vêm do StoreShell, com o valor que a API
+ * resolveu (escolha do lojista ou preset do ramo). Fica fora de @layer
+ * components de propósito: são regras de tema, não utilitários que alguém
+ * precise sobrescrever com classe do Tailwind.
+ */
+.store-theme {
+  font-family: var(--store-font);
+}
+
+.store-theme h1,
+.store-theme h2,
+.store-display {
+  font-family: var(--store-font-display, var(--store-font));
+}
+
+/* Proporção da foto do produto: 1/1 para eletrônico, 3/4 ou 2/3 para moda. */
+.store-card-media {
+  aspect-ratio: var(--store-card-ratio, 3 / 4);
+}
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -323,10 +608,11 @@
 }
 
 @media (max-width: 767px) {
+  /* No celular a proporção da arte também vale, com teto menor para o
+     catálogo não sair da primeira tela. */
   .store-promo-marquee {
-    height: 180px;
-    min-height: 160px;
-    max-height: 200px;
+    max-height: 240px;
+    min-height: 0;
   }
 }
 

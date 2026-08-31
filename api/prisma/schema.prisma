@@ -87,6 +87,12 @@ model Store {
   /** Assinatura recorrente MP (mensalidade da plataforma). */
   mpPreapprovalId  String?
   mpSubscriptionStatus String? // pending | authorized | paused | cancelled
+  /**
+   * Como o lojista paga a mensalidade: CARD (recorrência do Mercado Pago,
+   * que cobra sozinho) ou PIX (cobrança avulsa gerada por nós a cada ciclo).
+   * Pix recorrente não existe na API do MP — por isso o ciclo é nosso.
+   */
+  billingMethod    String?     @default("CARD")
   storeType        StoreType   @default(GENERAL)
 
   // Identidade do lojista (PF = CPF ou PJ = CNPJ)
@@ -159,6 +165,30 @@ model Store {
   autoDeliverDays   Int         @default(0)
   marqueeEnabled   Boolean     @default(true)
   marqueeImages    Json?
+
+  /**
+   * Aparência da vitrine. Nulo = herda o preset do storeType, então trocar o
+   * ramo da loja já muda a cara dela. Preenchido = o lojista escolheu na mão
+   * e a escolha dele manda.
+   */
+  storeFont        String?
+  storeCardRatio   String?
+
+  /**
+   * Sequência do número do pedido. Antes o número saía de count(*) + 1, o
+   * que dava o mesmo valor para dois checkouts simultâneos: a constraint
+   * única derrubava um dos clientes no último passo da compra.
+   */
+  orderSeq         Int         @default(0)
+
+  /*
+   * Medição de audiência. São opcionais e ficam vazios por padrão: enquanto
+   * não houver nenhum configurado, a loja só usa cookie essencial de sessão e
+   * o aviso de cookies nem aparece — banner que pede consentimento para nada
+   * só ensina o visitante a clicar em "aceitar" sem ler.
+   */
+  analyticsGaId     String?
+  analyticsPixelId  String?
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 
@@ -192,6 +222,32 @@ model User {
 
   @@unique([storeId, email])
   @@index([email])
+}
+
+/*
+ * Registro de acesso à aplicação (Marco Civil da Internet, art. 15): provedor
+ * de aplicação constituído como pessoa jurídica deve guardar os registros por
+ * 6 meses, sob sigilo.
+ *
+ * É gravado um registro por titular/IP por hora, não por requisição: o que a
+ * lei pede é data e hora de uso a partir de um IP, e uma linha por clique
+ * inviabilizaria a tabela sem acrescentar nada.
+ */
+model AccessLog {
+  id        String   @id @default(cuid())
+  storeId   String?
+  /** Cliente da loja, quando autenticado. */
+  customerId String?
+  /** Usuário do painel, quando autenticado. */
+  userId    String?
+  ip        String
+  userAgent String?
+  path      String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([storeId, createdAt])
+  @@index([customerId, createdAt])
 }
 
 model Customer {
@@ -244,6 +300,12 @@ model Category {
   slug        String
   description String?
   imageUrl    String?
+  /**
+   * Cor do anel em volta da imagem na vitrine. Nulo = usa a cor de destaque
+   * da loja. Importa quando a arte tem fundo transparente: sem o anel, o
+   * círculo não tem contorno e a fileira de categorias perde a forma.
+   */
+  borderColor String?
   parentId    String?
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -411,8 +473,32 @@ model Order {
   deliveredAt       DateTime?
   refundRequestedAt DateTime?
   refundReason      String?
+  /**
+   * REQUESTED → RETURN_PENDING → APPROVED, ou REQUESTED → APPROVED quando não
+   * há o que devolver (extravio), ou REQUESTED → REJECTED.
+   */
   refundStatus      String?
+  /** ARREPENDIMENTO | DEFEITO | NAO_RECEBI | OUTRO. */
+  refundReasonType  String?
+  /** Quando o lojista confirmou que o produto voltou de fato. */
+  returnReceivedAt  DateTime?
   refundedAt        DateTime?
+  /**
+   * Como o dinheiro voltou: GATEWAY (estorno disparado por nós), ou
+   * GATEWAY_EXTERNAL (o lojista estornou direto no painel do Mercado Pago e
+   * ficamos sabendo pelo webhook). Nulo em pedido não estornado — e também
+   * nos pedidos antigos, de quando dava para marcar "Reembolsado" na mão sem
+   * devolver nada.
+   */
+  refundVia         String?
+  /** Cupom reservado e ainda não devolvido. Espelha stockReserved. */
+  couponReserved    Boolean  @default(false)
+  /**
+   * Momento em que o cliente aceitou as condições de venda no checkout.
+   * Decreto 7.962/2013 art. 4º, I exige apresentar o sumário do contrato
+   * antes da contratação; guardar o aceite é a prova de que foi apresentado.
+   */
+  termsAcceptedAt   DateTime?
   /**
    * Estoque baixado na criação do pedido (reserva). Volta ao cancelar,
    * expirar ou estornar. Serve de trava contra devolver estoque 2x.
@@ -445,6 +531,15 @@ model Coupon {
   value       Decimal      @db.Decimal(10, 2)
   minSubtotal Decimal?     @db.Decimal(10, 2)
   maxUses     Int?
+  /** Limite por cliente. Nulo = sem limite. */
+  maxPerCustomer Int?
+  /**
+   * Conta reservas, não só usos consumados. O cupom é reservado quando o
+   * pedido é criado e devolvido se ele for cancelado, expirar ou ser
+   * estornado — mesma mecânica do estoque. Antes só era incrementado na
+   * aprovação do pagamento, e um cupom de 10 usos era fechado por 100
+   * pessoas ao mesmo tempo, porque a checagem via usedCount ainda em zero.
+   */
   usedCount   Int          @default(0)
   startsAt    DateTime?
   endsAt      DateTime?
@@ -557,6 +652,16 @@ model PlatformInvoice {
   mpPreapprovalId String?
   mpPaymentId     String?       @unique
   paidAt          DateTime?
+  /** CARD | PIX — como esta fatura específica foi cobrada. */
+  method          String        @default("CARD")
+  /** Vencimento do ciclo que esta fatura cobre. */
+  dueAt           DateTime?
+  /** Pix: copia e cola, imagem do QR e validade da cobrança. */
+  pixCopiaECola   String?       @db.Text
+  pixQrCodeBase64 String?       @db.Text
+  pixExpiresAt    DateTime?
+  /** Quando o lembrete de vencimento foi enviado — um por fatura. */
+  pixLembreteEm   DateTime?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -566,6 +671,7 @@ model PlatformInvoice {
   @@index([storeId, status])
   @@index([mpPreferenceId])
   @@index([mpPreapprovalId])
+  @@index([storeId, method, status])
 }
 
 /** Configuração global da plataforma (singleton id = default). */

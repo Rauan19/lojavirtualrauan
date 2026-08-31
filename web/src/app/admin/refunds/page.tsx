@@ -21,12 +21,25 @@ type RefundOrder = {
   customerEmail: string;
   refundReason?: string | null;
   refundStatus?: string | null;
+  refundReasonType?: string | null;
   refundRequestedAt?: string | null;
+  returnReceivedAt?: string | null;
+  /** Vem calculado da API: ver refund-rules.ts */
+  exigeDevolucao?: boolean;
+  podeRecusar?: boolean;
+  prazoArrependimento?: string | null;
   refundedAt?: string | null;
   mpPaymentId?: string | null;
   mpRefundId?: string | null;
   createdAt: string;
   items: { productName: string; quantity: number }[];
+};
+
+const MOTIVO_LABEL: Record<string, string> = {
+  ARREPENDIMENTO: 'Desistiu da compra',
+  DEFEITO: 'Produto com defeito',
+  NAO_RECEBI: 'Não recebeu o produto',
+  OUTRO: 'Outro motivo',
 };
 
 const PAGE_SIZE = 10;
@@ -69,12 +82,15 @@ export default function AdminRefundsPage() {
   async function approve(id: string) {
     const { token, storeSlug } = auth();
     if (!token) return;
+    const order = items.find((o) => o.id === id);
+    const comDevolucao = Boolean(order?.exigeDevolucao);
     const ok = await confirm({
-      title: 'Aprovar reembolso?',
-      message:
-        'O valor será estornado no gateway de pagamento quando estiver disponível.',
-      confirmLabel: 'Aprovar e estornar',
-      danger: true,
+      title: comDevolucao ? 'Autorizar devolução?' : 'Aprovar reembolso?',
+      message: comDevolucao
+        ? 'O cliente é avisado com as instruções e o pedido passa a aguardar o produto. O dinheiro só sai depois que você confirmar o recebimento.'
+        : 'O valor será estornado agora no gateway de pagamento.',
+      confirmLabel: comDevolucao ? 'Autorizar devolução' : 'Aprovar e estornar',
+      danger: !comDevolucao,
     });
     if (!ok) return;
     setBusyId(id);
@@ -89,10 +105,39 @@ export default function AdminRefundsPage() {
         token,
         storeSlug,
       });
-      setMessage(res.gatewayMessage || 'Reembolso aprovado');
+      setMessage(res.gatewayMessage || 'Solicitação aprovada');
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao aprovar');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  /** Produto voltou: confirma o recebimento e dispara o estorno. */
+  async function confirmarDevolucao(id: string) {
+    const { token, storeSlug } = auth();
+    if (!token) return;
+    const ok = await confirm({
+      title: 'Confirmar que o produto voltou?',
+      message:
+        'O estorno é enviado ao gateway agora e os itens voltam para o estoque. Não tem desfazer.',
+      confirmLabel: 'Recebi — estornar',
+      danger: true,
+    });
+    if (!ok) return;
+    setBusyId(id);
+    setError('');
+    setMessage('');
+    try {
+      const res = await api<{ gatewayMessage?: string }>(
+        `/admin/orders/${id}/refund/return-received`,
+        { method: 'POST', token, storeSlug },
+      );
+      setMessage(res.gatewayMessage || 'Devolução confirmada e valor estornado');
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao confirmar');
     } finally {
       setBusyId(null);
     }
@@ -165,9 +210,23 @@ export default function AdminRefundsPage() {
                     {refundStatusLabel(order.refundStatus)}
                   </p>
                 ) : null}
+                {order.refundReasonType ? (
+                  <p className="mt-1 text-xs font-medium">
+                    {MOTIVO_LABEL[order.refundReasonType] ||
+                      order.refundReasonType}
+                    {order.exigeDevolucao ? ' · exige devolução' : ''}
+                  </p>
+                ) : null}
                 {order.refundReason ? (
-                  <p className="mt-1 text-xs text-muted">
-                    Motivo: {order.refundReason}
+                  <p className="mt-0.5 text-xs text-muted">
+                    “{order.refundReason}”
+                  </p>
+                ) : null}
+                {order.refundReasonType === 'ARREPENDIMENTO' &&
+                order.podeRecusar === false ? (
+                  <p className="mt-1 border-l-2 border-amber-400 bg-amber-50 px-2 py-1 text-[11px] leading-snug text-amber-950">
+                    Desistência dentro dos 7 dias do recebimento é direito do
+                    consumidor (CDC art. 49). Não pode ser recusada.
                   </p>
                 ) : null}
                 {order.refundRequestedAt ? (
@@ -201,15 +260,40 @@ export default function AdminRefundsPage() {
                     disabled={busyId === order.id}
                     onClick={() => approve(order.id)}
                   >
-                    {busyId === order.id ? '...' : 'Aprovar e estornar'}
+                    {busyId === order.id
+                      ? '...'
+                      : order.exigeDevolucao
+                        ? 'Autorizar devolução'
+                        : 'Aprovar e estornar'}
                   </button>
+                  {/* recusar some quando a lei não permite recusar */}
+                  {order.podeRecusar !== false ? (
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      disabled={busyId === order.id}
+                      onClick={() => reject(order.id)}
+                    >
+                      Recusar
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
+              {order.refundStatus === 'RETURN_PENDING' ? (
+                <div className="flex flex-col gap-2">
+                  <p className="max-w-[240px] text-[11px] leading-snug text-muted">
+                    Aguardando o produto voltar. O estorno sai quando você
+                    confirmar o recebimento.
+                  </p>
                   <button
                     type="button"
-                    className="btn btn-ghost"
+                    className="btn btn-accent"
                     disabled={busyId === order.id}
-                    onClick={() => reject(order.id)}
+                    onClick={() => confirmarDevolucao(order.id)}
                   >
-                    Recusar
+                    {busyId === order.id
+                      ? '...'
+                      : 'Recebi o produto — estornar'}
                   </button>
                 </div>
               ) : null}

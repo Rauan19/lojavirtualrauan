@@ -27,6 +27,11 @@ export class CreateCategoryDto {
   @IsString()
   imageUrl?: string;
 
+  /** Vazio = usa a cor de destaque da loja. */
+  @IsOptional()
+  @IsString()
+  borderColor?: string;
+
   @IsOptional()
   @IsString()
   parentId?: string;
@@ -37,6 +42,11 @@ export class UpdateCategoryDto {
   @IsString()
   name?: string;
 
+  // String vazia limpa o vínculo e devolve a categoria ao nível de departamento.
+  @IsOptional()
+  @IsString()
+  parentId?: string;
+
   @IsOptional()
   @IsString()
   description?: string;
@@ -44,6 +54,10 @@ export class UpdateCategoryDto {
   @IsOptional()
   @IsString()
   imageUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  borderColor?: string;
 
   @IsOptional()
   @IsBoolean()
@@ -351,4 +365,9 @@ export class ProductQueryDto {
   @IsOptional()
   @IsString()
   onSale?: string;
+
+  /** Vitrine de destaques na home ("true"). */
+  @IsOptional()
+  @IsString()
+  featured?: string;
 }

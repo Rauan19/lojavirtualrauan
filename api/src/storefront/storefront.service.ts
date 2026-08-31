@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
+import { PersonalDataService } from '../customers/personal-data.service';
 import {
   AddressDto,
   CustomerLoginDto,
@@ -28,6 +29,7 @@ export class StorefrontService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
     private readonly mail: MailService,
+    private readonly personalData: PersonalDataService,
   ) {}
 
   private async tokenFor(customer: {
@@ -116,6 +118,32 @@ export class StorefrontService {
     }
 
     return this.tokenFor(customer);
+  }
+
+  /**
+   * Exclusão da conta pelo próprio titular (LGPD art. 18, VI).
+   *
+   * Exige a senha mesmo com o token válido: a ação não tem desfazer, e um
+   * token roubado não pode bastar para apagar a conta de alguém.
+   */
+  async deleteOwnAccount(storeId: string, customerId: string, password: string) {
+    const customer = await this.prisma.customer.findFirst({
+      where: { id: customerId, storeId },
+      select: { id: true, passwordHash: true },
+    });
+    if (!customer?.passwordHash) {
+      throw new UnauthorizedException('Credenciais inválidas');
+    }
+    const ok = await bcrypt.compare(password, customer.passwordHash);
+    if (!ok) {
+      throw new UnauthorizedException('Senha incorreta');
+    }
+    return this.personalData.anonymize(storeId, customerId);
+  }
+
+  /** Acesso e portabilidade (LGPD art. 18, II e V). */
+  exportOwnData(storeId: string, customerId: string) {
+    return this.personalData.export(storeId, customerId);
   }
 
   /**

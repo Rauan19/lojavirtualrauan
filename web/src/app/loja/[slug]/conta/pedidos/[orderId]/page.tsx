@@ -69,6 +69,7 @@ export default function PedidoDetalhePage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState('');
   const [reason, setReason] = useState('');
+  const [reasonType, setReasonType] = useState('ARREPENDIMENTO');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [sellerPhone, setSellerPhone] = useState<string | null>(null);
@@ -108,7 +109,7 @@ export default function PedidoDetalhePage() {
           method: 'POST',
           token,
           storeSlug: params.slug,
-          body: { reason: reason || undefined },
+          body: { reasonType, reason: reason || undefined },
         },
       );
       setOrder(updated);
@@ -314,11 +315,47 @@ export default function PedidoDetalhePage() {
           </div>
 
           {canRequestRefund ? (
-            <form onSubmit={requestRefund} className="mt-6 space-y-2 border border-line p-3">
+            <form onSubmit={requestRefund} className="mt-6 space-y-3 border border-line p-3">
               <p className="text-sm font-bold">Solicitar reembolso</p>
+              {/*
+                O motivo não é só informação: decide se o produto precisa
+                voltar e se a loja pode recusar. Desistir dentro de 7 dias é
+                direito (CDC art. 49) e a loja não pode negar.
+              */}
+              <div className="space-y-1.5">
+                {[
+                  ['ARREPENDIMENTO', 'Desisti da compra', 'Até 7 dias do recebimento. A loja não pode recusar e paga o frete da volta.'],
+                  ['DEFEITO', 'Produto com defeito', 'Garantia legal de 30 ou 90 dias, conforme o tipo de produto.'],
+                  ['NAO_RECEBI', 'Não recebi o produto', 'A loja vai apurar com a transportadora.'],
+                  ['OUTRO', 'Outro motivo', 'Descreva abaixo o que aconteceu.'],
+                ].map(([valor, titulo, ajuda]) => (
+                  <label
+                    key={valor}
+                    className={`flex cursor-pointer gap-2 border p-2 text-[13px] ${
+                      reasonType === valor
+                        ? 'border-[var(--store-accent)] bg-[color-mix(in_srgb,var(--store-accent)_6%,transparent)]'
+                        : 'border-line'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="motivo"
+                      className="mt-0.5 shrink-0"
+                      checked={reasonType === valor}
+                      onChange={() => setReasonType(valor)}
+                    />
+                    <span>
+                      <span className="font-semibold">{titulo}</span>
+                      <span className="block text-[11px] leading-snug text-muted">
+                        {ajuda}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
               <textarea
                 className="field min-h-[72px]"
-                placeholder="Motivo (opcional)"
+                placeholder="Conte o que aconteceu (opcional)"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               />

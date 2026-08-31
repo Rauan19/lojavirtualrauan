@@ -53,6 +53,7 @@ describe('Etiqueta Melhor Envio (e2e)', () => {
         items: [{ productId: seed.product.id, quantity: 1 }],
         shippingAddress: ADDRESS,
         shippingMethod: 'Entrega padrão',
+        acceptTerms: true,
         shippingOptionId: 'padrao',
       })
       .expect(201);
@@ -94,6 +95,7 @@ describe('Etiqueta Melhor Envio (e2e)', () => {
         items: [{ productId: seed.product.id, quantity: 1 }],
         shippingAddress: ADDRESS,
         shippingOptionId: 'padrao',
+        acceptTerms: true,
       })
       .expect(201);
 

@@ -88,7 +88,13 @@ export class OrdersController {
     @Param('id') id: string,
     @Body() dto: RequestRefundDto,
   ) {
-    return this.ordersService.requestRefund(store.id, user.id, id, dto.reason);
+    return this.ordersService.requestRefund(
+      store.id,
+      user.id,
+      id,
+      dto.reasonType,
+      dto.reason,
+    );
   }
 
   @Get('admin/orders')
@@ -133,7 +139,15 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard, RolesGuard, TenantGuard)
   @Roles(Role.STORE_ADMIN, Role.SUPER_ADMIN)
   approveRefund(@CurrentStore() store: TenantStore, @Param('id') id: string) {
-    return this.paymentsService.refundOrder(store.id, id);
+    return this.paymentsService.approveRefund(store.id, id);
+  }
+
+  /** Lojista confirma que o produto voltou — libera o estorno. */
+  @Post('admin/orders/:id/refund/return-received')
+  @UseGuards(JwtAuthGuard, RolesGuard, TenantGuard)
+  @Roles(Role.STORE_ADMIN, Role.SUPER_ADMIN)
+  confirmReturn(@CurrentStore() store: TenantStore, @Param('id') id: string) {
+    return this.paymentsService.confirmReturnAndRefund(store.id, id);
   }
 
   @Post('admin/orders/:id/refund/reject')

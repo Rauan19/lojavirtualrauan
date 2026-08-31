@@ -34,6 +34,8 @@ type BillingMe = {
     lastPaidAt?: string | null;
     lastPaidAmount?: number | null;
     lastPaidPlanName?: string | null;
+    /** CARD (recorrência do MP) ou PIX (cobrança mensal gerada por nós). */
+    billingMethod?: string | null;
   };
   plans: Plan[];
   paymentsEnabled: boolean;
@@ -161,6 +163,18 @@ function DetailRow({
   );
 }
 
+type CobrancaPix = {
+  id: string;
+  amount: string | number;
+  planName: string;
+  copiaECola: string | null;
+  qrCodeBase64: string | null;
+  expiresAt: string | null;
+  expirada: boolean;
+  /** Outra requisição está emitindo agora — o QR chega na próxima consulta. */
+  gerando: boolean;
+};
+
 export function AdminPlanosInner() {
   const searchParams = useSearchParams();
   const { confirm, dialog: confirmDialog } = useConfirm();
@@ -172,6 +186,10 @@ export function AdminPlanosInner() {
   const [cancelling, setCancelling] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [checkoutLink, setCheckoutLink] = useState<string | null>(null);
+  const [metodo, setMetodo] = useState<'CARD' | 'PIX'>('CARD');
+  const [pix, setPix] = useState<CobrancaPix | null>(null);
+  const [pixBusy, setPixBusy] = useState(false);
+  const [pixCopiado, setPixCopiado] = useState(false);
   const [banner, setBanner] = useState<{
     tone: 'ok' | 'warn' | 'err';
     text: string;
@@ -204,6 +222,7 @@ export function AdminPlanosInner() {
   useEffect(() => {
     void load();
   }, [load]);
+
 
   useEffect(() => {
     const status = searchParams.get('status');
@@ -391,6 +410,65 @@ export function AdminPlanosInner() {
     }
   }
 
+  async function carregarPix() {
+    const user = getUser();
+    const token = getToken();
+    if (!user?.store?.slug || !token) return;
+    try {
+      const atual = await api<CobrancaPix | Record<string, never>>(
+        '/billing/pix/atual',
+        { token, storeSlug: user.store.slug },
+      );
+      setPix(atual && 'id' in atual ? (atual as CobrancaPix) : null);
+    } catch {
+      setPix(null);
+    }
+  }
+
+  /** Assina por Pix (ou gera a cobrança do ciclo, se já for assinante). */
+  async function gerarPix(assinando: boolean) {
+    const user = getUser();
+    const token = getToken();
+    if (!user?.store?.slug || !token) return;
+    if (assinando && !selected) return;
+
+    setPixBusy(true);
+    setError('');
+    setBanner(null);
+    try {
+      const cobranca = await api<CobrancaPix>(
+        assinando ? '/billing/subscribe/pix' : '/billing/pix/gerar',
+        {
+          method: 'POST',
+          token,
+          storeSlug: user.store.slug,
+          ...(assinando ? { body: { planId: selected!.id } } : {}),
+        },
+      );
+      setPix(cobranca);
+      setBanner({
+        tone: 'ok',
+        text: 'Cobrança Pix gerada. Pague pelo QR ou copia e cola.',
+      });
+      void load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erro ao gerar cobrança Pix');
+    } finally {
+      setPixBusy(false);
+    }
+  }
+
+  async function copiarPix() {
+    if (!pix?.copiaECola) return;
+    try {
+      await navigator.clipboard.writeText(pix.copiaECola);
+      setPixCopiado(true);
+      setTimeout(() => setPixCopiado(false), 2500);
+    } catch {
+      setError('Não foi possível copiar. Selecione o código e copie na mão.');
+    }
+  }
+
   async function cancelSubscription() {
     if (!store?.recurringActive) return;
     const due = store.planDueAt
@@ -439,6 +517,18 @@ export function AdminPlanosInner() {
   }
 
   const store = data?.store;
+
+  /*
+   * Se a loja já paga por Pix, o QR em aberto aparece assim que a tela abre —
+   * o lojista não precisa clicar em nada para reencontrar a cobrança do mês.
+   */
+  useEffect(() => {
+    if (store?.billingMethod === 'PIX') {
+      setMetodo('PIX');
+      void carregarPix();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store?.billingMethod]);
   const plans = data?.plans || [];
   const selected = plans.find((p) => p.id === selectedId) || null;
   const currentPlanId = store?.planName || null;
@@ -824,33 +914,93 @@ export function AdminPlanosInner() {
               </div>
             ) : null}
 
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                className="btn"
-                disabled={
-                  !selected ||
-                  !data?.paymentsEnabled ||
-                  payingId !== null ||
-                  Boolean(
-                    store?.recurringActive && store.planName === selected?.id,
-                  )
-                }
-                onClick={() => void startSubscriptionCheckout()}
-              >
-                {payingId
-                  ? 'Abrindo assinatura…'
-                  : store?.recurringActive && store.planName === selected?.id
-                    ? 'Já assinado'
-                    : selected
-                      ? 'Assinar no Mercado Pago'
-                      : 'Selecione um plano'}
-              </button>
-              <p className="max-w-md text-[11px] leading-snug text-muted">
-                Abre o checkout do Mercado Pago em nova aba para autorizar o
-                cartão. A cobrança renova todo mês automaticamente.
-              </p>
+            {/*
+              Cartão e Pix são mecanismos diferentes, não só um botão a mais:
+              no cartão o Mercado Pago cobra sozinho todo mês; em Pix a
+              recorrência não existe na API deles, então geramos uma cobrança
+              nova a cada ciclo e o lojista precisa pagar. A escolha diz isso
+              com todas as letras — descobrir depois seria péssimo.
+            */}
+            <div className="mb-4 grid gap-2 sm:grid-cols-2">
+              {(
+                [
+                  {
+                    id: 'CARD' as const,
+                    titulo: 'Cartão de crédito',
+                    desc: 'Renova sozinho todo mês. Você não precisa fazer nada.',
+                  },
+                  {
+                    id: 'PIX' as const,
+                    titulo: 'Pix',
+                    desc: 'Geramos a cobrança todo mês e avisamos. Você paga o QR a cada ciclo.',
+                  },
+                ]
+              ).map((op) => (
+                <label
+                  key={op.id}
+                  className={`flex cursor-pointer gap-2.5 rounded-xl border p-3 text-sm transition-colors ${
+                    metodo === op.id
+                      ? 'border-accent bg-accent/[0.04]'
+                      : 'border-black/10 hover:border-black/20'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="metodo-pagamento"
+                    className="mt-1 shrink-0"
+                    checked={metodo === op.id}
+                    onChange={() => setMetodo(op.id)}
+                  />
+                  <span>
+                    <span className="font-bold">{op.titulo}</span>
+                    <span className="mt-0.5 block text-[12px] leading-snug text-muted">
+                      {op.desc}
+                    </span>
+                  </span>
+                </label>
+              ))}
             </div>
+
+            {metodo === 'CARD' ? (
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  className="btn"
+                  disabled={
+                    !selected ||
+                    !data?.paymentsEnabled ||
+                    payingId !== null ||
+                    Boolean(
+                      store?.recurringActive && store.planName === selected?.id,
+                    )
+                  }
+                  onClick={() => void startSubscriptionCheckout()}
+                >
+                  {payingId
+                    ? 'Abrindo assinatura…'
+                    : store?.recurringActive && store.planName === selected?.id
+                      ? 'Já assinado'
+                      : selected
+                        ? 'Assinar no Mercado Pago'
+                        : 'Selecione um plano'}
+                </button>
+                <p className="max-w-md text-[11px] leading-snug text-muted">
+                  Abre o checkout do Mercado Pago em nova aba para autorizar o
+                  cartão. A cobrança renova todo mês automaticamente.
+                </p>
+              </div>
+            ) : (
+              <PixBox
+                pix={pix}
+                busy={pixBusy}
+                copiado={pixCopiado}
+                podeGerar={Boolean(selected) && Boolean(data?.paymentsEnabled)}
+                jaAssinante={store?.billingMethod === 'PIX'}
+                onGerar={() => void gerarPix(store?.billingMethod !== 'PIX')}
+                onCopiar={() => void copiarPix()}
+                onAtualizar={() => void carregarPix()}
+              />
+            )}
           </div>
         </div>
       </section>
@@ -918,6 +1068,122 @@ export function AdminPlanosInner() {
         </section>
       ) : null}
       {confirmDialog}
+    </div>
+  );
+}
+
+/**
+ * Bloco do Pix: QR, copia e cola e validade.
+ *
+ * A validade fica visível porque a cobrança expira — QR vencido no painel,
+ * sem aviso, é o lojista tentando pagar e o app do banco recusando sem
+ * explicar por quê.
+ */
+function PixBox({
+  pix,
+  busy,
+  copiado,
+  podeGerar,
+  jaAssinante,
+  onGerar,
+  onCopiar,
+  onAtualizar,
+}: {
+  pix: CobrancaPix | null;
+  busy: boolean;
+  copiado: boolean;
+  podeGerar: boolean;
+  jaAssinante: boolean;
+  onGerar: () => void;
+  onCopiar: () => void;
+  onAtualizar: () => void;
+}) {
+  const util = pix && !pix.expirada && pix.copiaECola;
+
+  if (!util) {
+    return (
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          className="btn"
+          disabled={busy || (!jaAssinante && !podeGerar)}
+          onClick={onGerar}
+        >
+          {busy
+            ? 'Gerando cobrança…'
+            : pix?.expirada
+              ? 'Gerar nova cobrança'
+              : jaAssinante
+                ? 'Gerar cobrança do mês'
+                : 'Assinar pagando com Pix'}
+        </button>
+        <p className="max-w-md text-[11px] leading-snug text-muted">
+          {pix?.expirada
+            ? 'A cobrança anterior expirou. Gere uma nova para pagar.'
+            : pix?.gerando
+              ? 'A cobrança está sendo emitida. Atualize em instantes.'
+              : 'Pix não tem débito automático: a cada mês geramos a cobrança e avisamos por e-mail.'}
+        </p>
+        {pix?.gerando ? (
+          <button type="button" className="btn btn-ghost" onClick={onAtualizar}>
+            Atualizar
+          </button>
+        ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-black/10 bg-[#fafafa] p-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        {pix.qrCodeBase64 ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`data:image/png;base64,${pix.qrCodeBase64}`}
+            alt="QR Code do Pix da mensalidade"
+            className="h-40 w-40 shrink-0 rounded-lg border border-black/10 bg-white p-1"
+          />
+        ) : null}
+
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold">
+            {money(Number(pix.amount))} · {pix.planName}
+          </p>
+          {pix.expiresAt ? (
+            <p className="mt-0.5 text-[12px] text-muted">
+              Pague até{' '}
+              {new Date(pix.expiresAt).toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: 'long',
+              })}
+            </p>
+          ) : null}
+
+          <p className="mt-3 text-[11px] font-bold uppercase tracking-wide text-muted">
+            Copia e cola
+          </p>
+          <p className="mt-1 max-h-16 overflow-y-auto break-all rounded-lg border border-black/10 bg-white p-2 font-mono text-[11px] leading-snug">
+            {pix.copiaECola}
+          </p>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button type="button" className="btn" onClick={onCopiar}>
+              {copiado ? 'Copiado!' : 'Copiar código'}
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={onAtualizar}
+            >
+              Já paguei — atualizar
+            </button>
+          </div>
+          <p className="mt-2 text-[11px] leading-snug text-muted">
+            O pagamento é confirmado sozinho em alguns segundos. Se demorar,
+            use o botão acima.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

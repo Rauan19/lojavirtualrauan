@@ -49,6 +49,7 @@ describe('Checkout (e2e)', () => {
         items: [{ productId: seed.product.id, quantity: 1 }],
         shippingAddress: ADDRESS,
         shippingMethod: 'Entrega padrão',
+        acceptTerms: true,
         shippingOptionId: 'padrao',
         ...body,
       });
@@ -62,6 +63,7 @@ describe('Checkout (e2e)', () => {
           items: [{ productId: seed.product.id, quantity: 1 }],
           shippingAddress: ADDRESS,
           shippingMethod: 'Entrega padrão',
+        acceptTerms: true,
           shippingOptionId: 'padrao',
         })
         .expect(401);
@@ -247,6 +249,72 @@ describe('Checkout (e2e)', () => {
         where: { id: seed.product.id },
       });
       expect(product.stock).toBe(3);
+    });
+
+    it('checkouts simultâneos recebem números de pedido distintos', async () => {
+      /*
+       * O número saía de count(*) + 1, e (storeId, orderNumber) é único: dois
+       * clientes fechando ao mesmo tempo, um tomava erro no último passo.
+       */
+      await prisma.product.update({
+        where: { id: seed.product.id },
+        data: { stock: 50 },
+      });
+
+      const respostas = await Promise.all(
+        Array.from({ length: 12 }, () => checkout({})),
+      );
+
+      expect(respostas.every((r) => r.status === 201)).toBe(true);
+      const numeros = respostas.map((r) => r.body.orderNumber);
+      expect(new Set(numeros).size).toBe(12);
+      expect([...numeros].sort()).toEqual(
+        Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(6, '0')),
+      );
+    });
+
+    it('não deixa marcar Reembolsado como troca de status', async () => {
+      const res = await checkout({}).expect(201);
+      await orders.fulfillPaidOrder(res.body.id, seed.store.id, 'mp-refund-1');
+
+      /*
+       * Marcar aqui gravava o pedido como estornado sem chamar o gateway: o
+       * cliente lia "Reembolsado" e o dinheiro ficava com o lojista — e o
+       * estorno de verdade passava a ser recusado por "já reembolsado".
+       */
+      await expect(
+        orders.updateStatus(seed.store.id, res.body.id, {
+          status: OrderStatus.REFUNDED,
+        }),
+      ).rejects.toThrow(/Estornar pedido/);
+
+      const order = await prisma.order.findUniqueOrThrow({
+        where: { id: res.body.id },
+      });
+      expect(order.status).toBe(OrderStatus.PAID);
+      expect(order.paymentStatus).toBe(PaymentStatus.APPROVED);
+      expect(order.refundedAt).toBeNull();
+      expect(order.refundVia).toBeNull();
+
+      // e o estoque não pode ter voltado para a prateleira
+      const product = await prisma.product.findUniqueOrThrow({
+        where: { id: seed.product.id },
+      });
+      expect(product.stock).toBe(4);
+    });
+
+    it('não deixa marcar Reembolsado em massa', async () => {
+      const res = await checkout({}).expect(201);
+      await orders.fulfillPaidOrder(res.body.id, seed.store.id, 'mp-refund-2');
+
+      await expect(
+        orders.bulkUpdateStatus(seed.store.id, [res.body.id], OrderStatus.REFUNDED),
+      ).rejects.toThrow(/Estorno não é troca de status/);
+
+      const order = await prisma.order.findUniqueOrThrow({
+        where: { id: res.body.id },
+      });
+      expect(order.paymentStatus).toBe(PaymentStatus.APPROVED);
     });
 
     it('estorno devolve o estoque uma única vez', async () => {

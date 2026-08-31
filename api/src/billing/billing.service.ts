@@ -6,12 +6,20 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PaymentStatus, Prisma, StoreStatus } from '@prisma/client';
+import { PaymentStatus, Prisma, Role, StoreStatus } from '@prisma/client';
 import { assertMercadoPagoKeyPair } from '../common/utils/mercadopago-keys';
 import { PrismaService } from '../prisma/prisma.service';
 import { SecretsService } from '../common/secrets/secrets.service';
 import { buildPlatformBillingWebhookUrl } from './billing-webhook-url';
+import { buildMercadoPagoWebhookUrl } from '../common/utils/mercadopago-webhook-url';
+import { analisarPublicUrl } from '../common/utils/public-url-check';
+import {
+  BILLING_METHOD,
+  documentoDoPagador,
+  validadeDaCobranca,
+} from './pix-billing-rules';
 import { UpdatePlatformMercadoPagoDto } from './dto/platform-mp.dto';
+import { BillingMailService } from '../mail/billing-mail.service';
 import { PlatformPlansService } from './platform-plans.service';
 import { type PlatformPlan } from './platform-plans';
 
@@ -56,6 +64,7 @@ export class BillingService {
     private readonly config: ConfigService,
     private readonly secrets: SecretsService,
     private readonly platformPlans: PlatformPlansService,
+    private readonly billingMail: BillingMailService,
   ) {}
 
   /** Planos ativos, do banco (editáveis pelo Super Admin em /super/planos). */
@@ -569,6 +578,63 @@ export class BillingService {
     return created.id;
   }
 
+  /**
+   * Diagnóstico da URL pública: confere o formato e, se estiver plausível,
+   * tenta alcançá-la de fato.
+   *
+   * O teste ativo existe porque o modo de falha mais comum não é PUBLIC_URL
+   * vazia — é a que aponta para um túnel de desenvolvimento que já caiu.
+   * Ela passa em qualquer validação de formato e não entrega nada.
+   */
+  async testarWebhookPublico() {
+    const diag = analisarPublicUrl(this.config.get<string>('PUBLIC_URL'));
+
+    if (!diag.ok) {
+      return {
+        ok: false,
+        motivo: diag.motivo,
+        detalhe: diag.detalhe,
+        webhookPedidos: null,
+        webhookMensalidade: null,
+      };
+    }
+
+    const webhookPedidos = buildMercadoPagoWebhookUrl(this.config);
+    const webhookMensalidade = buildPlatformBillingWebhookUrl(this.config);
+
+    let alcancavel = false;
+    let erro: string | null = null;
+    try {
+      const controller = new AbortController();
+      const prazo = setTimeout(() => controller.abort(), 8000);
+      const res = await fetch(`${diag.url}/api/public/health`, {
+        signal: controller.signal,
+      });
+      clearTimeout(prazo);
+      alcancavel = res.ok;
+      if (!res.ok) erro = `A URL respondeu HTTP ${res.status}.`;
+    } catch (e) {
+      erro =
+        e instanceof Error && e.name === 'AbortError'
+          ? 'A URL não respondeu em 8 segundos.'
+          : 'Não foi possível alcançar a URL pela internet.';
+    }
+
+    return {
+      ok: alcancavel,
+      motivo: alcancavel ? null : 'inalcancavel',
+      detalhe: alcancavel
+        ? diag.tunel
+          ? 'A URL responde, mas é um túnel de desenvolvimento: quando ele cair, os pagamentos param de ser confirmados sozinhos e nada avisa. Use um domínio fixo em produção.'
+          : 'A URL responde. Os webhooks conseguem chegar.'
+        : `${erro} Enquanto isso, o cliente paga e o pedido fica parado em "aguardando pagamento".`,
+      url: diag.url,
+      tunel: diag.tunel,
+      webhookPedidos,
+      webhookMensalidade,
+    };
+  }
+
   async testPlatformMp() {
     const { accessToken, publicKey } =
       await this.resolvePlatformMpCredentials();
@@ -630,6 +696,7 @@ export class BillingService {
         monthlyFee: true,
         mpPreapprovalId: true,
         mpSubscriptionStatus: true,
+        billingMethod: true,
       },
     });
     if (!store) throw new NotFoundException('Loja não encontrada');
@@ -653,6 +720,7 @@ export class BillingService {
           monthlyFee: true,
           mpPreapprovalId: true,
           mpSubscriptionStatus: true,
+          billingMethod: true,
         },
       });
     }
@@ -1154,6 +1222,270 @@ export class BillingService {
    * Lojista cancela a recorrência no MP.
    * Acesso à loja continua até planDueAt (período já pago).
    */
+  /*
+   * ---------------------------------------------------------------------
+   * Mensalidade por Pix
+   *
+   * Pix recorrente não existe na API do Mercado Pago — preapproval só faz
+   * débito no cartão. Aqui o ciclo é nosso: a cada mês criamos uma
+   * PlatformInvoice e uma cobrança Pix avulsa apontando para ela em
+   * external_reference. Quando o lojista paga, o webhook de pagamento cai no
+   * applyPayment, que já sabe achar a fatura e empurrar o vencimento — o
+   * mesmo caminho do cartão.
+   * ---------------------------------------------------------------------
+   */
+
+  private async emailDoLojista(storeId: string, sellerEmail?: string | null) {
+    const fiscal = (sellerEmail || '').trim().toLowerCase();
+    if (fiscal) return fiscal;
+
+    const admin = await this.prisma.user.findFirst({
+      where: { storeId, role: Role.STORE_ADMIN },
+      select: { email: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    return admin?.email?.trim().toLowerCase() || null;
+  }
+
+  /** Plano do lojista, com queda para o primeiro ativo se o dele sumiu. */
+  private async planoParaCobranca(planId?: string | null) {
+    const planos = await this.listPlans();
+    if (planos.length === 0) {
+      throw new NotFoundException('Nenhum plano ativo configurado');
+    }
+    const escolhido = planId
+      ? planos.find((p) => p.id === planId)
+      : undefined;
+    if (escolhido) return escolhido;
+
+    const padrao = planos.find((p) => p.id === 'mensal') || planos[0];
+    if (planId) {
+      this.logger.warn(
+        `Plano "${planId}" não existe mais; cobrando pelo plano ${padrao.id}`,
+      );
+    }
+    return padrao;
+  }
+
+  /** Lojista escolhe pagar por Pix e recebe a primeira cobrança. */
+  async subscribeWithPix(storeId: string, planId: string) {
+    const plan = await this.getPlan(planId);
+    await this.prisma.store.update({
+      where: { id: storeId },
+      data: { billingMethod: BILLING_METHOD.PIX },
+    });
+    return this.emitirCobrancaPix(storeId, plan.id);
+  }
+
+  /** Cobrança Pix em aberto da loja, para o painel mostrar o QR. */
+  async cobrancaPixAberta(storeId: string) {
+    const invoice = await this.prisma.platformInvoice.findFirst({
+      where: {
+        storeId,
+        method: BILLING_METHOD.PIX,
+        status: PaymentStatus.PENDING,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!invoice) return null;
+
+    const expirada =
+      invoice.pixExpiresAt != null &&
+      invoice.pixExpiresAt.getTime() <= Date.now();
+
+    return {
+      id: invoice.id,
+      amount: invoice.amount,
+      planName: invoice.planName,
+      dueAt: invoice.dueAt,
+      copiaECola: invoice.pixCopiaECola,
+      qrCodeBase64: invoice.pixQrCodeBase64,
+      expiresAt: invoice.pixExpiresAt,
+      expirada,
+      // outra requisição pode estar emitindo agora; o painel reconsulta
+      gerando: !invoice.pixCopiaECola,
+    };
+  }
+
+  /**
+   * Cria a fatura do ciclo e a cobrança Pix no Mercado Pago.
+   *
+   * Reaproveita uma fatura Pix pendente e ainda válida em vez de criar outra:
+   * duas cobranças abertas para o mesmo mês é o caminho para o lojista pagar
+   * duas vezes.
+   */
+  async emitirCobrancaPix(storeId: string, planId?: string) {
+    const store = await this.prisma.store.findUnique({
+      where: { id: storeId },
+      select: {
+        id: true,
+        name: true,
+        planName: true,
+        planDueAt: true,
+        sellerEmail: true,
+        sellerLegalName: true,
+        sellerDocType: true,
+        sellerDocument: true,
+      },
+    });
+    if (!store) throw new NotFoundException('Loja não encontrada');
+
+    /*
+     * O plano da loja pode não existir mais na tabela (nome legado, plano
+     * desativado). Cair no primeiro plano ativo é melhor que estourar: sem
+     * isso a cobrança do mês simplesmente não sai, em silêncio, e a loja usa
+     * a plataforma de graça até alguém reparar.
+     */
+    const plan = await this.planoParaCobranca(planId || store.planName);
+
+    const pagador = documentoDoPagador(
+      store.sellerDocType,
+      store.sellerDocument,
+    );
+    if (!pagador) {
+      throw new BadRequestException(
+        'Informe o CPF ou CNPJ da loja em Configurações antes de gerar a cobrança Pix — o Mercado Pago exige o documento do pagador.',
+      );
+    }
+
+    /*
+     * E-mail do pagador: o fiscal da loja, com queda para o do admin. Bloquear
+     * a cobrança por falta de um campo opcional deixaria a loja sem como
+     * pagar — e o admin sempre tem e-mail, é com ele que faz login.
+     */
+    const email = await this.emailDoLojista(storeId, store.sellerEmail);
+    if (!email) {
+      throw new BadRequestException(
+        'Informe o e-mail da loja em Configurações antes de gerar a cobrança Pix.',
+      );
+    }
+
+    const token = await this.platformAccessToken();
+    const expiraEm = validadeDaCobranca();
+
+    /*
+     * Checar-e-criar precisa ser atômico. Sem o lock, dois cliques no botão
+     * (ou o painel e a varredura ao mesmo tempo) passavam os dois pela
+     * verificação de "já existe cobrança aberta" e geravam dois QR do mesmo
+     * mês — e o lojista podia pagar os dois. O SELECT ... FOR UPDATE na linha
+     * da loja serializa por loja; o segundo espera e encontra a cobrança do
+     * primeiro.
+     */
+    const { invoice, jaExistia } = await this.prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT id FROM "Store" WHERE id = ${storeId} FOR UPDATE`;
+
+      const aberta = await tx.platformInvoice.findFirst({
+        where: {
+          storeId,
+          method: BILLING_METHOD.PIX,
+          status: PaymentStatus.PENDING,
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      // vale mesmo sem QR ainda: outra requisição pode estar emitindo agora
+      if (
+        aberta &&
+        (!aberta.pixExpiresAt || aberta.pixExpiresAt.getTime() > Date.now())
+      ) {
+        return { invoice: aberta, jaExistia: true };
+      }
+
+      const criada = await tx.platformInvoice.create({
+        data: {
+          storeId,
+          planId: plan.id,
+          planName: plan.name,
+          amount: new Prisma.Decimal(plan.amount),
+          periodDays: plan.periodDays,
+          status: PaymentStatus.PENDING,
+          method: BILLING_METHOD.PIX,
+          dueAt: store.planDueAt,
+          pixExpiresAt: expiraEm,
+        },
+      });
+      return { invoice: criada, jaExistia: false };
+    });
+
+    if (jaExistia) {
+      return this.cobrancaPixAberta(storeId);
+    }
+
+    const body = {
+      transaction_amount: Number(plan.amount),
+      description: `Mensalidade ${this.platformBrandName()} · Plano ${plan.name}`,
+      payment_method_id: 'pix',
+      // é por aqui que o webhook reencontra a fatura
+      external_reference: invoice.id,
+      date_of_expiration: expiraEm.toISOString(),
+      payer: {
+        email,
+        first_name: (store.sellerLegalName || store.name).slice(0, 60),
+        identification: pagador,
+      },
+      ...(buildPlatformBillingWebhookUrl(this.config)
+        ? { notification_url: buildPlatformBillingWebhookUrl(this.config) }
+        : {}),
+    };
+
+    const res = await fetch('https://api.mercadopago.com/v1/payments', {
+      method: 'POST',
+      headers: this.mpApiHeaders(token, { idempotencyKey: invoice.id }),
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      /*
+       * O corpo do erro do Mercado Pago devolve o payer de volta — e-mail e
+       * documento do lojista. Log de erro não é lugar para dado pessoal, então
+       * só o que ajuda a depurar sai daqui.
+       */
+      const motivo = await res
+        .json()
+        .then((j: { message?: string; error?: string }) =>
+          String(j?.message || j?.error || '').slice(0, 160),
+        )
+        .catch(() => '');
+      // fatura sem cobrança é lixo que bloquearia a próxima tentativa
+      await this.prisma.platformInvoice.delete({ where: { id: invoice.id } });
+      this.logger.error(
+        `Falha ao gerar Pix da mensalidade (store=${storeId}) HTTP ${res.status}${motivo ? `: ${motivo}` : ''}`,
+      );
+      throw new BadRequestException(
+        'Não foi possível gerar a cobrança Pix agora. Tente de novo em instantes.',
+      );
+    }
+
+    const pagamento = (await res.json()) as {
+      id?: number | string;
+      point_of_interaction?: {
+        transaction_data?: { qr_code?: string; qr_code_base64?: string };
+      };
+    };
+    const dados = pagamento.point_of_interaction?.transaction_data;
+
+    await this.prisma.platformInvoice.update({
+      where: { id: invoice.id },
+      data: {
+        mpPaymentId: pagamento.id ? String(pagamento.id) : undefined,
+        pixCopiaECola: dados?.qr_code ?? null,
+        pixQrCodeBase64: dados?.qr_code_base64 ?? null,
+      },
+    });
+
+    this.logger.log(
+      `Cobrança Pix da mensalidade criada (store=${storeId}, invoice=${invoice.id}, plano=${plan.id})`,
+    );
+
+    /*
+     * Sem esse aviso o lojista só descobre a cobrança se abrir o painel — e a
+     * loja seria suspensa por uma conta que ele nunca viu. Sem await: e-mail
+     * que falha não pode derrubar a cobrança já emitida.
+     */
+    void this.billingMail.notificar(invoice.id, 'pix_nova');
+
+    return this.cobrancaPixAberta(storeId);
+  }
+
   async cancelSubscription(storeId: string) {
     const store = await this.prisma.store.findUnique({
       where: { id: storeId },
@@ -1612,6 +1944,11 @@ export class BillingService {
         },
       });
     });
+
+    // confirma para o lojista, com o novo vencimento já calculado
+    if (opts.markPaid) {
+      void this.billingMail.notificar(invoice.id, 'paga');
+    }
   }
 
   /**

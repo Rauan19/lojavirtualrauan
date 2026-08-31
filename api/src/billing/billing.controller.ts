@@ -105,6 +105,14 @@ export class BillingController {
     return this.billingService.updatePlatformMp(dto);
   }
 
+  /** Diagnóstico da URL pública — sem ela nenhum webhook chega. */
+  @Get('platform/webhook-check')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  webhookCheck() {
+    return this.billingService.testarWebhookPublico();
+  }
+
   @Post('platform/mercadopago/test')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN)
@@ -160,6 +168,41 @@ export class BillingController {
       cardTokenId,
       user.email,
     );
+  }
+
+  /** Assinar pagando por Pix: define o método e já devolve a primeira cobrança. */
+  @Post('subscribe/pix')
+  @UseGuards(JwtAuthGuard, RolesGuard, TenantGuard)
+  @Roles(Role.STORE_ADMIN, Role.SUPER_ADMIN)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  subscribePix(
+    @CurrentStore() store: TenantStore,
+    @Body() body: { planId?: string },
+  ) {
+    return this.billingService.subscribeWithPix(
+      store.id,
+      body?.planId?.trim() || 'mensal',
+    );
+  }
+
+  /** QR em aberto, para o painel mostrar sem gerar cobrança nova. */
+  @Get('pix/atual')
+  @UseGuards(JwtAuthGuard, RolesGuard, TenantGuard)
+  @Roles(Role.STORE_ADMIN, Role.SUPER_ADMIN)
+  pixAtual(@CurrentStore() store: TenantStore) {
+    return this.billingService.cobrancaPixAberta(store.id);
+  }
+
+  /**
+   * Gera a cobrança do ciclo sob demanda. Serve para loja suspensa, que a
+   * varredura automática não cobra, e para quem deixou o QR expirar.
+   */
+  @Post('pix/gerar')
+  @UseGuards(JwtAuthGuard, RolesGuard, TenantGuard)
+  @Roles(Role.STORE_ADMIN, Role.SUPER_ADMIN)
+  @Throttle({ default: { limit: 6, ttl: 60_000 } })
+  gerarPix(@CurrentStore() store: TenantStore) {
+    return this.billingService.emitirCobrancaPix(store.id);
   }
 
   @Post('checkout')

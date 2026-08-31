@@ -25,7 +25,7 @@ type StoreAccess = {
 const navGroups: NavGroup[] = [
   {
     title: 'Visão geral',
-    items: [{ href: '/admin', label: 'Dashboard' }],
+    items: [{ href: '/admin', label: 'Painel' }],
   },
   {
     title: 'Catálogo',
@@ -41,6 +41,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: '/admin/orders', label: 'Pedidos', badgeKey: 'orders' },
       { href: '/admin/refunds', label: 'Reembolsos', badgeKey: 'refunds' },
+      { href: '/admin/customers', label: 'Clientes' },
       { href: '/admin/coupons', label: 'Cupons' },
     ],
   },

@@ -23,6 +23,14 @@ type Store = {
   primaryColor: string;
   accentColor: string;
   sellerPhone?: string | null;
+  storeFont?: string | null;
+  storeCardRatio?: string | null;
+  analyticsGaId?: string | null;
+  analyticsPixelId?: string | null;
+  sellerLegalName?: string | null;
+  sellerDocument?: string | null;
+  sellerCity?: string | null;
+  sellerState?: string | null;
   instagramUrl?: string | null;
   facebookUrl?: string | null;
   tiktokUrl?: string | null;
@@ -309,6 +317,14 @@ function ProductInner({
         homeHref={`/loja/${storeSlug}`}
         storeSlug={storeSlug}
         sellerPhone={store.sellerPhone}
+        storeFont={store.storeFont}
+        storeCardRatio={store.storeCardRatio}
+        analyticsGaId={store.analyticsGaId}
+        analyticsPixelId={store.analyticsPixelId}
+        legalName={store.sellerLegalName}
+        sellerDocument={store.sellerDocument}
+        sellerCity={store.sellerCity}
+        sellerState={store.sellerState}
         instagramUrl={store.instagramUrl}
         facebookUrl={store.facebookUrl}
         tiktokUrl={store.tiktokUrl}
@@ -672,7 +688,7 @@ function ProductInner({
           ) : null}
         </div>
       </StoreShell>
-      <CartDrawer checkoutHref={`/loja/${storeSlug}/checkout`} />
+      <CartDrawer checkoutHref={`/loja/${storeSlug}/checkout`} accentColor={store.accentColor} />
 
       {zoomOpen && currentUrl ? (
         <div
@@ -747,7 +763,7 @@ function RelatedCard({
   const img = mediaUrl(product.images[0]?.url);
   return (
     <Link href={`/loja/${storeSlug}/p/${product.slug || product.id}`} className="flex flex-col">
-      <div className="aspect-[3/4] overflow-hidden bg-[#f3f3f3]">
+      <div className="store-card-media overflow-hidden bg-[#f3f3f3]">
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={img} alt={product.name} className="h-full w-full object-cover" />

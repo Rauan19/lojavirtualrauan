@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { BrandLogo } from '@/components/BrandLogo';
+import { AuthShell } from '@/components/AuthShell';
 import { api, AuthUser } from '@/lib/api';
 import { getToken, getUser, saveSession } from '@/lib/auth';
 import { clearAllCustomerSessions } from '@/lib/customer-auth';
@@ -20,19 +20,10 @@ const STEPS: { id: Step; label: string }[] = [
 ];
 
 const perks = [
-  '14 dias grátis, sem cartão de crédito',
+  'Comece sem pagar nada',
   'Vitrine e painel prontos pra usar',
   'Comece a vender ainda hoje',
 ];
-
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 20 20" width="16" height="16" fill="none" aria-hidden className="mt-0.5 shrink-0">
-      <circle cx="10" cy="10" r="9" stroke="var(--accent)" strokeWidth="1.4" />
-      <path d="M6 10.2l2.4 2.4L14 7" stroke="var(--accent)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
 
 function formatDoc(value: string, type: DocType) {
   const d = value.replace(/\D/g, '').slice(0, type === 'CNPJ' ? 14 : 11);
@@ -195,44 +186,31 @@ export default function CriarContaPage() {
   }
 
   return (
-    <main className="grid min-h-screen md:grid-cols-2">
-      <section className="hidden flex-col justify-between bg-[#171a1f] p-10 text-white md:flex lg:p-14">
-        <div>
-          <Link href="/" className="inline-block">
-            <BrandLogo height={30} onDark />
-          </Link>
-          <h1 className="mt-12 max-w-[15ch] font-[family-name:var(--font-brand)] text-[2.4rem] font-800 leading-[1.08] lg:text-[2.75rem]">
-            Crie sua loja em minutos
-          </h1>
-          <p className="mt-4 max-w-[34ch] text-[15px] leading-relaxed text-white/70">
-            Cadastra produto, testa o checkout e decide o plano depois, lá
-            dentro do painel, quando quiser.
-          </p>
-          <ul className="mt-10 space-y-3.5">
-            {perks.map((perk) => (
-              <li key={perk} className="flex items-start gap-2.5 text-[14px] leading-snug text-white/85">
-                <CheckIcon />
-                {perk}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <p className="text-[13px] text-white/45">
+    <AuthShell
+      headline="Crie sua loja em minutos"
+      subhead="Cadastra produto, testa o checkout e decide o plano depois, lá dentro do painel, quando quiser."
+      perks={perks}
+      footNote={
+        <>
           Já tem loja?{' '}
-          <Link href="/login" className="font-semibold text-white underline-offset-4 hover:underline">
+          <Link
+            href="/login"
+            className="font-semibold text-accent underline-offset-4 hover:underline"
+          >
             Entrar na sua conta
           </Link>
-        </p>
-      </section>
-
-      <section className="flex items-center justify-center bg-[#f7f8fa] px-4 py-10 md:bg-white md:px-10">
-        <div className="w-full max-w-sm">
-          <Link href="/" className="inline-block md:hidden">
-            <BrandLogo height={26} />
-          </Link>
+        </>
+      }
+    >
+      <h2 className="font-[family-name:var(--font-brand)] text-[1.7rem] font-800 leading-tight tracking-tight text-[#171a1f]">
+        Criar minha loja
+      </h2>
+      <p className="mt-1.5 text-[15px] text-[#4a5560]">
+        Leva menos de 3 minutos. Sem cartão de crédito.
+      </p>
 
           {/* Indicador de etapas */}
-          <ol className="mt-6 mb-6 flex items-center gap-2 text-[11px] font-medium text-muted md:mt-0">
+      <ol className="mb-6 mt-7 flex items-center gap-2 text-[11px] font-medium text-[#4a5560]">
             {STEPS.map((s, i) => (
               <li key={s.id} className="flex flex-1 items-center gap-2 last:flex-none">
                 <span
@@ -263,7 +241,7 @@ export default function CriarContaPage() {
                 <div>
                   <label className="label">Nome da loja</label>
                   <input
-                    className="field"
+                    className="field h-11"
                     value={storeName}
                     onChange={(e) => setStoreName(e.target.value)}
                     placeholder="Ex.: Camisetas do João"
@@ -274,7 +252,7 @@ export default function CriarContaPage() {
                 <div>
                   <label className="label">Seu nome</label>
                   <input
-                    className="field"
+                    className="field h-11"
                     value={adminName}
                     onChange={(e) => setAdminName(e.target.value)}
                     autoComplete="name"
@@ -284,7 +262,7 @@ export default function CriarContaPage() {
                 <div>
                   <label className="label">E-mail</label>
                   <input
-                    className="field"
+                    className="field h-11"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -295,7 +273,7 @@ export default function CriarContaPage() {
                 <div>
                   <label className="label">Senha</label>
                   <input
-                    className="field"
+                    className="field h-11"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -339,7 +317,7 @@ export default function CriarContaPage() {
                 <div>
                   <label className="label">{docType}</label>
                   <input
-                    className="field"
+                    className="field h-11"
                     value={document}
                     onChange={(e) => setDocument(formatDoc(e.target.value, docType))}
                     placeholder={docType === 'CPF' ? '000.000.000-00' : '00.000.000/0000-00'}
@@ -351,7 +329,7 @@ export default function CriarContaPage() {
                 <div>
                   <label className="label">Telefone / WhatsApp</label>
                   <input
-                    className="field"
+                    className="field h-11"
                     value={phone}
                     onChange={(e) => setPhone(formatPhoneBr(e.target.value))}
                     placeholder="(11) 98888-7777"
@@ -372,7 +350,7 @@ export default function CriarContaPage() {
                 <div>
                   <label className="label">CEP</label>
                   <input
-                    className="field"
+                    className="field h-11"
                     value={zipCode}
                     onChange={(e) => setZipCode(formatCep(e.target.value))}
                     onBlur={(e) => onCepBlur(e.target.value)}
@@ -392,7 +370,7 @@ export default function CriarContaPage() {
                   <div className="col-span-2">
                     <label className="label">Rua</label>
                     <input
-                      className="field"
+                      className="field h-11"
                       value={street}
                       onChange={(e) => setStreet(e.target.value)}
                       autoComplete="address-line1"
@@ -402,7 +380,7 @@ export default function CriarContaPage() {
                   <div>
                     <label className="label">Número</label>
                     <input
-                      className="field"
+                      className="field h-11"
                       value={number}
                       onChange={(e) => setNumber(e.target.value)}
                       autoComplete="off"
@@ -413,7 +391,7 @@ export default function CriarContaPage() {
                 <div>
                   <label className="label">Complemento (opcional)</label>
                   <input
-                    className="field"
+                    className="field h-11"
                     value={complement}
                     onChange={(e) => setComplement(e.target.value)}
                     placeholder="Sala, bloco, referência..."
@@ -424,7 +402,7 @@ export default function CriarContaPage() {
                   <div className="col-span-2">
                     <label className="label">Bairro</label>
                     <input
-                      className="field"
+                      className="field h-11"
                       value={neighborhood}
                       onChange={(e) => setNeighborhood(e.target.value)}
                       autoComplete="off"
@@ -434,7 +412,7 @@ export default function CriarContaPage() {
                   <div>
                     <label className="label">UF</label>
                     <input
-                      className="field"
+                      className="field h-11"
                       value={state}
                       onChange={(e) => setState(e.target.value.toUpperCase().slice(0, 2))}
                       maxLength={2}
@@ -446,7 +424,7 @@ export default function CriarContaPage() {
                 <div>
                   <label className="label">Cidade</label>
                   <input
-                    className="field"
+                    className="field h-11"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     autoComplete="address-level2"
@@ -460,30 +438,31 @@ export default function CriarContaPage() {
 
             <div className="mt-5 flex items-center gap-2">
               {step > 1 ? (
-                <button type="button" onClick={goBack} className="btn btn-ghost">
+                <button type="button" onClick={goBack} className="btn btn-ghost py-3.5">
                   Voltar
                 </button>
               ) : null}
               {step < 3 ? (
-                <button type="button" onClick={goNext} className="btn btn-accent flex-1">
+                <button
+                  type="button"
+                  onClick={goNext}
+                  className="btn btn-accent btn-bag flex-1 py-3.5"
+                  style={{ '--bag-bg': '#fff' } as React.CSSProperties}
+                >
                   Continuar
                 </button>
               ) : (
-                <button className="btn btn-accent flex-1" disabled={loading}>
+                <button
+                  className="btn btn-accent btn-bag flex-1 py-3.5"
+                  style={{ '--bag-bg': '#fff' } as React.CSSProperties}
+                  disabled={loading}
+                >
                   {loading ? 'Criando sua loja...' : 'Criar minha loja grátis'}
                 </button>
               )}
             </div>
 
-            <p className="mt-4 text-center text-sm text-muted md:hidden">
-              Já tem loja?{' '}
-              <Link href="/login" className="font-semibold text-accent underline-offset-2 hover:underline">
-                Entrar
-              </Link>
-            </p>
           </form>
-        </div>
-      </section>
-    </main>
+    </AuthShell>
   );
 }

@@ -1,61 +1,54 @@
 import { BRAND } from '@/lib/brand';
 
+/*
+ * Duas versões do mesmo lockup:
+ * - wordmark (carrinho + "vendira"): padrão, é a que roda em tamanho pequeno.
+ *   A tagline embutida na arte fica ilegível abaixo de ~60px de altura.
+ * - completa (com "Loja Online • Pronta para Vender"): só onde a marca aparece
+ *   grande e sozinha.
+ *
+ * A arte já vem com fundo transparente, então serve tanto no claro quanto no
+ * escuro — turquesa e coral têm contraste nos dois. Só a tagline é escura, e
+ * por isso a versão completa não deve ir para fundo escuro.
+ */
+
+const ART = {
+  wordmark: { src: '/brand/vendira-wordmark.webp', ratio: 536 / 140 },
+  full: { src: '/brand/vendira-logo.webp', ratio: 765 / 200 },
+} as const;
+
 type BrandLogoProps = {
   className?: string;
   height?: number;
-  /** Versão clara pra fundo escuro */
+  /** Mantido por compatibilidade: a arte atual funciona nos dois fundos. */
   onDark?: boolean;
+  /** Inclui a tagline. Use só em tamanho grande (a partir de ~60px). */
+  withTagline?: boolean;
   priority?: boolean;
 };
 
 export function BrandLogo({
   className = '',
   height = 28,
-  onDark = false,
+  withTagline = false,
+  priority = false,
 }: BrandLogoProps) {
-  const width = Math.round(height * (220 / 48));
-  const ink = onDark ? '#ffffff' : '#171a1f';
-  const accent = '#e31c5f';
+  const art = withTagline ? ART.full : ART.wordmark;
+  const width = Math.round(height * art.ratio);
 
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 220 48"
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={art.src}
+      alt={BRAND.name}
       width={width}
       height={height}
       className={className}
-      role="img"
-      aria-label={BRAND.name}
-    >
-      <path
-        d="M8 8 L20 40 L32 8"
-        stroke={accent}
-        strokeWidth="6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      <path
-        d="M38 14 H52 V34 H38 V14Z"
-        stroke={accent}
-        strokeWidth="3.5"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      <path d="M38 22 H52" stroke={accent} strokeWidth="3.5" />
-      <text
-        x="64"
-        y="34"
-        fill={ink}
-        style={{
-          fontFamily: 'var(--font-brand), Syne, Arial Black, sans-serif',
-          fontSize: 30,
-          fontWeight: 800,
-          letterSpacing: '-0.04em',
-        }}
-      >
-        {BRAND.name}
-      </text>
-    </svg>
+      style={{ height, width: 'auto' }}
+      loading={priority ? 'eager' : 'lazy'}
+      // A logo do header é elemento de primeira dobra: sem isso o navegador
+      // atrasa o decode e a marca pisca na entrada.
+      decoding={priority ? 'sync' : 'async'}
+    />
   );
 }

@@ -52,9 +52,9 @@ export default function ContaEntrarPage() {
       title="Bem-vindo de volta"
       subtitle="Login do comprador nesta loja (não é o painel do dono)."
     >
-      <form onSubmit={onSubmit} className="space-y-3">
+      <form onSubmit={onSubmit} className="space-y-4">
         {error ? (
-          <p className="border border-accent/20 bg-accent/5 px-3 py-2 text-sm text-accent">
+          <p className="border border-accent/25 bg-accent/5 px-3 py-2.5 text-sm leading-snug text-accent">
             {error}
           </p>
         ) : null}
@@ -62,7 +62,7 @@ export default function ContaEntrarPage() {
         <div>
           <label className="label">E-mail</label>
           <input
-            className="field"
+            className="field h-11 text-[15px]"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -72,41 +72,48 @@ export default function ContaEntrarPage() {
           />
         </div>
 
-        <PasswordField
-          label="Senha"
-          value={password}
-          onChange={setPassword}
-          autoComplete="current-password"
-          minLength={6}
-          required
-        />
+        <div>
+          <div className="flex items-baseline justify-between">
+            <label className="label">Senha</label>
+            <Link
+              href={`/loja/${params.slug}/conta/esqueci-senha`}
+              className="text-[11px] font-semibold text-muted underline-offset-2 transition hover:text-ink hover:underline"
+            >
+              Esqueci a senha
+            </Link>
+          </div>
+          <PasswordField
+            label=""
+            value={password}
+            onChange={setPassword}
+            autoComplete="current-password"
+            minLength={6}
+            required
+          />
+        </div>
 
         <button
           type="submit"
-          className="btn btn-accent w-full"
+          className="btn btn-accent h-11 w-full text-[15px]"
           disabled={busy}
         >
           {busy ? 'Entrando...' : 'Entrar'}
         </button>
 
-        <p className="text-center text-sm text-muted">
-          <Link
-            href={`/loja/${params.slug}/conta/esqueci-senha`}
-            className="underline-offset-2 hover:underline"
-          >
-            Esqueci a senha
-          </Link>
-        </p>
+        <div className="flex items-center gap-3 pt-1">
+          <span className="h-px flex-1 bg-line" />
+          <span className="text-[11px] font-medium uppercase tracking-wider text-muted">
+            ou
+          </span>
+          <span className="h-px flex-1 bg-line" />
+        </div>
 
-        <p className="pt-1 text-center text-sm text-muted">
-          Ainda não tem conta?{' '}
-          <Link
-            href={`/loja/${params.slug}/conta/cadastro?next=${encodeURIComponent(next)}`}
-            className="font-semibold text-ink underline-offset-2 hover:underline"
-          >
-            Criar conta
-          </Link>
-        </p>
+        <Link
+          href={`/loja/${params.slug}/conta/cadastro?next=${encodeURIComponent(next)}`}
+          className="btn btn-ghost h-11 w-full text-[15px]"
+        >
+          Criar minha conta
+        </Link>
       </form>
     </StoreAuthShell>
   );

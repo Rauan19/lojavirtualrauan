@@ -19,6 +19,17 @@ type Store = {
   primaryColor: string;
   accentColor: string;
   sellerPhone?: string | null;
+  storeFont?: string | null;
+  storeCardRatio?: string | null;
+  analyticsGaId?: string | null;
+  analyticsPixelId?: string | null;
+  sellerLegalName?: string | null;
+  sellerDocument?: string | null;
+  sellerCity?: string | null;
+  sellerState?: string | null;
+  instagramUrl?: string | null;
+  facebookUrl?: string | null;
+  tiktokUrl?: string | null;
 };
 
 type Product = {
@@ -99,6 +110,17 @@ function FavoritosInner({ slug }: { slug: string }) {
         homeHref={`/loja/${slug}`}
         storeSlug={slug}
         sellerPhone={store.sellerPhone}
+        storeFont={store.storeFont}
+        storeCardRatio={store.storeCardRatio}
+        analyticsGaId={store.analyticsGaId}
+        analyticsPixelId={store.analyticsPixelId}
+        legalName={store.sellerLegalName}
+        sellerDocument={store.sellerDocument}
+        sellerCity={store.sellerCity}
+        sellerState={store.sellerState}
+        instagramUrl={store.instagramUrl}
+        facebookUrl={store.facebookUrl}
+        tiktokUrl={store.tiktokUrl}
         cartCount={cart.count}
         onOpenCart={() => cart.setOpen(true)}
       >
@@ -119,7 +141,7 @@ function FavoritosInner({ slug }: { slug: string }) {
                 const href = `/loja/${slug}/p/${p.slug || p.id}`;
                 return (
                   <article key={p.id} className="flex flex-col">
-                    <Link href={href} className="relative aspect-[3/4] overflow-hidden bg-[#f3f3f3]">
+                    <Link href={href} className="relative store-card-media overflow-hidden bg-[#f3f3f3]">
                       {img ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={img} alt={p.name} className="h-full w-full object-cover" />
@@ -141,7 +163,7 @@ function FavoritosInner({ slug }: { slug: string }) {
           )}
         </div>
       </StoreShell>
-      <CartDrawer checkoutHref={`/loja/${slug}/checkout`} />
+      <CartDrawer checkoutHref={`/loja/${slug}/checkout`} accentColor={store.accentColor} />
     </>
   );
 }

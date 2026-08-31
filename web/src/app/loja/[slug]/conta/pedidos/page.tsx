@@ -139,40 +139,6 @@ export default function MeusPedidosPage() {
     }
   }
 
-  async function requestRefund(order: Order) {
-    if (!token || !canRequestRefund(order)) return;
-    const ok = await confirm({
-      title: 'Pedir reembolso?',
-      message:
-        'A loja vai analisar sua solicitação. Se aprovar, o valor é estornado pelo Mercado Pago.',
-      confirmLabel: 'Pedir reembolso',
-    });
-    if (!ok) return;
-    setBusyId(order.id);
-    setError('');
-    setMessage('');
-    try {
-      const updated = await api<Order>(
-        `/storefront/orders/${order.id}/refund-request`,
-        {
-          method: 'POST',
-          token,
-          storeSlug: params.slug,
-          body: {},
-        },
-      );
-      setOrders((prev) =>
-        prev.map((o) => (o.id === order.id ? { ...o, ...updated } : o)),
-      );
-      setMessage(
-        `Reembolso do pedido #${order.orderNumber} enviado. Aguarde a loja analisar.`,
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao solicitar');
-    } finally {
-      setBusyId(null);
-    }
-  }
 
   useEffect(() => {
     if (!token) return;
@@ -402,14 +368,17 @@ export default function MeusPedidosPage() {
                         </button>
                       ) : null}
                       {canRequestRefund(order) ? (
-                        <button
-                          type="button"
-                          className="flex flex-1 items-center justify-center rounded border border-orange-600 bg-orange-500 px-3 py-2 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-60"
-                          disabled={busyId === order.id}
-                          onClick={() => void requestRefund(order)}
+                        /*
+                          Leva para a tela do pedido: o motivo precisa ser
+                          escolhido, porque define se o produto tem que voltar
+                          e se a loja pode recusar.
+                        */
+                        <Link
+                          href={`/loja/${params.slug}/conta/pedidos/${order.id}`}
+                          className="flex flex-1 items-center justify-center rounded border border-orange-600 bg-orange-500 px-3 py-2 text-sm font-semibold text-white hover:bg-orange-600"
                         >
-                          {busyId === order.id ? '...' : 'Pedir reembolso'}
-                        </button>
+                          Pedir reembolso
+                        </Link>
                       ) : null}
                       <button
                         type="button"

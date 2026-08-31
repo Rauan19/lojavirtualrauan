@@ -47,8 +47,8 @@ export function SiteHeader({ solid = false }: SiteHeaderProps) {
       >
         <div className="mx-auto flex h-14 max-w-[1080px] items-center justify-between px-4 md:h-16 md:px-6">
           <Link href="/" className="flex items-center" aria-label="Página inicial">
-            <BrandLogo height={26} className="md:hidden" />
-            <BrandLogo height={30} className="hidden md:block" />
+            <BrandLogo height={34} priority className="md:hidden" />
+            <BrandLogo height={40} priority className="hidden md:block" />
           </Link>
 
           <nav className="hidden items-center gap-6 text-[13px] font-medium md:flex">
@@ -78,7 +78,7 @@ export function SiteHeader({ solid = false }: SiteHeaderProps) {
       <div className={`drawer-backdrop ${open ? 'open' : ''}`} onClick={() => setOpen(false)} />
       <aside className={`drawer ${open ? 'open' : ''}`}>
         <div className="flex items-center justify-between border-b border-line px-4 py-3">
-          <BrandLogo height={24} />
+          <BrandLogo height={32} />
           <button type="button" className="icon-btn" aria-label="Fechar" onClick={() => setOpen(false)}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
