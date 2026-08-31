@@ -86,6 +86,15 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
   },
   robots: { index: true, follow: true },
+  /*
+   * Sem esta tag o Search Console nao valida a propriedade — e sem Search
+   * Console nao da para submeter o sitemap nem descobrir por qual busca a
+   * landing aparece. O codigo sai do proprio painel do Google, em
+   * "Verificacao por tag HTML". Vazio = a tag simplesmente nao e emitida.
+   */
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
+  },
 };
 
 export default function RootLayout({

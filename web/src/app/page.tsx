@@ -46,9 +46,57 @@ export default async function HomePage() {
   ]);
   const base = siteUrl();
 
+  const orgId = `${base}/#organization`;
+
+  /*
+   * Quem e a empresa e qual e o site. E daqui que o Google tira nome, logo e
+   * contato para ligar a marca aos resultados; antes existia so a ficha do
+   * produto (SoftwareApplication), sem dono declarado.
+   */
+  const identityJsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': orgId,
+        name: BRAND.name,
+        url: base,
+        logo: {
+          '@type': 'ImageObject',
+          url: `${base}/brand/vendira-logo.webp`,
+        },
+        ...(CONTACT.email || CONTACT.whatsapp
+          ? {
+              contactPoint: [
+                {
+                  '@type': 'ContactPoint',
+                  contactType: 'customer support',
+                  areaServed: 'BR',
+                  availableLanguage: 'Portuguese',
+                  ...(CONTACT.email ? { email: CONTACT.email } : {}),
+                  ...(CONTACT.whatsapp
+                    ? { telephone: `+${CONTACT.whatsapp}` }
+                    : {}),
+                },
+              ],
+            }
+          : {}),
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${base}/#website`,
+        url: base,
+        name: BRAND.name,
+        inLanguage: 'pt-BR',
+        publisher: { '@id': orgId },
+      },
+    ],
+  };
+
   const orgJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
+    publisher: { '@id': orgId },
     name: BRAND.name,
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
@@ -75,6 +123,13 @@ export default async function HomePage() {
 
   return (
     <main className="landing min-h-screen bg-[#f7f8fa] text-ink">
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(identityJsonLd).replace(/</g, '\\u003c'),
+        }}
+      />
       <script
         type="application/ld+json"
         // Conteúdo é JSON serializado por nós, não HTML de terceiro

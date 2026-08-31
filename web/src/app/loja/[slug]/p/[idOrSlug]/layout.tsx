@@ -120,8 +120,41 @@ export default async function ProductLayout({
       : {}),
   };
 
+  /*
+   * Trilha da busca: sem ela o Google mostra a URL crua sob o titulo. Com
+   * ela aparece "Loja > Produto", que e o que se ve nos concorrentes.
+   */
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: store.sellerTradeName?.trim() || store.name,
+        item: storeBaseUrl(store),
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: product.name,
+        item: url,
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbJsonLd).replace(
+            /</g,
+            '\\u003c',
+          ),
+        }}
+      />
       <script
         type="application/ld+json"
         // Conteúdo é JSON serializado por nós, não HTML do lojista

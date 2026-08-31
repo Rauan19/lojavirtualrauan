@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 
 /**
@@ -184,6 +185,49 @@ export function asProductList(
   if (!data) return [];
   if (Array.isArray(data)) return data;
   return data.items || [];
+}
+
+const POLICY_LABELS = {
+  termos: ['Termos de uso', 'Condicoes de venda, pagamento e entrega'],
+  privacidade: [
+    'Politica de privacidade',
+    'Como os dados pessoais do cliente sao tratados',
+  ],
+  trocas: ['Trocas e devolucoes', 'Prazos e condicoes para trocar ou devolver'],
+} as const;
+
+export type PolicyKind = keyof typeof POLICY_LABELS;
+
+/**
+ * As tres paginas de politica entram no sitemap de cada loja. Sem titulo
+ * proprio as tres herdavam o da vitrine: tres URLs com titulo e descricao
+ * identicos, que o Google le como conteudo duplicado.
+ */
+export async function policyMetadata(
+  slug: string,
+  kind: PolicyKind,
+): Promise<Metadata> {
+  const [label, summary] = POLICY_LABELS[kind];
+  const store = await getStore(slug);
+  if (!store) return { title: label };
+
+  const name = store.sellerTradeName?.trim() || store.name;
+  const description = `${summary} em ${name}.`;
+  const url = `${storeBaseUrl(store)}/politicas/${kind}`;
+
+  return {
+    title: label,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: 'website',
+      locale: 'pt_BR',
+      siteName: name,
+      title: `${label} - ${name}`,
+      description,
+      url,
+    },
+  };
 }
 
 /** Descrição curta e limpa para meta tag. */
