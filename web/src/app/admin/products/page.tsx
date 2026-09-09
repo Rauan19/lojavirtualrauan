@@ -137,6 +137,36 @@ function isColorAxis(axis: { key: string; label: string }) {
   return /cor|color|acabamento|tone|tom/.test(t);
 }
 
+/**
+ * Agrupa campos dentro de uma etapa do assistente.
+ *
+ * As etapas usavam `form-grid`, que só existe no CSS dentro de `.card` — no
+ * modal a classe não aplicava nada, então os campos empilhavam colados, sem
+ * grid e sem respiro. Aqui a grade é explícita e cada bloco tem um título que
+ * diz o que aquele punhado de campos resolve.
+ */
+function StepGroup({
+  title,
+  hint,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section>
+      <p className="text-[13px] font-bold text-ink">{title}</p>
+      {hint ? (
+        <p className="mt-1 max-w-[70ch] text-xs leading-relaxed text-muted">
+          {hint}
+        </p>
+      ) : null}
+      <div className="mt-3.5 grid gap-x-4 gap-y-4 md:grid-cols-2">{children}</div>
+    </section>
+  );
+}
+
 function FieldHint({ children }: { children: ReactNode }) {
   return <p className="mt-0.5 text-[11px] leading-snug text-muted">{children}</p>;
 }
@@ -278,6 +308,12 @@ export default function AdminProductsPage() {
   const [compareAt, setCompareAt] = useState('');
   const [installments, setInstallments] = useState('');
   const [stock, setStock] = useState('10');
+  /*
+   * Nos modos que cotam por transportadora a API passou a exigir peso e
+   * dimensoes. A tela precisa saber disso para marcar os campos como
+   * obrigatorios em vez de deixar o lojista descobrir no erro do salvar.
+   */
+  const [carrierShipping, setCarrierShipping] = useState(false);
   const [weightKg, setWeightKg] = useState('0.5');
   const [widthCm, setWidthCm] = useState('16');
   const [heightCm, setHeightCm] = useState('10');
@@ -339,6 +375,20 @@ export default function AdminProductsPage() {
     setTotalPages(data.totalPages || 1);
     setCategories(cats.filter((c) => c.active));
   }
+
+  useEffect(() => {
+    const { token, storeSlug } = auth();
+    if (!token) return;
+    api<{ freteModo?: string }>('/stores/me', { token, storeSlug })
+      .then((store) =>
+        setCarrierShipping(
+          ['melhor_envio', 'frenet', 'superfrete'].includes(
+            store.freteModo || '',
+          ),
+        ),
+      )
+      .catch(() => setCarrierShipping(false));
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q.trim()), 300);
@@ -675,6 +725,32 @@ export default function AdminProductsPage() {
     if (!Number.isFinite(priceNum) || priceNum < 0) {
       setError('Preço inválido');
       return;
+    }
+    /*
+     * Mesma regra da API. O assistente de criacao ja cobrava as medidas; a
+     * edicao nao, entao produto antigo continuava salvando sem elas.
+     */
+    if (carrierShipping) {
+      const faltando = (
+        [
+          [editForm.weightKg, 0.01, 'o peso (kg)'],
+          [editForm.widthCm, 1, 'a largura (cm)'],
+          [editForm.heightCm, 1, 'a altura (cm)'],
+          [editForm.lengthCm, 1, 'o comprimento (cm)'],
+        ] as const
+      ).filter(([value, min]) => {
+        const n = Number(value);
+        return !Number.isFinite(n) || n < min;
+      });
+
+      if (faltando.length) {
+        setError(
+          `Sua loja calcula frete por transportadora, então informe ${faltando
+            .map(([, , label]) => label)
+            .join(', ')}.`,
+        );
+        return;
+      }
     }
     setEditBusy(true);
     setError('');
@@ -1185,267 +1261,334 @@ export default function AdminProductsPage() {
                 className="min-h-0 flex-1 overflow-y-auto px-4 py-4"
               >
                 {createStep === 0 ? (
-                  <div className="form-grid md:grid-cols-2">
-                <div>
-                  <label className="label">Nome do produto</label>
-                  <input
-                    className="field"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    autoFocus
-                    placeholder="Ex.: Camiseta básica, Shampoo 500ml…"
-                  />
-                  <FieldHint>
-                    Como o cliente vai ver na loja e no pedido.
-                  </FieldHint>
-                </div>
-                <div>
-                  <label className="label">
-                    Categoria <span className="text-accent">*</span>
-                  </label>
-                  <select
-                    className="field"
-                    value={categoryId}
-                    onChange={(e) => setCategoryId(e.target.value)}
-                  >
-                    <option value="">Escolha onde o produto aparece…</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                  <FieldHint>
-                    Obrigatório. Organize a vitrine (ex.: Masculino, Promoções).
-                  </FieldHint>
-                </div>
-                <div>
-                  <label className="label">Marca (opcional)</label>
-                  <input
-                    className="field"
-                    value={brand}
-                    onChange={(e) => setBrand(e.target.value)}
-                    placeholder="Ex.: Nike, Natura…"
-                  />
-                  <FieldHint>Aparece junto ao nome na listagem.</FieldHint>
-                </div>
-                <div>
-                  <label className="label">Código do produto / código de barras</label>
-                  <input
-                    className="field"
-                    value={sku}
-                    onChange={(e) => setSku(e.target.value)}
-                    placeholder="Opcional · ex.: 7891234567890"
-                    autoComplete="off"
-                  />
-                  <FieldHint>
-                    Para controle interno e impressão do pedido. Não é
-                    obrigatório.
-                  </FieldHint>
-                </div>
-                <div>
-                  <label className="label">NCM — código fiscal (opcional)</label>
-                  <input
-                    className="field"
-                    value={ncm}
-                    onChange={(e) => setNcm(e.target.value)}
-                    placeholder="8 números · só se emitir nota"
-                    inputMode="numeric"
-                    maxLength={10}
-                  />
-                  <FieldHint>
-                    Usado em NFC-e / nota fiscal. Pode deixar em branco.
-                  </FieldHint>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="label">Descrição do produto</label>
-                  <textarea
-                    className="field min-h-[72px] resize-y"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Conte material, uso, cuidados… o cliente lê isso na página do produto."
-                  />
-                  <FieldHint>
-                    Texto livre. Ajuda o cliente a decidir a compra.
-                  </FieldHint>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="label">
-                    Fotos do produto (até {MAX_PHOTOS})
-                  </label>
-                  <input
-                    className="field"
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={(e) => {
-                      onPickFiles(e.target.files);
-                      e.target.value = '';
-                    }}
-                  />
-                  <FieldHint>
-                    A primeira foto é a capa na vitrine. JPG, PNG ou WebP.
-                  </FieldHint>
-                  {previews.length > 0 ? (
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {previews.map((p, i) => (
-                        <div
-                          key={`${p.name}-${i}`}
-                          className="relative h-16 w-16 overflow-hidden border border-line bg-[#eee]"
+                  <div className="flex flex-col gap-6">
+                    <StepGroup
+                      title="O essencial"
+                      hint="Só estes dois são obrigatórios para o produto existir."
+                    >
+                      <div className="md:col-span-2">
+                        <label className="label">Nome do produto</label>
+                        <input
+                          className="field"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          autoFocus
+                          placeholder="Ex.: Camiseta básica, Shampoo 500ml…"
+                        />
+                        <FieldHint>
+                          Como o cliente vai ver na loja e no pedido.
+                        </FieldHint>
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="label">
+                          Categoria <span className="text-accent">*</span>
+                        </label>
+                        <select
+                          className="field"
+                          value={categoryId}
+                          onChange={(e) => setCategoryId(e.target.value)}
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={p.url}
-                            alt=""
-                            className="h-full w-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            className="absolute right-0 top-0 bg-black/70 px-1 text-[10px] text-white"
-                            onClick={() =>
-                              setFiles((prev) =>
-                                prev.filter((_, idx) => idx !== i),
-                              )
-                            }
-                          >
-                            ×
-                          </button>
+                          <option value="">Escolha onde o produto aparece…</option>
+                          {categories.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </select>
+                        <FieldHint>
+                          Define onde ele aparece na vitrine (ex.: Masculino,
+                          Promoções).
+                        </FieldHint>
+                      </div>
+                    </StepGroup>
+
+                    <StepGroup
+                      title="Fotos"
+                      hint={`Até ${MAX_PHOTOS}. A primeira é a capa na vitrine — escolha a melhor.`}
+                    >
+                      <div className="md:col-span-2">
+                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                          {previews.map((p, i) => (
+                            <div
+                              key={`${p.name}-${i}`}
+                              className="group relative aspect-square overflow-hidden border border-line bg-[#eee]"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={p.url}
+                                alt=""
+                                className="h-full w-full object-cover"
+                              />
+                              {i === 0 ? (
+                                <span className="absolute bottom-0 left-0 right-0 bg-black/70 py-0.5 text-center text-[10px] font-bold text-white">
+                                  Capa
+                                </span>
+                              ) : null}
+                              <button
+                                type="button"
+                                className="absolute right-1 top-1 bg-black/70 px-1.5 text-[11px] font-bold text-white opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100"
+                                onClick={() =>
+                                  setFiles((prev) =>
+                                    prev.filter((_, idx) => idx !== i),
+                                  )
+                                }
+                                aria-label="Remover foto"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+
+                          {previews.length < MAX_PHOTOS ? (
+                            <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 border border-dashed border-line text-[11px] font-semibold text-muted transition hover:border-ink/30 hover:bg-[#fafafa]">
+                              <svg
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                aria-hidden
+                              >
+                                <path
+                                  d="M12 5.5v13M5.5 12h13"
+                                  stroke="currentColor"
+                                  strokeWidth="1.8"
+                                  strokeLinecap="round"
+                                />
+                              </svg>
+                              Adicionar
+                              <input
+                                type="file"
+                                className="sr-only"
+                                accept="image/*"
+                                multiple
+                                onChange={(e) => {
+                                  onPickFiles(e.target.files);
+                                  e.target.value = '';
+                                }}
+                              />
+                            </label>
+                          ) : null}
                         </div>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
+                        <FieldHint>
+                          JPG, PNG ou WebP. Produto sem foto vende muito menos.
+                        </FieldHint>
+                      </div>
+                    </StepGroup>
+
+                    <StepGroup
+                      title="Descrição"
+                      hint="É o que o cliente lê na página do produto antes de decidir."
+                    >
+                      <div className="md:col-span-2">
+                        <textarea
+                          className="field min-h-[110px] resize-y"
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          placeholder="Material, tamanho, como usar, cuidados de lavagem…"
+                        />
+                      </div>
+                    </StepGroup>
+
+                    {/*
+                      Marca, código e NCM não impedem ninguém de vender — só
+                      atrapalhavam no meio do caminho. Ficam fechados por
+                      padrão, abertos por quem precisa deles.
+                    */}
+                    <details className="border border-line">
+                      <summary className="cursor-pointer list-none px-3.5 py-3 text-[13px] font-bold text-ink transition hover:bg-[#fafafa]">
+                        Identificação e fiscal
+                        <span className="ml-1 font-normal text-muted">
+                          — marca, código de barras e NCM (opcionais)
+                        </span>
+                      </summary>
+                      <div className="grid gap-x-4 gap-y-4 border-t border-line px-3.5 py-4 md:grid-cols-2">
+                        <div>
+                          <label className="label">Marca</label>
+                          <input
+                            className="field"
+                            value={brand}
+                            onChange={(e) => setBrand(e.target.value)}
+                            placeholder="Ex.: Nike, Natura…"
+                          />
+                          <FieldHint>Aparece junto ao nome na listagem.</FieldHint>
+                        </div>
+                        <div>
+                          <label className="label">
+                            Código / código de barras
+                          </label>
+                          <input
+                            className="field"
+                            value={sku}
+                            onChange={(e) => setSku(e.target.value)}
+                            placeholder="Ex.: 7891234567890"
+                            autoComplete="off"
+                          />
+                          <FieldHint>
+                            Controle interno e impressão do pedido.
+                          </FieldHint>
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="label">NCM — código fiscal</label>
+                          <input
+                            className="field"
+                            value={ncm}
+                            onChange={(e) => setNcm(e.target.value)}
+                            placeholder="8 números"
+                            inputMode="numeric"
+                            maxLength={10}
+                          />
+                          <FieldHint>
+                            Só necessário se a loja emite NFC-e.
+                          </FieldHint>
+                        </div>
+                      </div>
+                    </details>
                   </div>
                 ) : null}
 
                 {createStep === 1 ? (
-                  <div className="form-grid md:grid-cols-2">
-                <div>
-                  <label className="label">Preço antigo / “de” (opcional)</label>
-                  <input
-                    className="field"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={compareAt}
-                    onChange={(e) => setCompareAt(e.target.value)}
-                    placeholder="Ex.: 99,90"
-                    autoFocus
-                  />
-                  <FieldHint>
-                    Valor riscado na vitrine para mostrar desconto. Deixe vazio
-                    se não houver promoção.
-                  </FieldHint>
-                </div>
-                <div>
-                  <label className="label">Preço de venda (R$)</label>
-                  <input
-                    className="field"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder="Ex.: 79,90"
-                  />
-                  <FieldHint>
-                    Quanto o cliente paga. Nas opções, cada variação pode ter
-                    preço próprio.
-                  </FieldHint>
-                </div>
-                <div>
-                  <label className="label">Parcelas sem juros (opcional)</label>
-                  <select
-                    className="field"
-                    value={installments}
-                    onChange={(e) => setInstallments(e.target.value)}
-                  >
-                    <option value="">Só com juros no cartão</option>
-                    {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
-                      <option key={n} value={n}>
-                        Até {n}x sem juros (depois com juros)
-                      </option>
-                    ))}
-                  </select>
-                  <FieldHint>
-                    Igual Mercado Livre: até Nx o cliente vê sem juros; acima
-                    disso (até 12x) aparece com juros. No checkout o cartão
-                    segue a mesma lógica.
-                  </FieldHint>
-                </div>
-                <div>
-                  <label className="label">Quantidade em estoque</label>
-                  <input
-                    className="field"
-                    type="number"
-                    value={stock}
-                    onChange={(e) => setStock(e.target.value)}
-                    disabled={useVariants && draftVariants.length > 0}
-                  />
-                  <FieldHint>
-                    Se na próxima etapa você criar opções (P/M/G…), o estoque
-                    será por opção — este campo fica só como referência.
-                  </FieldHint>
-                </div>
+                  <div className="flex flex-col gap-6">
+                    <StepGroup
+                      title="Quanto custa"
+                      hint="O preço de venda é o que o cliente paga. O “de” é só o valor riscado ao lado."
+                    >
+                      <div>
+                        <label className="label">Preço de venda (R$)</label>
+                        <input
+                          className="field"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={price}
+                          onChange={(e) => setPrice(e.target.value)}
+                          placeholder="Ex.: 79,90"
+                          autoFocus
+                        />
+                        <FieldHint>
+                          Nas opções, cada variação pode ter preço próprio.
+                        </FieldHint>
+                      </div>
+                      <div>
+                        <label className="label">Preço antigo / “de”</label>
+                        <input
+                          className="field"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={compareAt}
+                          onChange={(e) => setCompareAt(e.target.value)}
+                          placeholder="Opcional · ex.: 99,90"
+                        />
+                        <FieldHint>
+                          Precisa ser maior que o preço de venda. Vazio, não
+                          aparece desconto.
+                        </FieldHint>
+                      </div>
+                    </StepGroup>
+
+                    <StepGroup
+                      title="Parcelamento e estoque"
+                      hint="Como o cliente paga e quantas unidades você tem."
+                    >
+                      <div>
+                        <label className="label">Parcelas sem juros</label>
+                        <select
+                          className="field"
+                          value={installments}
+                          onChange={(e) => setInstallments(e.target.value)}
+                        >
+                          <option value="">Só com juros no cartão</option>
+                          {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
+                            <option key={n} value={n}>
+                              Até {n}x sem juros
+                            </option>
+                          ))}
+                        </select>
+                        <FieldHint>
+                          Até Nx o cliente vê sem juros; acima disso, até 12x com
+                          juros — mesma lógica do checkout.
+                        </FieldHint>
+                      </div>
+                      <div>
+                        <label className="label">Quantidade em estoque</label>
+                        <input
+                          className="field"
+                          type="number"
+                          value={stock}
+                          onChange={(e) => setStock(e.target.value)}
+                          disabled={useVariants && draftVariants.length > 0}
+                        />
+                        <FieldHint>
+                          Criando opções (P/M/G…) na última etapa, o estoque passa
+                          a ser por opção e este campo vira referência.
+                        </FieldHint>
+                      </div>
+                    </StepGroup>
                   </div>
                 ) : null}
 
                 {createStep === 2 ? (
-                  <div className="space-y-3">
-                <div>
-                  <p className="text-sm font-bold">Medidas da embalagem</p>
-                  <p className="mt-0.5 text-xs text-muted">
-                    Usadas para calcular frete. Informe o pacote fechado.
-                  </p>
-                </div>
-                <div className="form-grid md:grid-cols-2">
-                <div>
-                  <label className="label">Peso do pacote (kg)</label>
-                  <input
-                    className="field"
-                    type="number"
-                    step="0.001"
-                    min="0.01"
-                    value={weightKg}
-                    onChange={(e) => setWeightKg(e.target.value)}
-                    autoFocus
-                  />
-                  <FieldHint>Ex.: 0,3 = 300 gramas.</FieldHint>
-                </div>
-                <div>
-                  <label className="label">Largura do pacote (cm)</label>
-                  <input
-                    className="field"
-                    type="number"
-                    step="0.1"
-                    min="1"
-                    value={widthCm}
-                    onChange={(e) => setWidthCm(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="label">Altura do pacote (cm)</label>
-                  <input
-                    className="field"
-                    type="number"
-                    step="0.1"
-                    min="1"
-                    value={heightCm}
-                    onChange={(e) => setHeightCm(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="label">Comprimento do pacote (cm)</label>
-                  <input
-                    className="field"
-                    type="number"
-                    step="0.1"
-                    min="1"
-                    value={lengthCm}
-                    onChange={(e) => setLengthCm(e.target.value)}
-                  />
-                </div>
-                </div>
+                  <div className="flex flex-col gap-6">
+                    <StepGroup
+                      title="Medidas da embalagem"
+                      hint="Do pacote fechado, pronto para postar — não do produto nu. É com isso que o frete é cotado e a etiqueta é comprada."
+                    >
+                      <div>
+                        <label className="label">Peso (kg)</label>
+                        <input
+                          className="field"
+                          type="number"
+                          step="0.001"
+                          min="0.01"
+                          value={weightKg}
+                          onChange={(e) => setWeightKg(e.target.value)}
+                          autoFocus
+                        />
+                        <FieldHint>0,3 = 300 gramas.</FieldHint>
+                      </div>
+                      <div>
+                        <label className="label">Largura (cm)</label>
+                        <input
+                          className="field"
+                          type="number"
+                          step="0.1"
+                          min="1"
+                          value={widthCm}
+                          onChange={(e) => setWidthCm(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="label">Altura (cm)</label>
+                        <input
+                          className="field"
+                          type="number"
+                          step="0.1"
+                          min="1"
+                          value={heightCm}
+                          onChange={(e) => setHeightCm(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="label">Comprimento (cm)</label>
+                        <input
+                          className="field"
+                          type="number"
+                          step="0.1"
+                          min="1"
+                          value={lengthCm}
+                          onChange={(e) => setLengthCm(e.target.value)}
+                        />
+                      </div>
+                    </StepGroup>
+
+                    {carrierShipping ? (
+                      <p className="border border-line bg-[#fafafa] px-3.5 py-3 text-xs leading-relaxed text-muted">
+                        Sua loja cota frete por transportadora, então essas quatro
+                        medidas são obrigatórias. Medida errada aqui vira cobrança
+                        de diferença depois — a transportadora pesa o pacote na
+                        origem.
+                      </p>
+                    ) : null}
                   </div>
                 ) : null}
 
@@ -2010,8 +2153,21 @@ export default function AdminProductsPage() {
                   }
                 />
               </div>
+              {carrierShipping ? (
+                <p className="md:col-span-2 text-[13px] leading-relaxed text-muted">
+                  Sua loja calcula frete por transportadora, então peso e
+                  dimensões são obrigatórios. É com eles que a cotação do
+                  cliente e a etiqueta são feitas — sem a medida real, a
+                  transportadora cobra a diferença de você depois.
+                </p>
+              ) : null}
               <div>
-                <label className="label">Peso (kg)</label>
+                <label className="label">
+                  Peso (kg)
+                  {carrierShipping ? (
+                    <span className="text-accent"> *</span>
+                  ) : null}
+                </label>
                 <input
                   className="field"
                   type="number"
@@ -2024,7 +2180,12 @@ export default function AdminProductsPage() {
                 />
               </div>
               <div>
-                <label className="label">Largura (cm)</label>
+                <label className="label">
+                  Largura (cm)
+                  {carrierShipping ? (
+                    <span className="text-accent"> *</span>
+                  ) : null}
+                </label>
                 <input
                   className="field"
                   type="number"
@@ -2037,7 +2198,12 @@ export default function AdminProductsPage() {
                 />
               </div>
               <div>
-                <label className="label">Altura (cm)</label>
+                <label className="label">
+                  Altura (cm)
+                  {carrierShipping ? (
+                    <span className="text-accent"> *</span>
+                  ) : null}
+                </label>
                 <input
                   className="field"
                   type="number"
@@ -2050,7 +2216,12 @@ export default function AdminProductsPage() {
                 />
               </div>
               <div>
-                <label className="label">Comprimento (cm)</label>
+                <label className="label">
+                  Comprimento (cm)
+                  {carrierShipping ? (
+                    <span className="text-accent"> *</span>
+                  ) : null}
+                </label>
                 <input
                   className="field"
                   type="number"

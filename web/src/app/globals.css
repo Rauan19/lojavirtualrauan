@@ -249,6 +249,18 @@
 }
 
 .admin-page form.card,
+/*
+ * `.form-grid` só existia sob `.admin-page .card`. Usada fora de um card — nos
+ * modais de produto, por exemplo — a classe não aplicava nada: sem grid e sem
+ * respiro, os campos empilhavam colados e o `md:grid-cols-2` do Tailwind não
+ * tinha efeito nenhum, porque faltava o `display: grid`. Esta é a versão base;
+ * dentro do card a regra mais específica abaixo continua mandando.
+ */
+.form-grid {
+  display: grid;
+  gap: 1rem;
+}
+
 .admin-page .card.form-grid {
   display: grid;
   gap: 0.7rem;
