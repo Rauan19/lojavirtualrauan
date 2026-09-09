@@ -16,6 +16,9 @@ process.env.JWT_EXPIRES_IN = '1d';
 process.env.ENCRYPTION_KEY =
   '00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff';
 process.env.MP_WEBHOOK_SECRET = 'segredo-webhook-teste';
+// Sem isto o guard do webhook do Melhor Envio libera geral (modo dev), e o
+// teste de autenticação passaria sem provar nada.
+process.env.ME_WEBHOOK_SECRET = 'segredo-me-teste';
 process.env.PUBLIC_URL = 'https://api.teste.local';
 process.env.FRONTEND_URL = 'https://app.teste.local';
 process.env.SMTP_HOST = '';

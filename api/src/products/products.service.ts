@@ -1,3 +1,4 @@
+import { CARRIER_QUOTE_MODES } from '../shipping/packaging';
 import {
   BadRequestException,
   Injectable,
@@ -159,6 +160,7 @@ export class ProductsService {
       throw new BadRequestException('Selecione uma categoria');
     }
     await this.ensureCategory(storeId, dto.categoryId);
+    await this.assertShippingDimensions(storeId, dto);
 
     const imageUrls = (dto.imageUrls || []).slice(0, 6);
     if (dto.compareAt !== undefined && dto.compareAt <= dto.price) {
@@ -520,10 +522,26 @@ export class ProductsService {
   }
 
   async updateProduct(storeId: string, id: string, dto: UpdateProductDto) {
-    await this.ensureProduct(storeId, id);
+    const current = await this.ensureProduct(storeId, id);
     if (dto.categoryId) {
       await this.ensureCategory(storeId, dto.categoryId);
     }
+
+    /*
+     * O PATCH e parcial: quem edita so o preco nao manda as medidas. Vale o
+     * que vier no dto e, no que faltar, o que ja esta salvo — assim mexer no
+     * preco nao exige redigitar o pacote, mas limpar a medida (null) barra.
+     */
+    await this.assertShippingDimensions(storeId, {
+      weightKg:
+        dto.weightKg !== undefined ? dto.weightKg : Number(current.weightKg),
+      widthCm:
+        dto.widthCm !== undefined ? dto.widthCm : Number(current.widthCm),
+      heightCm:
+        dto.heightCm !== undefined ? dto.heightCm : Number(current.heightCm),
+      lengthCm:
+        dto.lengthCm !== undefined ? dto.lengthCm : Number(current.lengthCm),
+    });
 
     return this.prisma.$transaction(async (tx) => {
       if (dto.variants !== undefined) {
@@ -724,6 +742,49 @@ export class ProductsService {
     }
 
     return `${root}-${Date.now()}`;
+  }
+
+  /**
+   * Peso e dimensões são obrigatórios quando a loja cota frete por
+   * transportadora. Antes eram sempre opcionais na API: o formulário de
+   * criação até exigia, mas a edição não, e qualquer chamada direta passava.
+   * Produto sem medida cai no pacote padrão na cotação e na etiqueta — o
+   * cliente paga um frete estimado e a diferença volta cobrada do lojista.
+   */
+  private async assertShippingDimensions(
+    storeId: string,
+    values: {
+      weightKg?: number | null;
+      widthCm?: number | null;
+      heightCm?: number | null;
+      lengthCm?: number | null;
+    },
+  ) {
+    const store = await this.prisma.store.findUnique({
+      where: { id: storeId },
+      select: { freteModo: true },
+    });
+    if (!store || !CARRIER_QUOTE_MODES.has(store.freteModo)) return;
+
+    const fields = [
+      ['weightKg', 'peso (kg)'],
+      ['widthCm', 'largura (cm)'],
+      ['heightCm', 'altura (cm)'],
+      ['lengthCm', 'comprimento (cm)'],
+    ] as const;
+
+    const missing = fields
+      .filter(([field]) => {
+        const n = Number(values[field]);
+        return !Number.isFinite(n) || n <= 0;
+      })
+      .map(([, label]) => label);
+
+    if (missing.length) {
+      throw new BadRequestException(
+        `Sua loja calcula frete por transportadora, então o produto precisa de ${missing.join(', ')}. Sem a medida real o frete sai por estimativa e a transportadora cobra a diferença depois.`,
+      );
+    }
   }
 
   private async ensureProduct(storeId: string, id: string) {

@@ -1,3 +1,5 @@
+import { MelhorEnvioOauthService } from './melhor-envio-oauth.service';
+import { CARRIER_QUOTE_MODES } from './packaging';
 import {
   BadRequestException,
   Injectable,
@@ -21,13 +23,14 @@ import {
   type ShipOption,
 } from './providers/types';
 
-const API_MODES = new Set(['melhor_envio', 'frenet', 'superfrete']);
+
 
 @Injectable()
 export class ShippingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly secrets: SecretsService,
+    private readonly meOauth: MelhorEnvioOauthService,
   ) {}
 
   async quote(storeId: string, dto: QuoteShippingDto) {
@@ -70,7 +73,7 @@ export class ShippingService {
       };
     }
 
-    if (store.freteModo === 'manual' || !API_MODES.has(store.freteModo)) {
+    if (store.freteModo === 'manual' || !CARRIER_QUOTE_MODES.has(store.freteModo)) {
       const options = this.manualOptions(store.freteValorFixo).map((o) =>
         qualifiesFreeShipping
           ? {
@@ -110,12 +113,20 @@ export class ShippingService {
     const products = await this.resolveProducts(storeId, dto);
     const useSandbox = store.freteSandbox === true;
 
+    /*
+     * Loja conectada por OAuth tem token de 30 dias; aqui ele e renovado
+     * quando esta perto de vencer. Quem ainda usa token colado na mao recebe
+     * o proprio token de volta, sem mudanca de comportamento.
+     */
+    const token =
+      (await this.meOauth.ensureFreshToken(storeId)) || store.freteToken;
+
     const ctx: QuoteContext = {
       fromZip,
       toZip,
       subtotal: dto.subtotal,
       products,
-      token: store.freteToken.trim(),
+      token: token.trim(),
       sandbox: useSandbox,
       contactEmail: store.freteEmailContato?.trim() || undefined,
     };

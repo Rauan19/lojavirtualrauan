@@ -147,6 +147,17 @@ model Store {
   freteCidadeOrigem String?
   freteUfOrigem    String?
   freteSandbox     Boolean     @default(false)
+  /**
+   * OAuth do Melhor Envio. O access token vale 30 dias e o refresh, 45 — sem
+   * renovação automática o frete de cada loja para de cotar um mês depois de
+   * configurado, em silêncio. `freteToken` continua guardando o access token
+   * (cifrado, como quando era colado na mão); estes campos são o que permite
+   * renovar sozinho e mostrar a conta conectada em vez de um token cru.
+   */
+  freteRefreshToken   String?
+  freteTokenExpiresAt DateTime?
+  freteContaNome      String?
+  freteContaEmail     String?
   freteEmailContato String?
   /**
    * Gera e paga a etiqueta no Melhor Envio sozinho quando o pagamento é

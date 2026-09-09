@@ -1,3 +1,5 @@
+import { DEFAULT_PACKAGE } from '../packaging';
+
 export type ShipOption = {
   id: string;
   name: string;
@@ -33,10 +35,7 @@ export function defaultProducts(subtotal: number): QuoteProduct[] {
       id: '1',
       quantity: 1,
       price: Math.max(subtotal, 1),
-      weight: 0.5,
-      width: 16,
-      height: 10,
-      length: 20,
+      ...DEFAULT_PACKAGE,
     },
   ];
 }

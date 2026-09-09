@@ -1,3 +1,4 @@
+import { DEFAULT_PACKAGE } from '../packaging';
 import type { QuoteContext, ShipOption } from './types';
 
 /**
@@ -6,10 +7,10 @@ import type { QuoteContext, ShipOption } from './types';
  */
 export async function quoteFrenet(ctx: QuoteContext): Promise<ShipOption[]> {
   const items = ctx.products.map((p) => ({
-    Weight: Math.max(0.1, p.weight ?? 0.5),
-    Length: Math.max(1, p.length ?? 20),
-    Height: Math.max(1, p.height ?? 10),
-    Width: Math.max(1, p.width ?? 16),
+    Weight: Math.max(0.1, p.weight ?? DEFAULT_PACKAGE.weight),
+    Length: Math.max(1, p.length ?? DEFAULT_PACKAGE.length),
+    Height: Math.max(1, p.height ?? DEFAULT_PACKAGE.height),
+    Width: Math.max(1, p.width ?? DEFAULT_PACKAGE.width),
     Quantity: Math.max(1, p.quantity),
     Price: Number(p.price.toFixed(2)),
   }));

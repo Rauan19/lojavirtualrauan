@@ -11,6 +11,7 @@ import {
 const STORE_SECRET_FIELDS = [
   'mpAccessToken',
   'freteToken',
+  'freteRefreshToken',
   'nfeApiToken',
   'nfeCscToken',
 ] as const;

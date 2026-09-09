@@ -1,3 +1,4 @@
+import { DEFAULT_PACKAGE } from '../packaging';
 import type { QuoteContext, ShipOption } from './types';
 
 /**
@@ -20,10 +21,10 @@ export async function quoteMelhorEnvio(
   const email = ctx.contactEmail.trim();
   const products = ctx.products.map((p, i) => ({
     id: p.id || String(i + 1),
-    width: Math.max(1, p.width ?? 16),
-    height: Math.max(1, p.height ?? 10),
-    length: Math.max(1, p.length ?? 20),
-    weight: Math.max(0.1, p.weight ?? 0.5),
+    width: Math.max(1, p.width ?? DEFAULT_PACKAGE.width),
+    height: Math.max(1, p.height ?? DEFAULT_PACKAGE.height),
+    length: Math.max(1, p.length ?? DEFAULT_PACKAGE.length),
+    weight: Math.max(0.1, p.weight ?? DEFAULT_PACKAGE.weight),
     insurance_value: Number(p.price.toFixed(2)),
     quantity: Math.max(1, p.quantity),
   }));

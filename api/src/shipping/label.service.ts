@@ -7,6 +7,8 @@ import {
 import { PaymentStatus } from '@prisma/client';
 import { SecretsService } from '../common/secrets/secrets.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { MelhorEnvioOauthService } from './melhor-envio-oauth.service';
+import { consolidatePackage } from './packaging';
 import {
   createMelhorEnvioLabel,
   parseMelhorEnvioServiceId,
@@ -32,6 +34,7 @@ export class LabelService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly secrets: SecretsService,
+    private readonly meOauth: MelhorEnvioOauthService,
   ) {}
 
   /**
@@ -100,20 +103,30 @@ export class LabelService {
       unitaryValue: Number(item.unitPrice),
     }));
 
-    // Um volume por item, respeitando a quantidade — o ME cobra por volume
-    const volumes = order.items.flatMap((item) => {
-      const p = item.product;
-      const volume = {
-        height: Number(p?.heightCm ?? 0) || 5,
-        width: Number(p?.widthCm ?? 0) || 16,
-        length: Number(p?.lengthCm ?? 0) || 20,
-        weight: Number(p?.weightKg ?? 0) || 0.3,
-      };
-      return Array.from({ length: item.quantity }, () => volume);
-    });
+    /*
+     * Um volume só, com o pedido inteiro empilhado. Antes ia um volume por
+     * unidade: o cliente pagava o frete de UM envio cubado na cotação e o
+     * lojista comprava a etiqueta de N pacotes. A diferença saía do bolso
+     * dele em todo pedido com mais de um item.
+     */
+    const volumes = [
+      consolidatePackage(
+        order.items.map((item) => ({
+          quantity: item.quantity,
+          weight: item.product?.weightKg ?? null,
+          width: item.product?.widthCm ?? null,
+          height: item.product?.heightCm ?? null,
+          length: item.product?.lengthCm ?? null,
+        })),
+      ),
+    ];
+
+    // Mesma renovacao da cotacao: comprar etiqueta com token vencido falha 401
+    const token =
+      (await this.meOauth.ensureFreshToken(storeId)) || store.freteToken;
 
     const result = await createMelhorEnvioLabel({
-      token: store.freteToken.trim(),
+      token: token.trim(),
       sandbox: store.freteSandbox === true,
       contactEmail: store.freteEmailContato.trim(),
       serviceId,

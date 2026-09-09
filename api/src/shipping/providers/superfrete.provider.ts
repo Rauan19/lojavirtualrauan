@@ -1,3 +1,4 @@
+import { DEFAULT_PACKAGE } from '../packaging';
 import type { QuoteContext, ShipOption } from './types';
 
 /**
@@ -9,10 +10,10 @@ export async function quoteSuperFrete(
 ): Promise<ShipOption[]> {
   const products = ctx.products.map((p) => ({
     quantity: Math.max(1, p.quantity),
-    weight: Math.max(0.1, p.weight ?? 0.5),
-    height: Math.max(1, p.height ?? 10),
-    width: Math.max(1, p.width ?? 16),
-    length: Math.max(1, p.length ?? 20),
+    weight: Math.max(0.1, p.weight ?? DEFAULT_PACKAGE.weight),
+    height: Math.max(1, p.height ?? DEFAULT_PACKAGE.height),
+    width: Math.max(1, p.width ?? DEFAULT_PACKAGE.width),
+    length: Math.max(1, p.length ?? DEFAULT_PACKAGE.length),
   }));
 
   const res = await fetch('https://api.superfrete.com/api/v0/calculator', {

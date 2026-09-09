@@ -87,6 +87,31 @@ function party(p: LabelParty) {
   };
 }
 
+/*
+ * Conectar a conta no Melhor Envio não coloca saldo nela, e o passo `checkout`
+ * compra a etiqueta com esse saldo. Sem tradução, o lojista recebe o JSON cru
+ * deles e abre chamado achando que a integração quebrou — quando o que falta é
+ * dinheiro na conta.
+ */
+function mensagemDeErro(step: string, status: number, text: string) {
+  const cru = text ? `: ${text.slice(0, 250)}` : '';
+  const pista = text.toLowerCase();
+
+  if (
+    pista.includes('saldo') ||
+    pista.includes('insufficient') ||
+    pista.includes('balance')
+  ) {
+    return `Saldo insuficiente na sua conta do Melhor Envio para comprar esta etiqueta. Adicione saldo no painel deles e tente de novo${cru}`;
+  }
+
+  if (status === 401 || status === 403) {
+    return `O Melhor Envio recusou o acesso da loja (${status}). Reconecte a conta em Configurações → Frete${cru}`;
+  }
+
+  return `Melhor Envio (${step}) respondeu ${status}${cru}`;
+}
+
 async function call<T>(
   ctx: LabelContext,
   path: string,
@@ -106,11 +131,7 @@ async function call<T>(
 
   const text = await res.text();
   if (!res.ok) {
-    throw new Error(
-      `Melhor Envio (${step}) respondeu ${res.status}${
-        text ? `: ${text.slice(0, 250)}` : ''
-      }`,
-    );
+    throw new Error(mensagemDeErro(step, res.status, text));
   }
 
   try {

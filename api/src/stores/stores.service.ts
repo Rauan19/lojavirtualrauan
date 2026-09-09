@@ -990,6 +990,31 @@ export class StoresService {
 
   async updateShipping(storeId: string, dto: UpdateShippingConfigDto) {
     const data: Prisma.StoreUpdateInput = {};
+
+    /*
+     * Sandbox e produção são contas distintas no Melhor Envio: um token de um
+     * ambiente é recusado no outro. Sem isto, trocar o ambiente mantinha o
+     * token antigo e o painel seguia dizendo "conectado" enquanto toda cotação
+     * respondia 401 — e a renovação automática tentaria renovar um refresh do
+     * ambiente errado. Trocou de ambiente, desconecta: o lojista reconecta na
+     * conta certa.
+     */
+    const atual = await this.prisma.store.findUnique({
+      where: { id: storeId },
+      select: { freteSandbox: true },
+    });
+    const trocouAmbiente =
+      dto.freteSandbox !== undefined &&
+      atual != null &&
+      dto.freteSandbox !== atual.freteSandbox;
+
+    if (trocouAmbiente) {
+      data.freteToken = null;
+      data.freteRefreshToken = null;
+      data.freteTokenExpiresAt = null;
+      data.freteContaNome = null;
+      data.freteContaEmail = null;
+    }
     if (dto.freteModo !== undefined) data.freteModo = dto.freteModo;
     if (dto.freteValorFixo !== undefined) {
       data.freteValorFixo = new Prisma.Decimal(dto.freteValorFixo);
@@ -1003,6 +1028,11 @@ export class StoresService {
     if (dto.freteEtiquetaAuto !== undefined) {
       data.freteEtiquetaAuto = dto.freteEtiquetaAuto;
     }
+    /*
+     * Vem depois da limpeza acima de propósito: quem troca o ambiente e cola
+     * o token do ambiente novo na mesma gravação fica com o token novo, não
+     * com nada.
+     */
     if (dto.freteToken !== undefined) {
       // string vazia = não altera (evita apagar ao salvar sem digitar de novo)
       if (dto.freteToken && dto.freteToken.trim()) {
@@ -1121,10 +1151,17 @@ export class StoresService {
 
   /** Não devolve tokens sensíveis em texto claro. */
   private toAdminStore<T extends Record<string, unknown>>(store: T) {
-    const { mpAccessToken, freteToken, nfeApiToken, nfeCscToken, ...rest } =
-      store as T & {
+    const {
+      mpAccessToken,
+      freteToken,
+      freteRefreshToken,
+      nfeApiToken,
+      nfeCscToken,
+      ...rest
+    } = store as T & {
         mpAccessToken?: string | null;
         freteToken?: string | null;
+        freteRefreshToken?: string | null;
         nfeApiToken?: string | null;
         nfeCscToken?: string | null;
       };
@@ -1142,6 +1179,12 @@ export class StoresService {
         : null,
       mpPublicKeyHint: pk ? `${pk.slice(0, 18)}…` : null,
       freteTokenSet: Boolean(freteToken),
+      /*
+       * Conectado por OAuth e diferente de ter um token colado: so no
+       * primeiro caso existe renovacao automatica, e o painel precisa
+       * distinguir os dois para nao oferecer "Conectar" a quem ja conectou.
+       */
+      freteOauthConectado: Boolean(freteRefreshToken),
       nfeApiTokenSet: Boolean(nfeToken),
       nfeCscTokenSet: Boolean((nfeCscToken || '').trim()),
     };
