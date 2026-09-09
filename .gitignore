@@ -14,3 +14,8 @@ api/generated/
 api/.agents/
 api/.claude/
 api/.windsurf/
+
+# Config local do Claude Code: permissoes e hooks da maquina de quem roda,
+# com caminhos absolutos. O launch.json ao lado fica versionado — ele so diz
+# como subir o dev server, e serve para qualquer um.
+.claude/settings.local.json
