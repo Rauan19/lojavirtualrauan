@@ -1,3 +1,4 @@
+import { SweepRunner } from '../common/utils/sweep-runner';
 import {
   Injectable,
   Logger,
@@ -33,7 +34,16 @@ type MeWebhookBody = {
 @Injectable()
 export class TrackingService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(TrackingService.name);
-  private timer: ReturnType<typeof setInterval> | null = null;
+  private readonly sweeper = new SweepRunner(
+    () => this.syncOpenShipments(),
+    TRACK_SWEEP_MS,
+    (err) =>
+      this.logger.warn(
+        `Sincronizacao de rastreios falhou: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      ),
+  );
 
   constructor(
     private readonly prisma: PrismaService,
@@ -42,17 +52,11 @@ export class TrackingService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   onModuleInit() {
-    void this.syncOpenShipments();
-    this.timer = setInterval(() => {
-      void this.syncOpenShipments();
-    }, TRACK_SWEEP_MS);
+    this.sweeper.start();
   }
 
-  onModuleDestroy() {
-    if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
+  async onModuleDestroy() {
+    await this.sweeper.stop();
   }
 
   /** Webhook Melhor Envio — order.posted / order.delivered / etc. */

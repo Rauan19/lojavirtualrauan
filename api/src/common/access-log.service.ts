@@ -1,3 +1,4 @@
+import { SweepRunner } from './utils/sweep-runner';
 import {
   Injectable,
   Logger,
@@ -44,7 +45,20 @@ type Registro = {
 @Injectable()
 export class AccessLogService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(AccessLogService.name);
-  private timer: NodeJS.Timeout | null = null;
+
+  private readonly sweeper = new SweepRunner(
+    async () => {
+      await this.limparAntigos();
+      this.podarCache();
+    },
+    LIMPEZA_MS,
+    (err) =>
+      this.logger.warn(
+        `Limpeza de registros de acesso falhou: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      ),
+  );
 
   /** Chaves já gravadas na janela atual, para não bater no banco à toa. */
   private readonly recentes = new Map<string, number>();
@@ -52,16 +66,11 @@ export class AccessLogService implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly prisma: PrismaService) {}
 
   onModuleInit() {
-    void this.limparAntigos();
-    this.timer = setInterval(() => {
-      void this.limparAntigos();
-      this.podarCache();
-    }, LIMPEZA_MS);
+    this.sweeper.start();
   }
 
-  onModuleDestroy() {
-    if (this.timer) clearInterval(this.timer);
-    this.timer = null;
+  async onModuleDestroy() {
+    await this.sweeper.stop();
   }
 
   /** Nunca lança: log de acesso não pode derrubar a requisição do cliente. */

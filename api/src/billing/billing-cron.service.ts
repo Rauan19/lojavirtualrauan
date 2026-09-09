@@ -1,3 +1,4 @@
+import { SweepRunner } from '../common/utils/sweep-runner';
 import {
   Injectable,
   Logger,
@@ -30,7 +31,16 @@ const DEFAULT_GRACE_DAYS = 7;
 @Injectable()
 export class BillingCronService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(BillingCronService.name);
-  private timer: ReturnType<typeof setInterval> | null = null;
+  private readonly sweeper = new SweepRunner(
+    () => this.rodar(),
+    SWEEP_MS,
+    (err) =>
+      this.logger.error(
+        `Varredura de cobranca falhou: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      ),
+  );
 
   constructor(
     private readonly prisma: PrismaService,
@@ -40,10 +50,7 @@ export class BillingCronService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   onModuleInit() {
-    void this.rodar();
-    this.timer = setInterval(() => {
-      void this.rodar();
-    }, SWEEP_MS);
+    this.sweeper.start();
   }
 
   /*
@@ -168,11 +175,8 @@ export class BillingCronService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  onModuleDestroy() {
-    if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
+  async onModuleDestroy() {
+    await this.sweeper.stop();
   }
 
   private graceDays(): number {

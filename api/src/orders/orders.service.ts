@@ -1,3 +1,4 @@
+import { SweepRunner } from '../common/utils/sweep-runner';
 import {
   BadRequestException,
   Injectable,
@@ -37,7 +38,16 @@ const EXPIRE_SWEEP_MS = 5 * 60 * 1000;
 @Injectable()
 export class OrdersService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(OrdersService.name);
-  private expireTimer: ReturnType<typeof setInterval> | null = null;
+  private readonly sweeper = new SweepRunner(
+    () => this.expireAbandonedUnpaidOrders(),
+    EXPIRE_SWEEP_MS,
+    (err) =>
+      this.logger.warn(
+        `Expiracao de pedidos abandonados falhou: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      ),
+  );
 
   constructor(
     private readonly prisma: PrismaService,
@@ -50,17 +60,11 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   onModuleInit() {
-    void this.expireAbandonedUnpaidOrders();
-    this.expireTimer = setInterval(() => {
-      void this.expireAbandonedUnpaidOrders();
-    }, EXPIRE_SWEEP_MS);
+    this.sweeper.start();
   }
 
-  onModuleDestroy() {
-    if (this.expireTimer) {
-      clearInterval(this.expireTimer);
-      this.expireTimer = null;
-    }
+  async onModuleDestroy() {
+    await this.sweeper.stop();
   }
 
   /**
