@@ -553,6 +553,22 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
         },
       },
     },
+    /*
+     * O mesmo trajeto que o cliente ve. Quando ele escreve perguntando "cade
+     * meu pedido", o lojista precisa responder sem abrir o site da
+     * transportadora numa outra aba — e precisa ver exatamente o que o cliente
+     * esta vendo, senao a conversa comeca desencontrada.
+     */
+    shipmentEvents: {
+      orderBy: { ocorridoEm: 'desc' as const },
+      select: {
+        descricao: true,
+        cidade: true,
+        uf: true,
+        ocorridoEm: true,
+        origem: true,
+      },
+    },
   } satisfies Prisma.OrderInclude;
 
   async updateStatus(storeId: string, id: string, dto: UpdateOrderStatusDto) {
@@ -1070,6 +1086,21 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
         product: {
           select: { id: true, images: true, slug: true },
         },
+      },
+    },
+    /*
+     * A linha do tempo do envio. Sem ela o cliente so via o status da loja e um
+     * link para fora, justamente no momento em que ele mais quer saber onde a
+     * encomenda esta.
+     */
+    shipmentEvents: {
+      orderBy: { ocorridoEm: 'desc' },
+      select: {
+        descricao: true,
+        cidade: true,
+        uf: true,
+        ocorridoEm: true,
+        origem: true,
       },
     },
   } as const;

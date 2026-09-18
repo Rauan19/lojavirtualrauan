@@ -522,6 +522,7 @@ model Order {
   customer Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
   coupon   Coupon?     @relation(fields: [couponId], references: [id], onDelete: SetNull)
   items    OrderItem[]
+  shipmentEvents ShipmentEvent[]
   invoice  Invoice?
 
   @@unique([storeId, orderNumber])
@@ -719,4 +720,36 @@ model PlatformPlan {
   updatedAt   DateTime @updatedAt
 
   @@index([active, order])
+}
+
+/*
+ * Ocorrências do rastreio, para o cliente acompanhar sem sair da loja.
+ *
+ * O Melhor Envio só devolve marcos com data (postado, entregue) — não tem
+ * cidade nem trajeto. Quem tem o detalhe é a consulta dos Correios, que já era
+ * chamada aqui e tinha os eventos descartados. Guardamos as duas origens: os
+ * marcos garantem uma linha do tempo mínima para qualquer transportadora, e os
+ * eventos dos Correios preenchem o caminho quando existem.
+ */
+model ShipmentEvent {
+  id          String   @id @default(cuid())
+  orderId     String
+  /** correios | melhor_envio */
+  origem      String
+  /** Código do evento na origem (BDE, posted...). Usado para não duplicar. */
+  codigo      String
+  descricao   String
+  cidade      String?
+  uf          String?
+  ocorridoEm  DateTime
+  createdAt   DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  /*
+   * A consulta e o webhook repetem os mesmos eventos a cada rodada; sem isto a
+   * linha do tempo do cliente encheria de duplicata.
+   */
+  @@unique([orderId, origem, codigo, ocorridoEm])
+  @@index([orderId, ocorridoEm])
 }

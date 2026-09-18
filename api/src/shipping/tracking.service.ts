@@ -1,3 +1,8 @@
+import {
+  eventosDoMelhorEnvio,
+  eventosDosCorreios,
+  ShipmentEventsService,
+} from './shipment-events.service';
 import { SweepRunner } from '../common/utils/sweep-runner';
 import {
   Injectable,
@@ -49,6 +54,7 @@ export class TrackingService implements OnModuleInit, OnModuleDestroy {
     private readonly prisma: PrismaService,
     private readonly orderMail: OrderMailService,
     private readonly secrets: SecretsService,
+    private readonly eventos: ShipmentEventsService,
   ) {}
 
   onModuleInit() {
@@ -180,11 +186,15 @@ export class TrackingService implements OnModuleInit, OnModuleDestroy {
             !!store.freteSandbox,
             store.freteEmailContato || 'loja@example.com',
             order.carrierShipmentId,
+            order.id,
           );
         }
 
         if (!result && order.trackingCode) {
-          result = await this.checkCorreiosTracking(order.trackingCode);
+          result = await this.checkCorreiosTracking(
+            order.trackingCode,
+            order.id,
+          );
         }
 
         if (result === 'DELIVERED') {
@@ -310,6 +320,7 @@ export class TrackingService implements OnModuleInit, OnModuleDestroy {
     sandbox: boolean,
     email: string,
     shipmentId: string,
+    orderId?: string,
   ): Promise<'SHIPPED' | 'DELIVERED' | null> {
     const base = sandbox
       ? 'https://sandbox.melhorenvio.com.br'
@@ -324,6 +335,12 @@ export class TrackingService implements OnModuleInit, OnModuleDestroy {
       });
       if (!res.ok) return null;
       const data = (await res.json()) as { status?: string };
+
+      // Os marcos viram linha do tempo mesmo quando o status nao mudou.
+      if (orderId) {
+        await this.eventos.registrar(orderId, eventosDoMelhorEnvio(data));
+      }
+
       const st = String(data.status || '').toLowerCase();
       if (st === 'delivered') return 'DELIVERED';
       if (
@@ -346,6 +363,7 @@ export class TrackingService implements OnModuleInit, OnModuleDestroy {
    */
   private async checkCorreiosTracking(
     code: string,
+    orderId?: string,
   ): Promise<'SHIPPED' | 'DELIVERED' | null> {
     const cleaned = code.trim().toUpperCase();
     if (cleaned.length < 8) return null;
@@ -364,6 +382,15 @@ export class TrackingService implements OnModuleInit, OnModuleDestroy {
       };
       const eventos = data.objetos?.[0]?.eventos || [];
       if (!eventos.length) return null;
+
+      /*
+       * E aqui que mora o trajeto com cidade — a unica fonte que temos dele.
+       * Antes esta resposta era lida so para decidir "enviado ou entregue" e
+       * descartada em seguida.
+       */
+      if (orderId) {
+        await this.eventos.registrar(orderId, eventosDosCorreios(data));
+      }
       const text = eventos
         .map((e) => `${e.codigo || ''} ${e.descricao || ''}`.toLowerCase())
         .join(' | ');

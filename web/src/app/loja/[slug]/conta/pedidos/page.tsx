@@ -43,6 +43,13 @@ type Order = {
   updatedAt?: string;
   trackingCode?: string | null;
   trackingUrl?: string | null;
+  shipmentEvents?: Array<{
+    descricao: string;
+    cidade?: string | null;
+    uf?: string | null;
+    ocorridoEm: string;
+    origem: string;
+  }> | null;
   shippingMethod?: string | null;
   refundStatus?: string | null;
   items: OrderItem[];

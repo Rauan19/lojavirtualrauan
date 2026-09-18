@@ -16,8 +16,24 @@ type Props = {
     trackingCode?: string | null;
     trackingUrl?: string | null;
     shippingMethod?: string | null;
+    /*
+     * Trajeto real da transportadora. Os passos acima sao os marcos da loja
+     * (pago, enviado, entregue); isto aqui e onde a encomenda esteve, com
+     * cidade — o que o cliente saia da loja para ver no site da transportadora.
+     */
+    shipmentEvents?: Array<{
+      descricao: string;
+      cidade?: string | null;
+      uf?: string | null;
+      ocorridoEm: string;
+      origem: string;
+    }> | null;
   };
 };
+
+function local(evento: { cidade?: string | null; uf?: string | null }) {
+  return [evento.cidade, evento.uf].filter(Boolean).join('/');
+}
 
 export function OrderTrackingPanel({ order }: Props) {
   const steps = buildTrackingSteps(order);
@@ -26,6 +42,7 @@ export function OrderTrackingPanel({ order }: Props) {
     order.trackingUrl,
     order.shippingMethod,
   );
+  const eventos = order.shipmentEvents || [];
   const paid =
     order.paymentStatus === 'APPROVED' ||
     ['PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED'].includes(order.status);
@@ -65,6 +82,42 @@ export function OrderTrackingPanel({ order }: Props) {
         ))}
       </ol>
 
+      {eventos.length > 0 ? (
+        <div className="mt-4 border-t border-line pt-3">
+          <p className="text-[11px] font-bold uppercase text-muted">
+            Trajeto da encomenda
+          </p>
+          <ol className="mt-2 space-y-2.5">
+            {eventos.map((evento, i) => (
+              <li
+                key={`${evento.ocorridoEm}-${i}`}
+                className="flex gap-2.5 text-sm"
+              >
+                <span
+                  className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
+                    i === 0 ? 'bg-emerald-500' : 'bg-zinc-300'
+                  }`}
+                  aria-hidden
+                />
+                <span className="min-w-0">
+                  <span
+                    className={`block leading-snug ${
+                      i === 0 ? 'font-semibold' : ''
+                    }`}
+                  >
+                    {evento.descricao}
+                  </span>
+                  <span className="mt-0.5 block text-[11px] text-muted">
+                    {new Date(evento.ocorridoEm).toLocaleString('pt-BR')}
+                    {local(evento) ? ` · ${local(evento)}` : ''}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      ) : null}
+
       {paid && order.trackingCode ? (
         <div className="mt-3 rounded border border-line bg-[#fafafa] p-3">
           <p className="text-[11px] font-bold uppercase text-muted">
@@ -84,7 +137,9 @@ export function OrderTrackingPanel({ order }: Props) {
             </a>
           ) : null}
           <p className="mt-2 text-[11px] text-muted">
-            Abre o rastreio da transportadora — igual Shopee / Mercado Livre.
+            {eventos.length > 0
+              ? 'O trajeto acima é atualizado sozinho. Este link abre o rastreio completo na transportadora.'
+              : 'Abre o rastreio da transportadora — igual Shopee / Mercado Livre.'}
           </p>
         </div>
       ) : paid ? (
