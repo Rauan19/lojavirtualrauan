@@ -675,11 +675,17 @@ function SettingsRow({
 function SettingsModal({
   title,
   hint,
+  erro,
   onClose,
   children,
 }: {
   title: string;
   hint?: string;
+  /*
+   * A mensagem da pagina fica atras do modal. Sem um lugar aqui dentro, quem
+   * salvava e falhava nao via nada — o modal so ficava aberto em silencio.
+   */
+  erro?: string;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -713,6 +719,11 @@ function SettingsModal({
             </svg>
           </button>
         </div>
+        {erro ? (
+          <p className="shrink-0 border-b border-accent/30 bg-[#fff5f6] px-4 py-2.5 text-sm text-accent">
+            {erro}
+          </p>
+        ) : null}
         {children}
       </div>
     </div>
@@ -904,14 +915,14 @@ export default function AdminSettingsPage() {
     });
   }
 
-  async function saveProfile(e: FormEvent) {
+  async function saveProfile(e: FormEvent): Promise<boolean> {
     e.preventDefault();
-    if (!store) return;
+    if (!store) return false;
     setError('');
     setMessage('');
     try {
       const { token, storeSlug } = auth();
-      if (!token) return;
+      if (!token) return false;
       const updated = await api<Store>('/stores/me/profile', {
         method: 'PATCH',
         token,
@@ -946,17 +957,19 @@ export default function AdminSettingsPage() {
       setMessage('Perfil da loja salvo');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao salvar perfil');
+      return false;
     }
+    return true;
   }
 
-  async function savePolicies(e: FormEvent) {
+  async function savePolicies(e: FormEvent): Promise<boolean> {
     e.preventDefault();
-    if (!store) return;
+    if (!store) return false;
     setError('');
     setMessage('');
     try {
       const { token, storeSlug } = auth();
-      if (!token) return;
+      if (!token) return false;
       const updated = await api<Store>('/stores/me/policies', {
         method: 'PATCH',
         token,
@@ -974,17 +987,19 @@ export default function AdminSettingsPage() {
       setMessage('Políticas salvas');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao salvar políticas');
+      return false;
     }
+    return true;
   }
 
-  async function saveNfe(e: FormEvent) {
+  async function saveNfe(e: FormEvent): Promise<boolean> {
     e.preventDefault();
-    if (!store) return;
+    if (!store) return false;
     setError('');
     setMessage('');
     try {
       const { token, storeSlug } = auth();
-      if (!token) return;
+      if (!token) return false;
       const body: Record<string, unknown> = {
         nfeEnabled: !!store.nfeEnabled,
         nfeEnvironment: store.nfeEnvironment || 'homologacao',
@@ -1008,12 +1023,14 @@ export default function AdminSettingsPage() {
       setMessage('Configuração de NFC-e salva');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao salvar NFC-e');
+      return false;
     }
+    return true;
   }
 
-  async function saveBranding(e: FormEvent) {
+  async function saveBranding(e: FormEvent): Promise<boolean> {
     e.preventDefault();
-    if (!store) return;
+    if (!store) return false;
     try {
       const updated = await patchBranding({
         name: store.name,
@@ -1042,7 +1059,9 @@ export default function AdminSettingsPage() {
       setMessage('Identidade salva');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro');
+      return false;
     }
+    return true;
   }
 
   async function uploadLogo(file: File) {
@@ -1149,20 +1168,20 @@ export default function AdminSettingsPage() {
     }
   }
 
-  async function saveMp(e: FormEvent) {
+  async function saveMp(e: FormEvent): Promise<boolean> {
     e.preventDefault();
-    if (!store) return;
+    if (!store) return false;
     const { token, storeSlug } = auth();
     setError('');
     setMessage('');
     try {
       if (!store.mpAccessTokenSet && !mpAccessToken.trim()) {
         setError('Cole o Access Token do Mercado Pago para salvar.');
-        return;
+        return false;
       }
       if (!mpPublicKey.trim() && !store.mpPublicKey) {
         setError('Cole a Public Key do Mercado Pago para salvar.');
-        return;
+        return false;
       }
       const updated = await api<Store>('/stores/me/mercadopago', {
         method: 'PATCH',
@@ -1189,7 +1208,9 @@ export default function AdminSettingsPage() {
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro');
+      return false;
     }
+    return true;
   }
 
   async function testMp() {
@@ -1248,7 +1269,7 @@ export default function AdminSettingsPage() {
     }
   }
 
-  async function saveShipping(e?: FormEvent) {
+  async function saveShipping(e?: FormEvent): Promise<boolean> {
     e?.preventDefault();
     if (!store) return false;
     const { token, storeSlug } = auth();
@@ -1303,7 +1324,9 @@ export default function AdminSettingsPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro');
       return false;
+      return false;
     }
+    return true;
   }
 
   async function saveOriginFromModal(e: FormEvent) {
@@ -1670,9 +1693,15 @@ export default function AdminSettingsPage() {
         <SettingsModal
           title={IDENT_MODAL_TITULO[identModal]}
           hint={IDENT_MODAL_HINT[identModal]}
-          onClose={() => setIdentModal(null)}
+          erro={error}
+            onClose={() => setIdentModal(null)}
         >
-          <form onSubmit={saveBranding} className="flex min-h-0 flex-1 flex-col">
+          <form
+            onSubmit={async (e) => {
+              if (await saveBranding(e)) setIdentModal(null);
+            }}
+            className="flex min-h-0 flex-1 flex-col"
+          >
             <div className="grid min-h-0 flex-1 gap-x-4 gap-y-4 overflow-y-auto px-4 py-4 md:grid-cols-2">
               {identModal === 'nome' ? (
                 <>
@@ -2176,11 +2205,12 @@ export default function AdminSettingsPage() {
         <SettingsModal
           title={FRETE_MODAL_TITULO[freteModal]}
           hint={FRETE_MODAL_HINT[freteModal]}
-          onClose={() => setFreteModal(null)}
+          erro={error}
+            onClose={() => setFreteModal(null)}
         >
           <form
-            onSubmit={(e) => {
-              void saveShipping(e);
+            onSubmit={async (e) => {
+              if (await saveShipping(e)) setFreteModal(null);
             }}
             className="flex min-h-0 flex-1 flex-col"
           >
@@ -2703,9 +2733,15 @@ export default function AdminSettingsPage() {
         <SettingsModal
           title={PAGAMENTO_MODAL_TITULO[pagamentoModal]}
           hint={PAGAMENTO_MODAL_HINT[pagamentoModal]}
-          onClose={() => setPagamentoModal(null)}
+          erro={error}
+            onClose={() => setPagamentoModal(null)}
         >
-          <form onSubmit={saveMp} className="flex min-h-0 flex-1 flex-col">
+          <form
+            onSubmit={async (e) => {
+              if (await saveMp(e)) setPagamentoModal(null);
+            }}
+            className="flex min-h-0 flex-1 flex-col"
+          >
             <div className="grid min-h-0 flex-1 gap-x-4 gap-y-4 overflow-y-auto px-4 py-4">
               {pagamentoModal === 'modelo' ? (
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -2932,9 +2968,15 @@ export default function AdminSettingsPage() {
           <SettingsModal
             title={PERFIL_MODAL_TITULO[perfilModal]}
             hint={PERFIL_MODAL_HINT[perfilModal]}
+            erro={error}
             onClose={() => setPerfilModal(null)}
           >
-            <form onSubmit={saveProfile} className="flex min-h-0 flex-1 flex-col">
+            <form
+              onSubmit={async (e) => {
+                if (await saveProfile(e)) setPerfilModal(null);
+              }}
+              className="flex min-h-0 flex-1 flex-col"
+            >
               <div className="grid min-h-0 flex-1 gap-x-4 gap-y-4 overflow-y-auto px-4 py-4 md:grid-cols-2">
                 {perfilModal === 'documento' ? (
                   <>
@@ -3179,9 +3221,15 @@ export default function AdminSettingsPage() {
               'Política'
             }
             hint={POLITICAS.find((p) => p.campo === politicaModal)?.hint}
+            erro={error}
             onClose={() => setPoliticaModal(null)}
           >
-            <form onSubmit={savePolicies} className="flex min-h-0 flex-1 flex-col">
+            <form
+              onSubmit={async (e) => {
+                if (await savePolicies(e)) setPoliticaModal(null);
+              }}
+              className="flex min-h-0 flex-1 flex-col"
+            >
               <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
                 <textarea
                   className="field min-h-[320px] w-full resize-y font-mono text-xs leading-relaxed"
@@ -3289,9 +3337,15 @@ export default function AdminSettingsPage() {
                 ? 'Quando a nota é emitida e em qual ambiente. Homologação não vale como documento fiscal.'
                 : 'Tokens da sua conta na Focus. Ficam cifrados e nunca voltam para a tela depois de salvos.'
             }
+            erro={error}
             onClose={() => setNfeModal(null)}
           >
-            <form onSubmit={saveNfe} className="flex min-h-0 flex-1 flex-col">
+            <form
+              onSubmit={async (e) => {
+                if (await saveNfe(e)) setNfeModal(null);
+              }}
+              className="flex min-h-0 flex-1 flex-col"
+            >
               <div className="grid min-h-0 flex-1 gap-x-4 gap-y-4 overflow-y-auto px-4 py-4 md:grid-cols-2">
                 {nfeModal === 'emissao' ? (
                   <>

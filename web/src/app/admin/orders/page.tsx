@@ -45,6 +45,13 @@ type Order = {
   trackingUrl?: string | null;
   carrierShipmentId?: string | null;
   labelUrl?: string | null;
+  shipmentEvents?: Array<{
+    descricao: string;
+    cidade?: string | null;
+    uf?: string | null;
+    ocorridoEm: string;
+    origem: string;
+  }> | null;
   shippingAddress?: Record<string, unknown> | null;
   createdAt: string;
   notes?: string | null;
@@ -134,8 +141,110 @@ function formatAddress(addr?: Record<string, unknown> | null) {
     .join(' · ');
 }
 
+/**
+ * Em que ponto do despacho o pedido esta.
+ *
+ * O painel mostrava tudo ao mesmo tempo e o lojista tinha que deduzir a ordem.
+ * Aqui a propria tela responde "e agora, o que eu faco?" — uma acao por vez.
+ */
+type FaseEnvio = 'aguardando' | 'gerar' | 'postar' | 'a-caminho' | 'entregue';
+
+const ENVIO_FASES: Record<
+  FaseEnvio,
+  { etapa: string; titulo: string; ajuda: string }
+> = {
+  aguardando: {
+    etapa: 'Aguardando pagamento',
+    titulo: 'Ainda não há o que despachar',
+    ajuda:
+      'A etiqueta só pode ser comprada depois que o pagamento for aprovado.',
+  },
+  gerar: {
+    etapa: 'Passo 1 de 3',
+    titulo: 'Gerar a etiqueta',
+    ajuda:
+      'A etiqueta é comprada no Melhor Envio com o saldo da sua conta, e o código de rastreio entra no pedido sozinho.',
+  },
+  postar: {
+    etapa: 'Passo 2 de 3',
+    titulo: 'Imprimir e levar à transportadora',
+    ajuda:
+      'Cole a etiqueta no pacote e poste. Quando a transportadora registrar a postagem, o pedido vira "Enviado" sozinho — você não precisa marcar nada.',
+  },
+  'a-caminho': {
+    etapa: 'Passo 3 de 3',
+    titulo: 'A caminho do cliente',
+    ajuda:
+      'O trajeto abaixo atualiza sozinho e é o mesmo que o cliente vê na conta dele. Quando for entregue, o pedido fecha automaticamente.',
+  },
+  entregue: {
+    etapa: 'Concluído',
+    titulo: 'Entregue',
+    ajuda: 'A transportadora confirmou a entrega. Nada mais a fazer aqui.',
+  },
+};
+
+function faseDoEnvio(order: {
+  status: string;
+  paymentStatus: string;
+  labelUrl?: string | null;
+}): FaseEnvio {
+  if (order.status === 'DELIVERED') return 'entregue';
+  if (order.status === 'SHIPPED') return 'a-caminho';
+  if (order.paymentStatus !== 'APPROVED') return 'aguardando';
+  return order.labelUrl ? 'postar' : 'gerar';
+}
+
 export default function AdminOrdersPage() {
   const { confirm, dialog: confirmDialog } = useConfirm();
+
+  /**
+   * Compra a etiqueta no Melhor Envio.
+   *
+   * Gasta saldo real da conta do lojista, entao confirma antes — na lista o
+   * botao fica a um clique de distancia de "Cancelar", e um errar aqui custa
+   * dinheiro. A rota e idempotente: pedido que ja tem etiqueta devolve a
+   * mesma, sem comprar de novo.
+   */
+  async function gerarEtiqueta(order: Order) {
+    const ok = await confirm({
+      title: `Gerar etiqueta do pedido #${order.orderNumber}?`,
+      message:
+        'A etiqueta é comprada no Melhor Envio com o saldo da sua conta, e o código de rastreio entra no pedido.',
+      confirmLabel: 'Gerar etiqueta',
+    });
+    if (!ok) return;
+
+    setLabelBusyId(order.id);
+    setError('');
+    try {
+      const { token, storeSlug } = auth();
+      const res = await api<{
+        labelUrl?: string | null;
+        trackingCode?: string | null;
+      }>(`/admin/orders/${order.id}/label`, {
+        method: 'POST',
+        token,
+        storeSlug,
+      });
+      setDetail((atual) =>
+        atual && atual.id === order.id
+          ? {
+              ...atual,
+              labelUrl: res.labelUrl ?? null,
+              trackingCode: res.trackingCode ?? atual.trackingCode ?? null,
+            }
+          : atual,
+      );
+      await load();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Falha ao gerar etiqueta',
+      );
+    } finally {
+      setLabelBusyId(null);
+    }
+  }
   const [items, setItems] = useState<Order[]>([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -149,7 +258,13 @@ export default function AdminOrdersPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [detail, setDetail] = useState<Order | null>(null);
-  const [labelBusy, setLabelBusy] = useState(false);
+  /* Em que passo do despacho o pedido aberto esta. */
+  const fase: FaseEnvio = detail ? faseDoEnvio(detail) : 'aguardando';
+  /*
+   * Guarda o id do pedido, nao um booleano: agora o botao existe em cada linha
+   * da lista, e so a linha clicada deve ficar ocupada.
+   */
+  const [labelBusyId, setLabelBusyId] = useState<string | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [invoice, setInvoice] = useState<InvoiceInfo | null>(null);
   const [invoiceBusy, setInvoiceBusy] = useState(false);
@@ -896,6 +1011,32 @@ export default function AdminOrdersPage() {
                           {busyId === o.id ? '...' : 'Imprimir'}
                         </button>
                       ) : null}
+                      {/*
+                        Despachar era a unica tarefa diaria que obrigava a
+                        abrir o pedido. Numa fila de dez, isso e dez idas e
+                        voltas.
+                      */}
+                      {isOrderPaid(o) ? (
+                        o.labelUrl ? (
+                          <a
+                            href={o.labelUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-ghost py-1 text-xs"
+                          >
+                            Etiqueta
+                          </a>
+                        ) : (
+                          <button
+                            type="button"
+                            className="btn btn-ghost py-1 text-xs"
+                            disabled={labelBusyId === o.id}
+                            onClick={() => void gerarEtiqueta(o)}
+                          >
+                            {labelBusyId === o.id ? '...' : 'Gerar etiqueta'}
+                          </button>
+                        )
+                      ) : null}
                       {o.status !== 'CANCELLED' && o.status !== 'REFUNDED' ? (
                         <button
                           type="button"
@@ -996,63 +1137,6 @@ export default function AdminOrdersPage() {
                   ) : null}
                 </div>
 
-                {detail.paymentStatus === 'APPROVED' ? (
-                  <div className="mb-3 border-t border-line pt-3">
-                    {detail.labelUrl ? (
-                      <a
-                        href={detail.labelUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn btn-ghost w-full"
-                      >
-                        Abrir etiqueta (PDF)
-                      </a>
-                    ) : (
-                      <button
-                        type="button"
-                        className="btn btn-ghost w-full"
-                        disabled={labelBusy}
-                        onClick={async () => {
-                          setLabelBusy(true);
-                          setError('');
-                          try {
-                            const { token, storeSlug } = auth();
-                            const res = await api<{
-                              labelUrl?: string | null;
-                              trackingCode?: string | null;
-                            }>(`/admin/orders/${detail.id}/label`, {
-                              method: 'POST',
-                              token,
-                              storeSlug,
-                            });
-                            setDetail({
-                              ...detail,
-                              labelUrl: res.labelUrl ?? null,
-                              trackingCode:
-                                res.trackingCode ?? detail.trackingCode ?? null,
-                            });
-                            await load();
-                          } catch (err) {
-                            setError(
-                              err instanceof Error
-                                ? err.message
-                                : 'Falha ao gerar etiqueta',
-                            );
-                          } finally {
-                            setLabelBusy(false);
-                          }
-                        }}
-                      >
-                        {labelBusy ? 'Gerando etiqueta...' : 'Gerar etiqueta'}
-                      </button>
-                    )}
-                    <p className="mt-1 text-[11px] text-muted">
-                      Compra a etiqueta no Melhor Envio com o saldo da sua
-                      conta e traz o código de rastreio.
-                    </p>
-                  </div>
-                ) : null}
-
                 <ul className="mb-3 space-y-2 border-t border-line pt-3">
                   {(detail.items || []).map((item) => {
                     const img = mediaUrl(item.product?.images?.[0]?.url);
@@ -1149,90 +1233,202 @@ export default function AdminOrdersPage() {
                   </select>
                 </div>
 
-                <div className="mb-3 grid gap-2 sm:grid-cols-2">
-                  <div className="sm:col-span-2">
-                    <p className="mb-1 text-[11px] font-bold uppercase text-muted">
-                      Rastreio (cliente vê na conta)
-                    </p>
+                {/*
+                  Despachar um pedido e uma sequencia, nao um formulario: gerar
+                  a etiqueta, imprimir, postar, acompanhar. O bloco mostrava os
+                  quatro campos e os dois botoes ao mesmo tempo, sem dizer o que
+                  vinha primeiro. Agora aparece um passo de cada vez, e os
+                  campos manuais ficam guardados — com Melhor Envio eles se
+                  preenchem sozinhos.
+                */}
+                <div className="mb-3 border border-line">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-3 py-2.5">
+                    <p className="text-[13px] font-bold text-ink">Envio</p>
+                    <span className="text-[11px] font-semibold text-muted">
+                      {ENVIO_FASES[fase].etapa}
+                    </span>
                   </div>
-                  <div>
-                    <label className="label">Código de rastreio</label>
-                    <input
-                      className="field"
-                      defaultValue={detail.trackingCode || ''}
-                      key={`tc-${detail.id}-${detail.trackingCode || ''}`}
-                      id="admin-tracking-code"
-                      placeholder="BR123456789BR"
-                    />
-                  </div>
-                  <div>
-                    <label className="label">Link de rastreio (opcional)</label>
-                    <input
-                      className="field"
-                      defaultValue={detail.trackingUrl || ''}
-                      key={`tu-${detail.id}-${detail.trackingUrl || ''}`}
-                      id="admin-tracking-url"
-                      placeholder="https://… (Melhor Envio, etc.)"
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="label">
-                      ID etiqueta Melhor Envio (opcional)
-                    </label>
-                    <input
-                      className="field"
-                      defaultValue={detail.carrierShipmentId || ''}
-                      key={`me-${detail.id}-${detail.carrierShipmentId || ''}`}
-                      id="admin-carrier-shipment-id"
-                      placeholder="UUID da etiqueta no Melhor Envio"
-                    />
-                    <p className="mt-0.5 text-[11px] text-muted">
-                      Com esse ID o sistema recebe postagem/entrega via webhook
-                      e atualiza o status sozinho (como ML/Shopee).
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    className="btn btn-ghost sm:col-span-2"
-                    disabled={busyId === detail.id}
-                    onClick={() => {
-                      const code = (
-                        document.getElementById(
-                          'admin-tracking-code',
-                        ) as HTMLInputElement | null
-                      )?.value;
-                      const url = (
-                        document.getElementById(
-                          'admin-tracking-url',
-                        ) as HTMLInputElement | null
-                      )?.value;
-                      const meId = (
-                        document.getElementById(
-                          'admin-carrier-shipment-id',
-                        ) as HTMLInputElement | null
-                      )?.value;
-                      void updateStatus(
-                        detail.id,
-                        detail.status === 'PENDING' ||
+
+                  <div className="space-y-3 p-3">
+                    <div>
+                      <p className="text-sm font-bold text-ink">
+                        {ENVIO_FASES[fase].titulo}
+                      </p>
+                      <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
+                        {ENVIO_FASES[fase].ajuda}
+                      </p>
+                    </div>
+
+                    {fase === 'gerar' ? (
+                      <button
+                        type="button"
+                        className="btn btn-accent w-full sm:w-auto"
+                        disabled={labelBusyId === detail.id}
+                        onClick={() => void gerarEtiqueta(detail)}
+                      >
+                        {labelBusyId === detail.id
+                          ? 'Gerando etiqueta...'
+                          : 'Gerar etiqueta no Melhor Envio'}
+                      </button>
+                    ) : null}
+
+                    {detail.labelUrl ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <a
+                          href={detail.labelUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={
+                            fase === 'postar' ? 'btn btn-accent' : 'btn btn-ghost'
+                          }
+                        >
+                          {fase === 'postar'
+                            ? 'Imprimir etiqueta (PDF)'
+                            : 'Abrir etiqueta (PDF)'}
+                        </a>
+                        {detail.trackingCode ? (
+                          <span className="font-mono text-xs font-bold tracking-wide">
+                            {detail.trackingCode}
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {detail.shipmentEvents?.length ? (
+                      <div className="border border-line bg-[#fafafa] p-2.5">
+                        <p className="text-[11px] font-bold uppercase text-muted">
+                          Trajeto — o cliente vê isto na conta dele
+                        </p>
+                        <ol className="mt-2 space-y-1.5">
+                          {detail.shipmentEvents.slice(0, 6).map((ev, i) => (
+                            <li
+                              key={`${ev.ocorridoEm}-${i}`}
+                              className="flex gap-2 text-xs leading-snug"
+                            >
+                              <span
+                                className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
+                                  i === 0 ? 'bg-emerald-500' : 'bg-zinc-300'
+                                }`}
+                                aria-hidden
+                              />
+                              <span className="min-w-0">
+                                <span className={i === 0 ? 'font-semibold' : ''}>
+                                  {ev.descricao}
+                                </span>
+                                <span className="ml-1 text-muted">
+                                  {new Date(ev.ocorridoEm).toLocaleString('pt-BR')}
+                                  {[ev.cidade, ev.uf].filter(Boolean).length
+                                    ? ` · ${[ev.cidade, ev.uf]
+                                        .filter(Boolean)
+                                        .join('/')}`
+                                    : ''}
+                                </span>
+                              </span>
+                            </li>
+                          ))}
+                        </ol>
+                        {detail.shipmentEvents.length > 6 ? (
+                          <p className="mt-1.5 text-[11px] text-muted">
+                            + {detail.shipmentEvents.length - 6} ocorrência(s)
+                            anteriores
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {/*
+                      Saida de emergencia: quem despacha por fora da plataforma
+                      (retirada, motoboy, transportadora propria) precisa digitar
+                      o rastreio. Com Melhor Envio isso se preenche sozinho, entao
+                      fica fechado para nao competir com o passo do momento.
+                    */}
+                    <details className="border border-line">
+                      <summary className="cursor-pointer list-none px-2.5 py-2 text-[12px] font-semibold text-muted transition hover:bg-[#fafafa]">
+                        Informar rastreio na mão
+                        <span className="ml-1 font-normal">
+                          — para envio fora do Melhor Envio
+                        </span>
+                      </summary>
+                      <div className="grid gap-2 border-t border-line p-2.5 sm:grid-cols-2">
+                        <div>
+                          <label className="label">Código de rastreio</label>
+                          <input
+                            className="field"
+                            defaultValue={detail.trackingCode || ''}
+                            key={`tc-${detail.id}-${detail.trackingCode || ''}`}
+                            id="admin-tracking-code"
+                            placeholder="BR123456789BR"
+                          />
+                        </div>
+                        <div>
+                          <label className="label">Link de rastreio</label>
+                          <input
+                            className="field"
+                            defaultValue={detail.trackingUrl || ''}
+                            key={`tu-${detail.id}-${detail.trackingUrl || ''}`}
+                            id="admin-tracking-url"
+                            placeholder="https://… (opcional)"
+                          />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="label">ID da etiqueta no Melhor Envio</label>
+                          <input
+                            className="field"
+                            defaultValue={detail.carrierShipmentId || ''}
+                            key={`me-${detail.id}-${detail.carrierShipmentId || ''}`}
+                            id="admin-carrier-shipment-id"
+                            placeholder="UUID (opcional)"
+                          />
+                          <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
+                            Com esse ID o sistema recebe postagem e entrega por
+                            webhook e atualiza o status sozinho.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          className="btn btn-ghost sm:col-span-2"
+                          disabled={busyId === detail.id}
+                          onClick={() => {
+                            const code = (
+                              document.getElementById(
+                                'admin-tracking-code',
+                              ) as HTMLInputElement | null
+                            )?.value;
+                            const url = (
+                              document.getElementById(
+                                'admin-tracking-url',
+                              ) as HTMLInputElement | null
+                            )?.value;
+                            const meId = (
+                              document.getElementById(
+                                'admin-carrier-shipment-id',
+                              ) as HTMLInputElement | null
+                            )?.value;
+                            void updateStatus(
+                              detail.id,
+                              detail.status === 'PENDING' ||
+                                detail.status === 'PAID' ||
+                                detail.status === 'PROCESSING'
+                                ? 'SHIPPED'
+                                : detail.status,
+                              {
+                                trackingCode: code || '',
+                                trackingUrl: url || '',
+                                carrierShipmentId: meId || '',
+                              },
+                            );
+                          }}
+                        >
+                          Salvar rastreio
+                          {detail.status === 'PENDING' ||
                           detail.status === 'PAID' ||
                           detail.status === 'PROCESSING'
-                          ? 'SHIPPED'
-                          : detail.status,
-                        {
-                          trackingCode: code || '',
-                          trackingUrl: url || '',
-                          carrierShipmentId: meId || '',
-                        },
-                      );
-                    }}
-                  >
-                    Salvar rastreio
-                    {detail.status === 'PENDING' ||
-                    detail.status === 'PAID' ||
-                    detail.status === 'PROCESSING'
-                      ? ' e marcar como enviado'
-                      : ''}
-                  </button>
+                            ? ' e marcar como enviado'
+                            : ''}
+                        </button>
+                      </div>
+                    </details>
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
