@@ -440,7 +440,17 @@ export class UpdateStoreProfileDto {
   @IsString()
   sellerPhone?: string | null;
 
-  @ValidateIf((_, o) => o.sellerEmail != null && o.sellerEmail !== '')
+  /*
+   * O callback do ValidateIf recebe (objeto, valor) — nessa ordem. Estava
+   * escrito `(_, o)` e usando `o` como se fosse o objeto, quando `o` e o
+   * proprio valor: com sellerEmail nulo, `o.sellerEmail` estourava e o PATCH
+   * do perfil respondia 500. E o painel manda null sempre que o e-mail fiscal
+   * esta vazio, entao bastava salvar o perfil sem ele.
+   *
+   * O @IsOptional ja pula nulo e indefinido; isto aqui e so para a string
+   * vazia, que o IsEmail recusaria.
+   */
+  @ValidateIf((_obj, valor: unknown) => valor !== '')
   @IsEmail()
   @IsOptional()
   sellerEmail?: string | null;
