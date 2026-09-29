@@ -185,6 +185,7 @@ describe('Planos da plataforma (e2e)', () => {
           sellerDocument: VALID_CPF,
           phone: '11988887777',
           ...ADDRESS,
+          acceptTerms: true,
         })
         .expect(201);
 
@@ -257,6 +258,7 @@ describe('Planos da plataforma (e2e)', () => {
           sellerDocument: VALID_CPF,
           phone: '11988887777',
           ...ADDRESS,
+          acceptTerms: true,
         })
         .expect(201);
 

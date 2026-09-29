@@ -1,4 +1,5 @@
 import {
+  Equals,
   IsArray,
   IsBoolean,
   IsDateString,
@@ -84,6 +85,13 @@ export class PublicSignupDto {
   @IsString()
   @Length(2, 2)
   state!: string;
+
+  /** Caixa "li e aceito" dos Termos e da Privacidade. Sem ela, não cria loja. */
+  @Equals(true, {
+    message:
+      'Para criar a loja é preciso aceitar os Termos de Uso e a Política de Privacidade.',
+  })
+  acceptTerms!: boolean;
 }
 
 export class CreateStoreDto {

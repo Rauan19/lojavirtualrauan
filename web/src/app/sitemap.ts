@@ -81,6 +81,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [
     { url: base, changeFrequency: 'weekly', priority: 1 },
     { url: `${base}/criar-conta`, changeFrequency: 'monthly', priority: 0.9 },
+    { url: `${base}/termos`, changeFrequency: 'yearly', priority: 0.2 },
+    { url: `${base}/privacidade`, changeFrequency: 'yearly', priority: 0.2 },
     ...stores.map((store) => ({
       url: `${base}/loja/${store.slug}`,
       lastModified: store.updatedAt ? new Date(store.updatedAt) : undefined,

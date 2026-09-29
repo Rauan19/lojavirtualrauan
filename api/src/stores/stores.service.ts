@@ -47,6 +47,7 @@ import {
   onlyDigits,
   resolveStoreLayout,
 } from './store-type';
+import { TERMS_VERSION } from '../common/legal';
 
 const BRAZILIAN_STATES = new Set([
   'AC',
@@ -93,7 +94,7 @@ export class StoresService {
    * pedir status/planDueAt/monthlyFee, então não existe caminho pra criar
    * loja já ACTIVE sem pagar.
    */
-  async signup(dto: PublicSignupDto) {
+  async signup(dto: PublicSignupDto, ip: string) {
     const slug = await this.resolveAvailableSlug(dto.slug || dto.storeName);
     const passwordHash = await bcrypt.hash(dto.adminPassword, 10);
     const trialDays = await this.billingService.getTrialDays();
@@ -131,6 +132,9 @@ export class StoresService {
           planDueAt,
           monthlyFee: new Prisma.Decimal(plan.amount),
           ...sellerProfile,
+          termsVersion: TERMS_VERSION,
+          termsAcceptedAt: new Date(),
+          termsAcceptedIp: ip.slice(0, 64),
         },
       });
 

@@ -6,6 +6,7 @@ import { StoreDeviceShowcase } from '@/components/StoreDeviceShowcase';
 import { BRAND } from '@/lib/brand';
 import { CONTACT, whatsappHref } from '@/lib/contact';
 import { getDemoStoreSlug, getPlans, siteUrl } from '@/lib/seo';
+import { LEGAL, empresaIdentificada } from '@/lib/legal';
 
 const faq: [string, string][] = [
   [
@@ -421,7 +422,20 @@ export default async function HomePage() {
             <Link href="/login" className="hover:text-white">
               Área do cliente
             </Link>
+            <Link href="/termos" className="hover:text-white">
+              Termos de Uso
+            </Link>
+            <Link href="/privacidade" className="hover:text-white">
+              Privacidade
+            </Link>
           </div>
+        </div>
+        {/* Decreto 7.962/2013: quem vende online se identifica no site */}
+        <div className="mx-auto max-w-[1080px] border-t border-white/10 px-4 py-4 text-xs text-[#7d8792] md:px-6">
+          <p>
+            {empresaIdentificada()}
+            {LEGAL.endereco ? ` · ${LEGAL.endereco}` : ''}
+          </p>
         </div>
       </footer>
     </main>

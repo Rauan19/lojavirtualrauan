@@ -101,6 +101,15 @@ model Store {
   sellerLegalName  String? // nome completo ou razão social
   sellerTradeName  String? // nome fantasia
   sellerIe         String? // inscrição estadual ou ISENTO
+
+  /**
+   * Aceite dos Termos de Uso e da Política de Privacidade no cadastro.
+   * Prova do contrato: qual versão, quando e de qual IP. Loja criada antes
+   * disso fica null (aceite será pedido de novo quando houver nova versão).
+   */
+  termsVersion     String?
+  termsAcceptedAt  DateTime?
+  termsAcceptedIp  String?
   sellerIm         String? // inscrição municipal
   sellerPhone      String?
   sellerEmail      String?

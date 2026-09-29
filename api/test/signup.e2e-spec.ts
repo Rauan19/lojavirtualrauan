@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { SellerDocType, StoreStatus } from '@prisma/client';
 import request from 'supertest';
+import { TERMS_VERSION } from '../src/common/legal';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { createTestApp, resetDb } from './helpers/test-app';
 
@@ -53,6 +54,7 @@ describe('Signup público (e2e)', () => {
         sellerDocument: VALID_CPF,
         phone: '11988887777',
         ...VALID_ADDRESS,
+        acceptTerms: true,
         ...body,
       });
 
@@ -62,6 +64,25 @@ describe('Signup público (e2e)', () => {
     expect(res.body.accessToken).toBeTruthy();
     expect(res.body.user.role).toBe('STORE_ADMIN');
     expect(res.body.slug).toBeTruthy();
+  });
+
+  it('sem aceitar os termos, não cria a loja', async () => {
+    const res = await signup({ acceptTerms: false }).expect(400);
+    expect(JSON.stringify(res.body)).toContain('Termos de Uso');
+    expect(await prisma.store.count()).toBe(0);
+  });
+
+  it('grava versão, data e IP do aceite dos termos', async () => {
+    const antes = Date.now();
+    const res = await signup().expect(201);
+    const store = await prisma.store.findUniqueOrThrow({
+      where: { slug: res.body.slug },
+    });
+    expect(store.termsVersion).toBe(TERMS_VERSION);
+    expect(store.termsAcceptedAt!.getTime()).toBeGreaterThanOrEqual(
+      antes - 1000,
+    );
+    expect(store.termsAcceptedIp).toBeTruthy();
   });
 
   it('a loja nasce sempre em TRIAL, nunca ACTIVE', async () => {

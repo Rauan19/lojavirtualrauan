@@ -5,8 +5,10 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { Role } from '@prisma/client';
 import { CurrentStore } from '../common/decorators/current-store.decorator';
 import type { TenantStore } from '../common/decorators/current-store.decorator';
@@ -30,6 +32,7 @@ import {
 import { StoresService } from './stores.service';
 import { AuthService } from '../auth/auth.service';
 import { Throttle } from '@nestjs/throttler';
+import { ipDaRequisicao } from '../common/utils/request-ip';
 
 @Controller('stores')
 export class StoresController {
@@ -61,8 +64,8 @@ export class StoresController {
       ttl: 60 * 60_000,
     },
   })
-  async signup(@Body() dto: PublicSignupDto) {
-    const { slug } = await this.storesService.signup(dto);
+  async signup(@Body() dto: PublicSignupDto, @Req() req: Request) {
+    const { slug } = await this.storesService.signup(dto, ipDaRequisicao(req));
     // Reaproveita o login normal: mesmo formato de token que o painel espera,
     // sem duplicar a lógica de assinatura do JWT.
     const session = await this.authService.login({

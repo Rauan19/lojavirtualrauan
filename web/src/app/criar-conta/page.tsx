@@ -69,6 +69,7 @@ export default function CriarContaPage() {
   const [cepLoading, setCepLoading] = useState(false);
   const [cepError, setCepError] = useState('');
 
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -142,6 +143,10 @@ export default function CriarContaPage() {
       setError('Complete o endereço.');
       return;
     }
+    if (!acceptTerms) {
+      setError('Para criar a loja, aceite os Termos de Uso e a Política de Privacidade.');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
@@ -164,6 +169,7 @@ export default function CriarContaPage() {
             neighborhood,
             city,
             state,
+            acceptTerms,
           },
         },
       );
@@ -432,6 +438,30 @@ export default function CriarContaPage() {
                   />
                 </div>
               </div>
+            ) : null}
+
+            {step === 3 ? (
+              <label htmlFor="accept-terms" className="mt-4 flex items-start gap-2.5 text-sm leading-snug text-muted">
+                <input
+                  id="accept-terms"
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                  required
+                />
+                <span>
+                  Li e aceito os{' '}
+                  <Link href="/termos" target="_blank" className="font-semibold text-ink underline">
+                    Termos de Uso
+                  </Link>{' '}
+                  e a{' '}
+                  <Link href="/privacidade" target="_blank" className="font-semibold text-ink underline">
+                    Política de Privacidade
+                  </Link>
+                  .
+                </span>
+              </label>
             ) : null}
 
             {error ? <p className="mt-3 text-sm text-accent">{error}</p> : null}
