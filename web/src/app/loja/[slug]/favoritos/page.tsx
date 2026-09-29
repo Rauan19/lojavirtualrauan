@@ -8,7 +8,7 @@ import { CartProvider, useCart } from '@/components/CartProvider';
 import { useCustomer } from '@/components/CustomerProvider';
 import { StoreShell } from '@/components/StoreShell';
 import { WishlistButton } from '@/components/WishlistButton';
-import { api, mediaUrl, money } from '@/lib/api';
+import { api, mediaUrl, thumbUrl, money } from '@/lib/api';
 import { fetchFavoritesOnce, invalidateFavoritesCache } from '@/lib/favorites';
 import { getWishlist } from '@/lib/wishlist';
 
@@ -137,7 +137,7 @@ function FavoritosInner({ slug }: { slug: string }) {
           ) : (
             <div className="mt-4 grid grid-cols-3 gap-x-1.5 gap-y-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 lg:gap-x-2 lg:gap-y-4">
               {products.map((p) => {
-                const img = mediaUrl(p.images[0]?.url);
+                const img = thumbUrl(p.images[0]?.url);
                 const href = `/loja/${slug}/p/${p.slug || p.id}`;
                 return (
                   <article key={p.id} className="flex flex-col">

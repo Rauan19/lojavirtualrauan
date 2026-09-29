@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useConfirm } from '@/components/ConfirmDialog';
 import { PaginationBar } from '@/components/PaginationBar';
-import { api, mediaUrl, money } from '@/lib/api';
+import { api, thumbUrl, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 import {
   StatusBadge,
@@ -1139,7 +1139,7 @@ export default function AdminOrdersPage() {
 
                 <ul className="mb-3 space-y-2 border-t border-line pt-3">
                   {(detail.items || []).map((item) => {
-                    const img = mediaUrl(item.product?.images?.[0]?.url);
+                    const img = thumbUrl(item.product?.images?.[0]?.url);
                     return (
                       <li
                         key={item.id}

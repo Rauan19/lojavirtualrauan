@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { StarRating } from '@/components/StarRating';
-import { api, mediaUrl, money } from '@/lib/api';
+import { api, thumbUrl, money } from '@/lib/api';
 
 export type ShelfProduct = {
   id: string;
@@ -144,7 +144,7 @@ export function ProductShelf({
             className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-1"
           >
             {items.map((p) => {
-              const img = mediaUrl(p.images[0]?.url);
+              const img = thumbUrl(p.images[0]?.url);
               const price = Number(p.price);
               const compare = p.compareAt ? Number(p.compareAt) : null;
               const off =

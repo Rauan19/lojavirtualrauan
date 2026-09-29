@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useConfirm } from '@/components/ConfirmDialog';
 import { PaginationBar } from '@/components/PaginationBar';
-import { api, mediaUrl, money } from '@/lib/api';
+import { api, thumbUrl, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 
 type ProductVariant = {
@@ -1057,7 +1057,7 @@ export default function AdminProductsPage() {
       ) : (
         <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
           {items.map((p) => {
-            const img = mediaUrl(p.images[0]?.url);
+            const img = thumbUrl(p.images[0]?.url);
             const priceNum = Number(p.price);
             const de = p.compareAt ? Number(p.compareAt) : null;
             const discount =

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { mediaUrl, money } from '@/lib/api';
+import { thumbUrl, money } from '@/lib/api';
 import { useCart } from '@/components/CartProvider';
 import { cartLineKey } from '@/lib/cart';
 
@@ -113,7 +113,7 @@ export function CartDrawer({
           ) : (
             <ul className="divide-y divide-line">
               {items.map((item) => {
-                const img = mediaUrl(item.image);
+                const img = thumbUrl(item.image);
                 return (
                   <li key={cartLineKey(item)} className="flex gap-3 px-4 py-3">
                     <div className="h-20 w-16 shrink-0 overflow-hidden bg-[#f3f3f3]">

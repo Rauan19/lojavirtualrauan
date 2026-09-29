@@ -7,7 +7,7 @@ import { useConfirm } from '@/components/ConfirmDialog';
 import { useCustomer } from '@/components/CustomerProvider';
 import { OrderTrackingPanel } from '@/components/OrderTracking';
 import { PaginationBar } from '@/components/PaginationBar';
-import { api, mediaUrl, money } from '@/lib/api';
+import { api, thumbUrl, money } from '@/lib/api';
 import { sellerWhatsappHref } from '@/lib/contact';
 import {
   StatusBadge,
@@ -71,7 +71,7 @@ function firstImageUrl(item: OrderItem) {
   const sorted = [...imgs].sort(
     (a, b) => (a.position ?? 0) - (b.position ?? 0),
   );
-  return mediaUrl(sorted[0]?.url);
+  return thumbUrl(sorted[0]?.url);
 }
 
 function currentShipLabel(order: Order) {

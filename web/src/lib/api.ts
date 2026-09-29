@@ -78,3 +78,18 @@ export function mediaUrl(path?: string | null) {
   const base = process.env.NEXT_PUBLIC_UPLOADS_URL || '';
   return `${base}${path.startsWith('/') ? path : `/${path}`}`;
 }
+
+/**
+ * Miniatura (480px) da foto, para vitrine, carrinho e listas.
+ *
+ * Todo upload novo vira `abc.webp` + `abc-thumb.webp` (ver
+ * api/src/uploads/image-optimizer.ts). Foto antiga (.jpg/.png) ou URL externa
+ * não tem miniatura, então volta a própria foto.
+ */
+export function thumbUrl(path?: string | null) {
+  if (!path || path.startsWith('http') || !path.endsWith('.webp')) {
+    return mediaUrl(path);
+  }
+  if (path.endsWith('-thumb.webp')) return mediaUrl(path);
+  return mediaUrl(path.replace(/\.webp$/, '-thumb.webp'));
+}

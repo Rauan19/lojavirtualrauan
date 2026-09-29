@@ -12,7 +12,7 @@ import { ProductShelf } from '@/components/ProductShelf';
 import { StoreShell } from '@/components/StoreShell';
 import { StarRating } from '@/components/StarRating';
 import { WishlistButton } from '@/components/WishlistButton';
-import { api, mediaUrl, money } from '@/lib/api';
+import { api, mediaUrl, thumbUrl, money } from '@/lib/api';
 import { addToCart } from '@/lib/cart';
 import {
   fetchInstallmentsBatch,
@@ -695,7 +695,7 @@ function StorefrontInner({ slug }: { slug: string }) {
               }`}
             >
               {products.map((p) => {
-                const img = mediaUrl(p.images[0]?.url);
+                const img = thumbUrl(p.images[0]?.url);
                 const price = Number(p.price);
                 const compare = p.compareAt ? Number(p.compareAt) : null;
                 const discount =

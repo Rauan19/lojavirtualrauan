@@ -7,7 +7,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { writeFileSync } from 'fs';
+import { writeFile } from 'fs/promises';
 import { join, extname } from 'path';
 import { randomUUID } from 'crypto';
 import { Role } from '@prisma/client';
@@ -17,6 +17,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { TenantGuard } from '../common/guards/tenant.guard';
+import { optimizeImage, THUMB_SUFFIX } from './image-optimizer';
 import { UploadsService } from './uploads.service';
 
 @Controller('admin/uploads')
@@ -38,7 +39,7 @@ export class UploadsController {
       },
     }),
   )
-  upload(
+  async upload(
     @CurrentStore() store: TenantStore,
     @UploadedFile() file: Express.Multer.File,
   ) {
@@ -52,10 +53,23 @@ export class UploadsController {
       throw new BadRequestException('Formato de imagem inválido');
     }
 
-    const dir = this.uploadsService.storageDestination(store.id);
-    const filename = `${randomUUID()}${ext}`;
-    writeFileSync(join(dir, filename), file.buffer);
+    let optimized: Awaited<ReturnType<typeof optimizeImage>>;
+    try {
+      optimized = await optimizeImage(file.buffer);
+    } catch {
+      throw new BadRequestException(
+        'Não foi possível ler a imagem. Envie um JPG, PNG ou WebP válido.',
+      );
+    }
 
-    return this.uploadsService.toPublicUrl(store.id, filename);
+    // Sempre .webp, seja qual for o formato enviado; a miniatura vai ao lado
+    const dir = this.uploadsService.storageDestination(store.id);
+    const id = randomUUID();
+    await Promise.all([
+      writeFile(join(dir, `${id}.webp`), optimized.main),
+      writeFile(join(dir, `${id}${THUMB_SUFFIX}.webp`), optimized.thumb),
+    ]);
+
+    return this.uploadsService.toPublicUrl(store.id, `${id}.webp`);
   }
 }
