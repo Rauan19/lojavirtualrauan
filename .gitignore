@@ -1,6 +1,11 @@
 node_modules/
-.env
-.env.local
+# Qualquer .env (local, production, staging...) fica fora; só o exemplo entra.
+.env*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
 dist/
 # Arquivos enviados pelos lojistas, não código.
 # Ancorado com o caminho: "uploads/" solto casava também com api/src/uploads/,

@@ -21,6 +21,7 @@ import {
 import { MailService } from '../mail/mail.service';
 import { buildPasswordResetEmail } from '../mail/password-reset-email';
 import { createHash, randomBytes } from 'crypto';
+import { comparePasswordConstantTime } from '../common/utils/password-timing';
 
 @Injectable()
 export class StorefrontService {
@@ -108,12 +109,11 @@ export class StorefrontService {
       where: { storeId_email: { storeId, email } },
     });
 
-    if (!customer?.passwordHash) {
-      throw new UnauthorizedException('Credenciais inválidas');
-    }
-
-    const ok = await bcrypt.compare(dto.password, customer.passwordHash);
-    if (!ok) {
+    const ok = await comparePasswordConstantTime(
+      dto.password,
+      customer?.passwordHash,
+    );
+    if (!customer || !ok) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
@@ -191,12 +191,16 @@ export class StorefrontService {
         accentColor: store.accentColor || undefined,
       });
 
-      await this.mail.send({
-        to: email,
-        subject: mail.subject,
-        text: mail.text,
-        html: mail.html,
-      });
+      // Sem await: esperar o SMTP fazia a resposta demorar só quando a conta
+      // existe, e o tempo entregava o que a mensagem genérica esconde.
+      void this.mail
+        .send({
+          to: email,
+          subject: mail.subject,
+          text: mail.text,
+          html: mail.html,
+        })
+        .catch(() => undefined);
     }
 
     return {
@@ -238,8 +242,14 @@ export class StorefrontService {
         where: { id: customer.id },
         data: { passwordHash, tokenVersion: { increment: 1 } },
       }),
-      this.prisma.passwordResetToken.update({
-        where: { id: row.id },
+      // Queima este link e qualquer outro pedido de troca ainda aberto
+      this.prisma.passwordResetToken.updateMany({
+        where: {
+          email: row.email,
+          subject: row.subject,
+          storeId: row.storeId,
+          usedAt: null,
+        },
         data: { usedAt: new Date() },
       }),
     ]);

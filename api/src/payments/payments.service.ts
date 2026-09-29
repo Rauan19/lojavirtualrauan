@@ -867,6 +867,28 @@ export class PaymentsService {
         };
       }
 
+      /*
+       * O valor sai sempre do banco quando a cobrança é criada, então isto não
+       * deveria disparar. Fica como trava: se um pagamento aprovado com esta
+       * external_reference vier menor que o pedido, não libera a mercadoria.
+       */
+      const orderTotal = Number(order.total);
+      const underpaid =
+        payment.status === 'approved' &&
+        Number.isFinite(orderTotal) &&
+        totalAmt < orderTotal - 0.01;
+      if (underpaid) {
+        this.logger.warn(
+          `Pagamento ${payment.id} aprovado com valor menor que o pedido ${order.id}: pago=${totalAmt} total=${orderTotal}. Pedido NÃO confirmado.`,
+        );
+        return {
+          ok: true,
+          orderId: order.id,
+          approved: false,
+          underpaid: true,
+        };
+      }
+
       const approved = payment.status === 'approved' && refundedAmt <= 0;
       if (approved) {
         await this.confirmPaidOrder(order.id, store.id, String(payment.id));

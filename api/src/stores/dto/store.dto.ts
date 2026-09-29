@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsString,
   Length,
+  Matches,
   MinLength,
   ValidateIf,
 } from 'class-validator';
@@ -225,12 +226,20 @@ export class UpdateStoreBrandingDto {
   @IsString()
   storeCardRatio?: string;
 
+  // Os dois vão parar dentro de um <script> na vitrine: só o formato do id,
+  // nada que possa virar código. Vazio limpa o campo.
   @IsOptional()
   @IsString()
+  @Matches(/^\s*([A-Z]{1,3}-[A-Z0-9-]{4,24})?\s*$/i, {
+    message: 'ID do Google Analytics inválido (formato G-XXXXXXX)',
+  })
   analyticsGaId?: string;
 
   @IsOptional()
   @IsString()
+  @Matches(/^\s*(\d{5,20})?\s*$/, {
+    message: 'ID do Meta Pixel inválido (só números)',
+  })
   analyticsPixelId?: string;
 }
 
