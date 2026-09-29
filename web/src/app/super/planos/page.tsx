@@ -13,6 +13,8 @@ type Plan = {
   badge?: string;
   highlight?: boolean;
   features?: string[];
+  maxProducts?: number | null;
+  nfeIncluded?: boolean;
   active: boolean;
 };
 
@@ -24,6 +26,9 @@ const emptyForm = {
   badge: '',
   highlight: false,
   features: '',
+  /** Vazio = sem limite. */
+  maxProducts: '',
+  nfeIncluded: true,
 };
 
 function money(value: number) {
@@ -104,6 +109,8 @@ export default function SuperPlanosPage() {
       badge: plan.badge || '',
       highlight: plan.highlight || false,
       features: (plan.features || []).join('\n'),
+      maxProducts: plan.maxProducts ? String(plan.maxProducts) : '',
+      nfeIncluded: plan.nfeIncluded ?? true,
     });
     setShowForm(true);
   }
@@ -127,6 +134,9 @@ export default function SuperPlanosPage() {
           .split('\n')
           .map((f) => f.trim())
           .filter(Boolean),
+        // 0 = sem limite (a API grava null)
+        maxProducts: Number(form.maxProducts) || 0,
+        nfeIncluded: form.nfeIncluded,
       };
       if (editingId) {
         await api(`/billing/platform/plans/${editingId}`, {
@@ -258,7 +268,11 @@ export default function SuperPlanosPage() {
                     ) : null}
                   </div>
                   <p className="mt-0.5 text-sm text-muted">
-                    {money(plan.amount)} / {plan.periodDays} dias
+                    {money(plan.amount)} / {plan.periodDays} dias ·{' '}
+                    {plan.maxProducts
+                      ? `até ${plan.maxProducts} produtos`
+                      : 'produtos ilimitados'}{' '}
+                    · {plan.nfeIncluded === false ? 'sem NF-e' : 'com NF-e'}
                   </p>
                   {plan.description ? (
                     <p className="mt-1 text-xs text-muted">{plan.description}</p>
@@ -315,7 +329,7 @@ export default function SuperPlanosPage() {
               />
             </div>
             <div>
-              <label className="label">Preço (R$/mês)</label>
+              <label className="label">Preço (R$ por período)</label>
               <input
                 className="field"
                 type="number"
@@ -363,6 +377,35 @@ export default function SuperPlanosPage() {
               onChange={(e) => setForm({ ...form, features: e.target.value })}
             />
           </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="label" htmlFor="plan-max-products">
+                Limite de produtos
+              </label>
+              <input
+                id="plan-max-products"
+                className="field"
+                type="number"
+                min={0}
+                placeholder="Vazio = sem limite"
+                value={form.maxProducts}
+                onChange={(e) => setForm({ ...form, maxProducts: e.target.value })}
+              />
+            </div>
+            <label className="flex items-center gap-2 self-end pb-2 text-sm">
+              <input
+                type="checkbox"
+                checked={form.nfeIncluded}
+                onChange={(e) => setForm({ ...form, nfeIncluded: e.target.checked })}
+              />
+              Inclui nota fiscal (NF-e/NFC-e)
+            </label>
+          </div>
+          <p className="text-xs text-muted">
+            Os limites valem de verdade: a loja não cadastra produto acima do
+            limite nem emite nota se o plano não incluir. No teste grátis tudo
+            fica liberado.
+          </p>
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"

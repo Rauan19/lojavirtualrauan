@@ -166,7 +166,7 @@ describe('Planos da plataforma (e2e)', () => {
       expect(row).toBeNull();
     });
 
-    it('apagar plano não quebra loja que já usa o nome dele', async () => {
+    it('apagar plano não quebra loja que já usa ele', async () => {
       const created = await request(app.getHttpServer())
         .post('/api/billing/platform/plans')
         .set('Authorization', `Bearer ${superToken}`)
@@ -197,7 +197,9 @@ describe('Planos da plataforma (e2e)', () => {
       const store = await prisma.store.findUniqueOrThrow({
         where: { slug: signup.body.slug },
       });
-      expect(store.planName).toBe('Plano Efêmero');
+      // A loja continua existindo e apontando para o plano; sem o plano no
+      // catálogo, os limites caem no "sem limite" (PlanLimitsService).
+      expect(store.planName).toBe(created.body.id);
     });
 
     it('recusa nome vazio', async () => {

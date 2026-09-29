@@ -30,6 +30,7 @@ import {
   OrderQueryDto,
   UpdateOrderStatusDto,
 } from './dto/order.dto';
+import { PlanLimitsService } from '../plan-limits/plan-limits.service';
 
 /** Pedido sem pagar some de "minhas compras" e não pode mais ser pago. */
 const UNPAID_ORDER_TTL_MS = 60 * 60 * 1000;
@@ -57,6 +58,7 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
     private readonly orderMail: OrderMailService,
     private readonly shippingService: ShippingService,
     private readonly labelService: LabelService,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
   onModuleInit() {
@@ -920,6 +922,8 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
         select: { nfeEnabled: true },
       });
       if (!store?.nfeEnabled) return;
+      // Plano sem NF-e: não tenta (e não enche o log com a recusa a cada pedido)
+      if (!(await this.planLimits.forStore(storeId)).nfeIncluded) return;
       await this.invoicesService.issueForOrder(storeId, orderId);
       this.logger.log(`NFC-e emitida · pedido ${orderId}`);
     } catch (err) {

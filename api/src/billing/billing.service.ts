@@ -22,6 +22,7 @@ import { UpdatePlatformMercadoPagoDto } from './dto/platform-mp.dto';
 import { BillingMailService } from '../mail/billing-mail.service';
 import { PlatformPlansService } from './platform-plans.service';
 import { type PlatformPlan } from './platform-plans';
+import { PlanLimitsService } from '../plan-limits/plan-limits.service';
 
 type MpPreapproval = {
   id: string;
@@ -65,6 +66,7 @@ export class BillingService {
     private readonly secrets: SecretsService,
     private readonly platformPlans: PlatformPlansService,
     private readonly billingMail: BillingMailService,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
   /** Planos ativos, do banco (editáveis pelo Super Admin em /super/planos). */
@@ -536,10 +538,9 @@ export class BillingService {
     }
 
     const body = {
-      reason: `Mensalidade ${this.platformBrandName()} · Plano ${plan.name}`,
+      reason: `${this.rotuloCobranca(plan)} ${this.platformBrandName()} · Plano ${plan.name}`,
       auto_recurring: {
-        frequency: 1,
-        frequency_type: 'months',
+        ...this.recorrencia(plan),
         transaction_amount: plan.amount,
         currency_id: 'BRL',
       },
@@ -753,8 +754,14 @@ export class BillingService {
     const recurringActive = subStatus === 'authorized';
 
     const creds = await this.resolvePlatformMpCredentials();
+    const [limites, productCount] = await Promise.all([
+      this.planLimits.forStore(storeId),
+      this.prisma.product.count({ where: { storeId } }),
+    ]);
 
     return {
+      /** O que o plano atual permite, com o uso de hoje (painel mostra "37 de 100"). */
+      limits: { ...limites, productCount },
       store: {
         ...store,
         monthlyFee: store.monthlyFee != null ? Number(store.monthlyFee) : null,
@@ -890,13 +897,12 @@ export class BillingService {
 
     const body: Record<string, unknown> = {
       preapproval_plan_id: preapprovalPlanId,
-      reason: `Mensalidade ${this.platformBrandName()} · Plano ${plan.name}`,
+      reason: `${this.rotuloCobranca(plan)} ${this.platformBrandName()} · Plano ${plan.name}`,
       external_reference: invoice.id,
       payer_email: email,
       card_token_id: tokenId,
       auto_recurring: {
-        frequency: 1,
-        frequency_type: 'months',
+        ...this.recorrencia(plan),
         transaction_amount: plan.amount,
         currency_id: 'BRL',
       },
@@ -1093,12 +1099,11 @@ export class BillingService {
     const notificationUrl = buildPlatformBillingWebhookUrl(this.config);
 
     const body: Record<string, unknown> = {
-      reason: `Mensalidade ${this.platformBrandName()} · Plano ${plan.name}`,
+      reason: `${this.rotuloCobranca(plan)} ${this.platformBrandName()} · Plano ${plan.name}`,
       external_reference: invoice.id,
       payer_email: email,
       auto_recurring: {
-        frequency: 1,
-        frequency_type: 'months',
+        ...this.recorrencia(plan),
         transaction_amount: plan.amount,
         currency_id: 'BRL',
       },
@@ -1248,6 +1253,19 @@ export class BillingService {
   }
 
   /** Plano do lojista, com queda para o primeiro ativo se o dele sumiu. */
+  /**
+   * De quanto em quanto tempo o cartão é cobrado. Antes era fixo em 1 mês: um
+   * plano anual cobraria o valor do ano todo mês.
+   */
+  private recorrencia(plan: { periodDays: number }) {
+    const meses = Math.max(1, Math.round(plan.periodDays / 30));
+    return { frequency: meses, frequency_type: 'months' as const };
+  }
+
+  private rotuloCobranca(plan: { periodDays: number }) {
+    return plan.periodDays >= 360 ? 'Anuidade' : 'Mensalidade';
+  }
+
   private async planoParaCobranca(planId?: string | null) {
     const planos = await this.listPlans();
     if (planos.length === 0) {
@@ -1258,7 +1276,9 @@ export class BillingService {
       : undefined;
     if (escolhido) return escolhido;
 
-    const padrao = planos.find((p) => p.id === 'mensal') || planos[0];
+    const padrao =
+      planos.find((p) => p.id === 'plan-seed-mensal' || p.id === 'mensal') ||
+      planos[0];
     if (planId) {
       this.logger.warn(
         `Plano "${planId}" não existe mais; cobrando pelo plano ${padrao.id}`,

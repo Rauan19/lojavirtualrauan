@@ -24,6 +24,8 @@ export class PlatformPlansService {
     badge: string | null;
     highlight: boolean;
     features: Prisma.JsonValue;
+    maxProducts: number | null;
+    nfeIncluded: boolean;
   }): PlatformPlan {
     return {
       id: row.id,
@@ -36,6 +38,8 @@ export class PlatformPlansService {
       features: Array.isArray(row.features)
         ? (row.features as string[])
         : undefined,
+      maxProducts: row.maxProducts,
+      nfeIncluded: row.nfeIncluded,
     };
   }
 
@@ -72,6 +76,8 @@ export class PlatformPlansService {
         badge: dto.badge?.trim() || null,
         highlight: dto.highlight ?? false,
         features: dto.features?.length ? dto.features : undefined,
+        maxProducts: dto.maxProducts || null,
+        nfeIncluded: dto.nfeIncluded ?? true,
         order: dto.order ?? (maxOrder._max.order ?? -1) + 1,
       },
     });
@@ -101,6 +107,13 @@ export class PlatformPlansService {
         ...(dto.highlight !== undefined ? { highlight: dto.highlight } : {}),
         ...(dto.features !== undefined
           ? { features: dto.features.length ? dto.features : Prisma.JsonNull }
+          : {}),
+        // 0 ou null = sem limite
+        ...(dto.maxProducts !== undefined
+          ? { maxProducts: dto.maxProducts || null }
+          : {}),
+        ...(dto.nfeIncluded !== undefined
+          ? { nfeIncluded: dto.nfeIncluded }
           : {}),
         ...(dto.active !== undefined ? { active: dto.active } : {}),
         ...(dto.order !== undefined ? { order: dto.order } : {}),

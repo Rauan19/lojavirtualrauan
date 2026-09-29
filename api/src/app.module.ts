@@ -5,6 +5,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { join } from 'path';
 import { OrderAccessModule } from './common/order-access/order-access.module';
+import { PlanLimitsModule } from './plan-limits/plan-limits.module';
 import { SecretsModule } from './common/secrets/secrets.module';
 import { AuthModule } from './auth/auth.module';
 import { BillingModule } from './billing/billing.module';
@@ -43,6 +44,7 @@ import { AccessLogInterceptor } from './common/interceptors/access-log.intercept
       serveRoot: `/${process.env.UPLOAD_DIR || 'uploads'}`,
     }),
     SecretsModule,
+    PlanLimitsModule,
     OrderAccessModule,
     PrismaModule,
     MailModule,

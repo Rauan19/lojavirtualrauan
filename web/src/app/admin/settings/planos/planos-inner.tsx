@@ -16,9 +16,22 @@ type Plan = {
   highlight?: boolean;
   badge?: string;
   features?: string[];
+  maxProducts?: number | null;
+  nfeIncluded?: boolean;
 };
 
+/** Plano anual: 365 dias no catálogo; tudo a partir de ~1 ano conta como anual. */
+const isAnual = (p: { periodDays: number }) => p.periodDays >= 360;
+
 type BillingMe = {
+  /** O que o plano atual libera e quanto já foi usado. */
+  limits?: {
+    planName: string | null;
+    maxProducts: number | null;
+    nfeIncluded: boolean;
+    trial: boolean;
+    productCount: number;
+  };
   store: {
     id: string;
     name: string;
@@ -209,8 +222,10 @@ export function AdminPlanosInner() {
       setData(res);
       setSelectedId((prev) => {
         if (prev && res.plans.some((p) => p.id === prev)) return prev;
-        const highlighted = res.plans.find((p) => p.highlight);
-        return highlighted?.id || res.plans[0]?.id || null;
+        const mensais = res.plans.filter((p) => !isAnual(p));
+        const lista = mensais.length > 0 ? mensais : res.plans;
+        const highlighted = lista.find((p) => p.highlight);
+        return highlighted?.id || lista[0]?.id || null;
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erro ao carregar planos');
@@ -531,6 +546,21 @@ export function AdminPlanosInner() {
   }, [store?.billingMethod]);
   const plans = data?.plans || [];
   const selected = plans.find((p) => p.id === selectedId) || null;
+  const temAnual = plans.some(isAnual) && plans.some((p) => !isAnual(p));
+  const periodo: 'mensal' | 'anual' = selected && isAnual(selected) ? 'anual' : 'mensal';
+  const planosVisiveis = temAnual
+    ? plans.filter((p) => (periodo === 'anual') === isAnual(p))
+    : plans;
+  const limits = data?.limits;
+  const cicloTexto = periodo === 'anual' ? 'todo ano' : 'todo mês';
+
+  /** Troca mensal ⇄ anual mantendo o mesmo plano (pelo nome) selecionado. */
+  function trocarPeriodo(alvo: 'mensal' | 'anual') {
+    const lista = plans.filter((p) => (alvo === 'anual') === isAnual(p));
+    const mesmo = selected && lista.find((p) => p.name === selected.name);
+    const destaque = lista.find((p) => p.highlight);
+    setSelectedId((mesmo || destaque || lista[0])?.id ?? null);
+  }
   const currentPlanId = store?.planName || null;
   const currentPlanLabel = planDisplayName(currentPlanId, plans);
 
@@ -792,12 +822,60 @@ export function AdminPlanosInner() {
           </h2>
           <p className="mt-1 text-sm text-muted">
             Escolha um plano. No Mercado Pago você autoriza o cartão — a
-            cobrança segue todo mês.
+            cobrança segue {cicloTexto}.
           </p>
         </div>
 
+        {limits ? (
+          <div className="flex flex-wrap gap-x-6 gap-y-1 rounded-xl bg-zinc-50 px-4 py-3 text-sm ring-1 ring-black/5">
+            {limits.trial ? (
+              <span className="font-medium text-emerald-700">
+                No teste grátis tudo fica liberado.
+              </span>
+            ) : null}
+            <span>
+              <span className="text-muted">Produtos: </span>
+              <strong className="tabular-nums">
+                {limits.productCount}
+                {limits.maxProducts != null ? ` de ${limits.maxProducts}` : ''}
+              </strong>
+              {limits.maxProducts == null ? (
+                <span className="text-muted"> (sem limite)</span>
+              ) : null}
+            </span>
+            <span>
+              <span className="text-muted">Nota fiscal: </span>
+              <strong>{limits.nfeIncluded ? 'incluída' : 'não incluída'}</strong>
+            </span>
+          </div>
+        ) : null}
+
+        {temAnual ? (
+          <div
+            role="radiogroup"
+            aria-label="Forma de pagamento do plano"
+            className="inline-flex rounded-full bg-zinc-100 p-1 text-sm font-semibold"
+          >
+            {(['mensal', 'anual'] as const).map((op) => (
+              <button
+                key={op}
+                type="button"
+                role="radio"
+                aria-checked={periodo === op}
+                onClick={() => trocarPeriodo(op)}
+                className={[
+                  'rounded-full px-4 py-1.5 transition',
+                  periodo === op ? 'bg-white text-ink shadow-sm' : 'text-muted hover:text-ink',
+                ].join(' ')}
+              >
+                {op === 'mensal' ? 'Mensal' : 'Anual · 2 meses grátis'}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
         <div className="grid gap-4 lg:grid-cols-3">
-          {plans.map((plan) => {
+          {planosVisiveis.map((plan) => {
             const active = selectedId === plan.id;
             const isCurrent = currentPlanId === plan.id;
             const features =
@@ -858,7 +936,11 @@ export function AdminPlanosInner() {
                   <p className="text-3xl font-bold tracking-tight">
                     {money(plan.amount)}
                   </p>
-                  <p className="mt-0.5 text-xs text-muted">por mês</p>
+                  <p className="mt-0.5 text-xs text-muted">
+                    {isAnual(plan)
+                      ? `por ano · equivale a ${money(plan.amount / 12)} por mês`
+                      : 'por mês'}
+                  </p>
                 </div>
 
                 <ul className="mt-5 space-y-2.5">
@@ -894,7 +976,7 @@ export function AdminPlanosInner() {
             </p>
             <p className="mt-0.5 text-sm font-bold">
               {selected
-                ? `Plano ${selected.name} · ${money(selected.amount)}/mês`
+                ? `Plano ${selected.name} · ${money(selected.amount)}${isAnual(selected) ? '/ano' : '/mês'}`
                 : 'Selecione um plano'}
             </p>
           </div>
@@ -904,7 +986,7 @@ export function AdminPlanosInner() {
               <div className="mb-4 grid gap-0 sm:grid-cols-2 sm:gap-x-8">
                 <DetailRow
                   label="Produto"
-                  value={`Mensalidade ${BRAND.name}`}
+                  value={`${periodo === 'anual' ? 'Anuidade' : 'Mensalidade'} ${BRAND.name}`}
                 />
                 <DetailRow
                   label="Cobrança"
@@ -927,12 +1009,12 @@ export function AdminPlanosInner() {
                   {
                     id: 'CARD' as const,
                     titulo: 'Cartão de crédito',
-                    desc: 'Renova sozinho todo mês. Você não precisa fazer nada.',
+                    desc: `Renova sozinho ${cicloTexto}. Você não precisa fazer nada.`,
                   },
                   {
                     id: 'PIX' as const,
                     titulo: 'Pix',
-                    desc: 'Geramos a cobrança todo mês e avisamos. Você paga o QR a cada ciclo.',
+                    desc: `Geramos a cobrança ${cicloTexto} e avisamos. Você paga o QR a cada ciclo.`,
                   },
                 ]
               ).map((op) => (
@@ -986,7 +1068,7 @@ export function AdminPlanosInner() {
                 </button>
                 <p className="max-w-md text-[11px] leading-snug text-muted">
                   Abre o checkout do Mercado Pago em nova aba para autorizar o
-                  cartão. A cobrança renova todo mês automaticamente.
+                  cartão. A cobrança renova {cicloTexto} automaticamente.
                 </p>
               </div>
             ) : (

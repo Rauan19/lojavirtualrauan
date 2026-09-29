@@ -6,10 +6,7 @@ import { ProductsService } from './products.service';
  * transportadora. Os testes param na validação: o Prisma falso devolve o
  * suficiente para chegar nela e falha alto se a gravação for tentada.
  */
-function serviceFor(
-  freteModo: string,
-  saved: Record<string, unknown> = {},
-) {
+function serviceFor(freteModo: string, saved: Record<string, unknown> = {}) {
   const created = jest.fn().mockResolvedValue({ id: 'novo' });
   const prisma = {
     category: { findFirst: jest.fn().mockResolvedValue({ id: 'cat' }) },
@@ -22,7 +19,12 @@ function serviceFor(
     $transaction: jest.fn().mockResolvedValue({ id: 'p1' }),
   };
   return {
-    service: new ProductsService(prisma as never),
+    service: new ProductsService(
+      prisma as never,
+      {
+        assertCanCreateProduct: jest.fn(),
+      } as never,
+    ),
     prisma,
     created,
   };

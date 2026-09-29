@@ -7,55 +7,112 @@ export type PlatformPlan = {
   highlight?: boolean;
   badge?: string;
   features?: string[];
+  /** Máximo de produtos cadastrados. null/ausente = sem limite. */
+  maxProducts?: number | null;
+  /** NF-e/NFC-e liberada. Ausente = liberada. */
+  nfeIncluded?: boolean;
 };
 
-/** Catálogo SaaS (todos mensais). Valores podem ser sobrescritos por env (JSON). */
+/**
+ * Catálogo usado só quando a tabela PlatformPlan está vazia. O catálogo de
+ * verdade vive no banco (editável pelo Super Admin) e é semeado pelas
+ * migrations platform_plans e planos_com_limites, com os mesmos valores.
+ */
 export const DEFAULT_PLATFORM_PLANS: PlatformPlan[] = [
   {
     id: 'essencial',
     name: 'Essencial',
-    description:
-      'Ideal para loja menor, catálogo enxuto e começo sem complicação.',
-    amount: 169.9,
+    description: 'Para começar a vender online com marca própria.',
+    amount: 69.9,
     periodDays: 30,
-    badge: 'Loja menor',
+    badge: 'Para começar',
+    maxProducts: 100,
+    nfeIncluded: false,
     features: [
-      'Loja online completa',
-      'Produtos, pedidos e frete',
-      'Mercado Pago dos seus clientes',
-      'Link da loja incluso (slug)',
-      'Domínio próprio opcional — o registro do domínio é pago por você',
+      'Loja completa com domínio próprio',
+      'Até 100 produtos',
+      'Pix, cartão e boleto pelo Mercado Pago',
+      'Frete pelo Melhor Envio com etiqueta e rastreio',
+      'Cupons, promoções e avaliações',
     ],
   },
   {
     id: 'mensal',
-    name: 'Mensal',
-    description: 'Para loja em crescimento que já vende com mais frequência.',
-    amount: 199.9,
+    name: 'Profissional',
+    description: 'Para a loja que já vende todo dia e emite nota.',
+    amount: 129.9,
     periodDays: 30,
-    highlight: true,
     badge: 'Mais escolhido',
+    highlight: true,
+    maxProducts: null,
+    nfeIncluded: true,
     features: [
       'Tudo do Essencial',
-      'Mais espaço pra crescer o catálogo',
-      'Painel completo de vendas',
-      'Link da loja incluso (slug)',
-      'Domínio próprio opcional — o registro do domínio é pago por você',
+      'Produtos ilimitados',
+      'Nota fiscal automática (NF-e e NFC-e)',
     ],
   },
   {
     id: 'pro',
-    name: 'Pro',
-    description: 'Para loja maior, mais volume e operação no dia a dia.',
-    amount: 297.9,
+    name: 'Avançado',
+    description: 'Para operação maior, com atendimento prioritário.',
+    amount: 249.9,
     periodDays: 30,
     badge: 'Loja maior',
+    maxProducts: null,
+    nfeIncluded: true,
     features: [
-      'Tudo do Mensal',
-      'Foco em operação com mais volume',
-      'Prioridade no suporte',
-      'Link da loja incluso (slug)',
-      'Domínio próprio opcional — o registro do domínio é pago por você',
+      'Tudo do Profissional',
+      'Suporte prioritário pelo WhatsApp',
+      'Ajuda para configurar domínio, frete e nota fiscal',
+    ],
+  },
+  {
+    id: 'essencial-anual',
+    name: 'Essencial',
+    description: 'Pagamento anual. Equivale a R$ 58,25 por mês.',
+    amount: 699,
+    periodDays: 365,
+    badge: '2 meses grátis',
+    maxProducts: 100,
+    nfeIncluded: false,
+    features: [
+      'Loja completa com domínio próprio',
+      'Até 100 produtos',
+      'Pix, cartão e boleto pelo Mercado Pago',
+      'Frete pelo Melhor Envio com etiqueta e rastreio',
+      'Cupons, promoções e avaliações',
+    ],
+  },
+  {
+    id: 'mensal-anual',
+    name: 'Profissional',
+    description: 'Pagamento anual. Equivale a R$ 108,25 por mês.',
+    amount: 1299,
+    periodDays: 365,
+    badge: '2 meses grátis',
+    highlight: true,
+    maxProducts: null,
+    nfeIncluded: true,
+    features: [
+      'Tudo do Essencial',
+      'Produtos ilimitados',
+      'Nota fiscal automática (NF-e e NFC-e)',
+    ],
+  },
+  {
+    id: 'pro-anual',
+    name: 'Avançado',
+    description: 'Pagamento anual. Equivale a R$ 208,25 por mês.',
+    amount: 2499,
+    periodDays: 365,
+    badge: '2 meses grátis',
+    maxProducts: null,
+    nfeIncluded: true,
+    features: [
+      'Tudo do Profissional',
+      'Suporte prioritário pelo WhatsApp',
+      'Ajuda para configurar domínio, frete e nota fiscal',
     ],
   },
 ];

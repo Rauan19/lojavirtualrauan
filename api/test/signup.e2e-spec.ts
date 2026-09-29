@@ -153,7 +153,8 @@ describe('Signup público (e2e)', () => {
     const store = await prisma.store.findUniqueOrThrow({
       where: { slug: res.body.slug },
     });
-    expect(store.planName).toBe('Pro');
+    // Grava o id (não o nome): é por ele que limites e cobrança acham o plano
+    expect(store.planName).toBe('plan-seed-pro');
     expect(store.status).toBe(StoreStatus.TRIAL);
   });
 

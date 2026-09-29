@@ -106,7 +106,7 @@ export default async function HomePage() {
       'Plataforma para criar loja virtual com catálogo, pedidos, pagamento por Pix e cartão, nota fiscal e domínio próprio.',
     offers: plans.map((plan) => ({
       '@type': 'Offer',
-      name: plan.name,
+      name: plan.periodDays >= 360 ? `${plan.name} (anual)` : plan.name,
       price: plan.amount,
       priceCurrency: 'BRL',
     })),
@@ -313,8 +313,18 @@ export default async function HomePage() {
               paga.
             </p>
 
+            {plans.some((p) => p.periodDays >= 360) ? (
+              <p className="mt-3 text-sm font-semibold text-[#171a1f]">
+                No plano anual você ganha 2 meses grátis.
+              </p>
+            ) : null}
+
             <div className="mt-10 grid gap-4 md:grid-cols-3">
-              {plans.map((plan) => (
+              {plans
+                .filter((plan, _i, all) =>
+                  all.some((p) => p.periodDays < 360) ? plan.periodDays < 360 : true,
+                )
+                .map((plan) => (
                 <div
                   key={plan.id}
                   className={`flex flex-col border bg-white p-5 ${

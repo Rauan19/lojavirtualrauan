@@ -48,6 +48,7 @@ import {
   resolveStoreLayout,
 } from './store-type';
 import { TERMS_VERSION } from '../common/legal';
+import { PlanLimitsService } from '../plan-limits/plan-limits.service';
 
 const BRAZILIAN_STATES = new Set([
   'AC',
@@ -87,6 +88,7 @@ export class StoresService {
     private readonly secrets: SecretsService,
     private readonly billingService: BillingService,
     private readonly platformPlansService: PlatformPlansService,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
   /**
@@ -127,7 +129,8 @@ export class StoresService {
           name: dto.storeName.trim(),
           slug,
           storeType: StoreType.GENERAL,
-          planName: plan.name,
+          // id, não nome: é por ele que os limites e a cobrança acham o plano
+          planName: plan.id,
           status: StoreStatus.TRIAL,
           planDueAt,
           monthlyFee: new Prisma.Decimal(plan.amount),
@@ -706,6 +709,9 @@ export class StoresService {
 
   async updateNfeConfig(storeId: string, dto: UpdateNfeConfigDto) {
     const data: Prisma.StoreUpdateInput = {};
+    if (dto.nfeEnabled === true) {
+      await this.planLimits.assertNfeIncluded(storeId);
+    }
     if (dto.nfeEnabled !== undefined) data.nfeEnabled = dto.nfeEnabled;
     if (dto.nfeProvider !== undefined) {
       data.nfeProvider = dto.nfeProvider?.trim() || null;

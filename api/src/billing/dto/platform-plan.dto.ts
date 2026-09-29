@@ -41,6 +41,17 @@ export class CreatePlatformPlanDto {
   @IsString({ each: true })
   features?: string[];
 
+  /** Máximo de produtos. 0 ou null = sem limite. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  maxProducts?: number | null;
+
+  @IsOptional()
+  @IsBoolean()
+  nfeIncluded?: boolean;
+
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -84,6 +95,17 @@ export class UpdatePlatformPlanDto {
   @IsOptional()
   @IsBoolean()
   active?: boolean;
+
+  /** Máximo de produtos. 0 ou null = sem limite. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  maxProducts?: number | null;
+
+  @IsOptional()
+  @IsBoolean()
+  nfeIncluded?: boolean;
 
   @IsOptional()
   @Type(() => Number)

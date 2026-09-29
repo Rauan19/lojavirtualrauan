@@ -13,6 +13,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { SecretsService } from '../common/secrets/secrets.service';
 import { onlyDigits } from '../stores/store-type';
+import { PlanLimitsService } from '../plan-limits/plan-limits.service';
 
 /** NCM padrão quando o produto não tem NCM cadastrado (obrigatório na NFC-e). */
 export const DEFAULT_NCM = '00000000';
@@ -39,9 +40,11 @@ export class InvoicesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly secrets: SecretsService,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
   async issueForOrder(storeId: string, orderId: string) {
+    await this.planLimits.assertNfeIncluded(storeId);
     const storeRow = await this.prisma.store.findUnique({
       where: { id: storeId },
     });

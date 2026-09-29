@@ -722,6 +722,13 @@ model PlatformPlan {
   badge       String?
   highlight   Boolean  @default(false)
   features    Json?
+  /**
+   * Limites do plano, aplicados de verdade pela API (PlanLimitsService).
+   * null = sem limite. Loja em teste grátis não tem limite nenhum.
+   */
+  maxProducts Int?
+  /** Emissão de NF-e/NFC-e (manual e automática) liberada neste plano. */
+  nfeIncluded Boolean  @default(true)
   /** Desativado some da lista de escolha, mas não quebra loja que já usa o nome. */
   active      Boolean  @default(true)
   order       Int      @default(0)

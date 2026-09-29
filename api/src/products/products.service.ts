@@ -16,6 +16,7 @@ import {
   UpdateCategoryDto,
   UpdateProductDto,
 } from './dto/product.dto';
+import { PlanLimitsService } from '../plan-limits/plan-limits.service';
 
 const productInclude = {
   images: { orderBy: { position: 'asc' as const } },
@@ -26,7 +27,10 @@ const productInclude = {
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly planLimits: PlanLimitsService,
+  ) {}
 
   async ensureDefaultCategories(storeId: string, storeType?: StoreType) {
     const count = await this.prisma.category.count({ where: { storeId } });
@@ -156,6 +160,7 @@ export class ProductsService {
   }
 
   async createProduct(storeId: string, dto: CreateProductDto) {
+    await this.planLimits.assertCanCreateProduct(storeId);
     if (!dto.categoryId?.trim()) {
       throw new BadRequestException('Selecione uma categoria');
     }
