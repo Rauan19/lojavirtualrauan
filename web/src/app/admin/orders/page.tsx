@@ -1071,12 +1071,6 @@ export default function AdminOrdersPage() {
       {detail || detailLoading ? (
         <div
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-3 sm:items-center"
-          onClick={() => {
-            if (!detailLoading) {
-              setDetail(null);
-              setInvoice(null);
-            }
-          }}
         >
           <div
             className="max-h-[90vh] w-full max-w-lg overflow-y-auto border border-line bg-white p-4 shadow-xl"

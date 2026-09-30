@@ -1,6 +1,13 @@
 'use client';
 
-import { FormEvent, useEffect, useMemo, useState, type ReactNode } from 'react';
+import {
+  FormEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useConfirm } from '@/components/ConfirmDialog';
 import { PaginationBar } from '@/components/PaginationBar';
 import { api, thumbUrl, money } from '@/lib/api';
@@ -328,6 +335,36 @@ export default function AdminProductsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [createStep, setCreateStep] = useState(0);
   const [editForm, setEditForm] = useState<EditForm | null>(null);
+  /** Como o produto estava ao abrir a edição — para saber se há alteração. */
+  const editSnapshot = useRef<string | null>(null);
+  useEffect(() => {
+    if (!editForm) {
+      editSnapshot.current = null;
+    } else if (editSnapshot.current === null) {
+      editSnapshot.current = JSON.stringify(editForm);
+    }
+  }, [editForm]);
+
+  async function closeEdit() {
+    if (editBusy) return;
+    const mudou =
+      editForm !== null &&
+      editSnapshot.current !== null &&
+      JSON.stringify(editForm) !== editSnapshot.current;
+    if (
+      mudou &&
+      !(await confirm({
+        title: 'Descartar as alterações?',
+        message: 'As mudanças neste produto ainda não foram salvas.',
+        confirmLabel: 'Descartar',
+        cancelLabel: 'Continuar editando',
+        danger: true,
+      }))
+    ) {
+      return;
+    }
+    setEditForm(null);
+  }
   const [editBusy, setEditBusy] = useState(false);
   const [useVariants, setUseVariants] = useState(false);
   const [axes, setAxes] = useState<FreeAxis[]>([]);
@@ -567,8 +604,34 @@ export default function AdminProductsPage() {
     setCreateOpen(true);
   }
 
-  function closeCreate() {
+  /** Já tem algo digitado no cadastro? (estoque e medidas vêm preenchidos) */
+  const createDirty = Boolean(
+    name.trim() ||
+      price.trim() ||
+      compareAt.trim() ||
+      description.trim() ||
+      brand.trim() ||
+      sku.trim() ||
+      ncm.trim() ||
+      categoryId ||
+      files.length ||
+      draftVariants.length,
+  );
+
+  async function closeCreate() {
     if (loading) return;
+    if (
+      createDirty &&
+      !(await confirm({
+        title: 'Descartar este produto?',
+        message: 'O que você preencheu ainda não foi salvo e vai ser perdido.',
+        confirmLabel: 'Descartar',
+        cancelLabel: 'Continuar editando',
+        danger: true,
+      }))
+    ) {
+      return;
+    }
     setCreateOpen(false);
     resetForm();
   }
@@ -1182,9 +1245,6 @@ export default function AdminProductsPage() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="create-product-title"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) closeCreate();
-          }}
         >
           <div className="flex max-h-[94vh] w-full max-w-lg flex-col overflow-hidden border border-line bg-white shadow-xl sm:max-w-3xl sm:rounded-md">
             <div className="border-b border-line px-4 py-3">
@@ -2024,9 +2084,6 @@ export default function AdminProductsPage() {
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-0 sm:items-center sm:p-4"
           role="dialog"
           aria-modal="true"
-          onClick={(e) => {
-            if (e.target === e.currentTarget && !editBusy) setEditForm(null);
-          }}
         >
           <form
             onSubmit={saveEdit}
@@ -2043,7 +2100,7 @@ export default function AdminProductsPage() {
                 type="button"
                 className="btn btn-ghost shrink-0 py-1.5 text-xs"
                 disabled={editBusy}
-                onClick={() => setEditForm(null)}
+                onClick={() => void closeEdit()}
               >
                 Fechar
               </button>
@@ -2394,7 +2451,7 @@ export default function AdminProductsPage() {
                   type="button"
                   className="btn btn-ghost"
                   disabled={editBusy}
-                  onClick={() => setEditForm(null)}
+                  onClick={() => void closeEdit()}
                 >
                   Cancelar
                 </button>
