@@ -6,7 +6,9 @@ import {
   NotFoundException,
   OnModuleDestroy,
   OnModuleInit,
+  Optional,
 } from '@nestjs/common';
+import { emTrava, TravasService } from '../fila/travas.service';
 import { ConfigService } from '@nestjs/config';
 import { SecretsService } from '../common/secrets/secrets.service';
 import { SweepRunner } from '../common/utils/sweep-runner';
@@ -54,7 +56,8 @@ type TokenResponse = {
 export class MercadoPagoOauthService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(MercadoPagoOauthService.name);
   private readonly sweeper = new SweepRunner(
-    () => this.renovarVencendo(),
+    () =>
+      emTrava(this.travas, 'mp-oauth-renovacao', () => this.renovarVencendo()),
     SWEEP_MS,
     (err) =>
       this.logger.warn(
@@ -68,6 +71,7 @@ export class MercadoPagoOauthService implements OnModuleInit, OnModuleDestroy {
     private readonly prisma: PrismaService,
     private readonly secrets: SecretsService,
     private readonly config: ConfigService,
+    @Optional() private readonly travas?: TravasService,
   ) {}
 
   onModuleInit() {

@@ -9,7 +9,9 @@ import {
   Logger,
   OnModuleDestroy,
   OnModuleInit,
+  Optional,
 } from '@nestjs/common';
+import { emTrava, TravasService } from '../fila/travas.service';
 import { OrderStatus, PaymentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SecretsService } from '../common/secrets/secrets.service';
@@ -40,7 +42,7 @@ type MeWebhookBody = {
 export class TrackingService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(TrackingService.name);
   private readonly sweeper = new SweepRunner(
-    () => this.syncOpenShipments(),
+    () => emTrava(this.travas, 'rastreio', () => this.syncOpenShipments()),
     TRACK_SWEEP_MS,
     (err) =>
       this.logger.warn(
@@ -55,6 +57,7 @@ export class TrackingService implements OnModuleInit, OnModuleDestroy {
     private readonly orderMail: OrderMailService,
     private readonly secrets: SecretsService,
     private readonly eventos: ShipmentEventsService,
+    @Optional() private readonly travas?: TravasService,
   ) {}
 
   onModuleInit() {

@@ -52,6 +52,7 @@ function montar(comissao: { feeCents: number; feeReais: number } | null) {
     {} as never,
     mpOauth as never,
     platformFee as never,
+    { agendar: jest.fn() } as never,
   );
   return { svc };
 }

@@ -6,8 +6,10 @@ import {
   NotFoundException,
   OnModuleDestroy,
   OnModuleInit,
+  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
+import { emTrava, TravasService } from '../fila/travas.service';
 import { OrderStatus, PaymentStatus, Prisma } from '@prisma/client';
 import {
   REFUND_STATUS,
@@ -40,7 +42,10 @@ const EXPIRE_SWEEP_MS = 5 * 60 * 1000;
 export class OrdersService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(OrdersService.name);
   private readonly sweeper = new SweepRunner(
-    () => this.expireAbandonedUnpaidOrders(),
+    () =>
+      emTrava(this.travas, 'pedidos-abandonados', () =>
+        this.expireAbandonedUnpaidOrders(),
+      ),
     EXPIRE_SWEEP_MS,
     (err) =>
       this.logger.warn(
@@ -59,6 +64,7 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
     private readonly shippingService: ShippingService,
     private readonly labelService: LabelService,
     private readonly planLimits: PlanLimitsService,
+    @Optional() private readonly travas?: TravasService,
   ) {}
 
   onModuleInit() {
@@ -859,7 +865,6 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
       });
     }
 
-
     if (firstApproval) {
       void this.orderMail.notifyOrder(orderId, 'paid');
       void this.tryAutoNetworkPrint(storeId, orderId);
@@ -1268,10 +1273,7 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
   }) {
     return {
       exigeDevolucao: exigeDevolucao(order.refundReasonType),
-      podeRecusar: podeRecusarPedido(
-        order.refundReasonType,
-        order.deliveredAt,
-      ),
+      podeRecusar: podeRecusarPedido(order.refundReasonType, order.deliveredAt),
       prazoArrependimento: prazoArrependimento(order.deliveredAt),
     };
   }

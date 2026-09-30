@@ -18,6 +18,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SecretsService } from '../common/secrets/secrets.service';
 import { buildMercadoPagoWebhookUrl } from '../common/utils/mercadopago-webhook-url';
 import { MercadoPagoOauthService } from './mercadopago-oauth.service';
+import { ConciliacaoComissaoService } from './conciliacao-comissao.service';
 import {
   PlatformFeeService,
   type ComissaoDoPedido,
@@ -51,6 +52,7 @@ export class PaymentsService {
     private readonly ordersService: OrdersService,
     private readonly mpOauth: MercadoPagoOauthService,
     private readonly platformFee: PlatformFeeService,
+    private readonly conciliacao: ConciliacaoComissaoService,
   ) {}
 
   /** URL pública do webhook (compra + reembolso), para exibir no painel. */
@@ -827,6 +829,11 @@ export class PaymentsService {
     if (context) {
       const { store, payment, order } = context;
 
+      // Livro da comissão: a fila relê o pagamento e lança o que faltar
+      if (order.platformFeeCents && order.platformFeeCents > 0) {
+        await this.conciliacao.agendar(store.id, payment.id);
+      }
+
       // Reembolso total / chargeback confirmado no Mercado Pago
       if (payment.status === 'refunded' || payment.status === 'charged_back') {
         const wasRefunded =
@@ -1056,6 +1063,9 @@ export class PaymentsService {
     await this.ordersService.releaseOrderCoupon(storeId, order.id);
 
     void this.ordersService.notifyRefundDone(order.id);
+    if (order.mpPaymentId && (order.platformFeeCents ?? 0) > 0) {
+      await this.conciliacao.agendar(storeId, order.mpPaymentId);
+    }
 
     return {
       order: updated,

@@ -554,6 +554,10 @@ model Order {
   platformFeeBps    Int?
   platformFeeBaseCents Int?
   platformFeeCents  Int?
+  /// O que o Mercado Pago de fato reteve (fee_details.application_fee), lido na conciliação
+  platformFeeChargedCents Int?
+  /// Retido ≠ fotografado: alguém precisa olhar (relatório do Super Admin)
+  platformFeeMismatch Boolean @default(false)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 

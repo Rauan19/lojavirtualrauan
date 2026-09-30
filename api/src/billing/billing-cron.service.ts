@@ -4,7 +4,9 @@ import {
   Logger,
   OnModuleDestroy,
   OnModuleInit,
+  Optional,
 } from '@nestjs/common';
+import { emTrava, TravasService } from '../fila/travas.service';
 import { ConfigService } from '@nestjs/config';
 import { PaymentStatus, StoreStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -32,7 +34,7 @@ const DEFAULT_GRACE_DAYS = 7;
 export class BillingCronService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(BillingCronService.name);
   private readonly sweeper = new SweepRunner(
-    () => this.rodar(),
+    () => emTrava(this.travas, 'cobranca-mensalidade', () => this.rodar()),
     SWEEP_MS,
     (err) =>
       this.logger.error(
@@ -47,6 +49,7 @@ export class BillingCronService implements OnModuleInit, OnModuleDestroy {
     private readonly config: ConfigService,
     private readonly billing: BillingService,
     private readonly billingMail: BillingMailService,
+    @Optional() private readonly travas?: TravasService,
   ) {}
 
   onModuleInit() {
@@ -83,7 +86,9 @@ export class BillingCronService implements OnModuleInit, OnModuleDestroy {
 
       let enviados = 0;
       for (const f of vencidas) {
-        if (!deveLembrar({ dueAt: f.dueAt, lembreteEnviadoEm: f.pixLembreteEm })) {
+        if (
+          !deveLembrar({ dueAt: f.dueAt, lembreteEnviadoEm: f.pixLembreteEm })
+        ) {
           continue;
         }
         /*
@@ -202,7 +207,10 @@ export class BillingCronService implements OnModuleInit, OnModuleDestroy {
       let fimDoTeste = 0;
       if (gratis) {
         const testes = await this.prisma.store.findMany({
-          where: { status: StoreStatus.TRIAL, planDueAt: { not: null, lte: now } },
+          where: {
+            status: StoreStatus.TRIAL,
+            planDueAt: { not: null, lte: now },
+          },
           select: { id: true },
         });
         for (const loja of testes) {
