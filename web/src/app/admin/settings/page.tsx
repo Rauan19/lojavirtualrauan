@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
+import { useEscapeKey, useUnsavedWarning } from '@/lib/modal-guards';
+import { useConfirm } from '@/components/ConfirmDialog';
 import { BRAND } from '@/lib/brand';
 import { api, mediaUrl } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
@@ -739,6 +741,7 @@ function SettingsModal({
   hint,
   erro,
   onClose,
+  onDescartar,
   children,
 }: {
   title: string;
@@ -749,14 +752,57 @@ function SettingsModal({
    */
   erro?: string;
   onClose: () => void;
+  /** Chamada quando fecha descartando o que foi mexido. */
+  onDescartar?: () => void;
   children: ReactNode;
 }) {
+  /*
+   * Mexeu em algum campo e ainda não enviou? O X e o Esc perguntam antes de
+   * fechar, e recarregar a página mostra o aviso do navegador. Enviar o
+   * formulário zera: dali em diante quem manda é a resposta do salvamento.
+   */
+  const [mexeu, setMexeu] = useState(false);
+  const { confirm, dialog } = useConfirm();
+
+  async function fechar() {
+    if (
+      mexeu &&
+      !(await confirm({
+        title: 'Fechar sem salvar?',
+        message: 'O que você mudou aqui ainda não foi salvo.',
+        confirmLabel: 'Fechar sem salvar',
+        cancelLabel: 'Continuar editando',
+        danger: true,
+      }))
+    ) {
+      return;
+    }
+    onClose();
+    if (mexeu) onDescartar?.();
+  }
+
+  useEscapeKey(true, () => void fechar());
+  useUnsavedWarning(mexeu);
+
   return (
     <div
       className="fixed inset-0 z-[80] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
+      onInputCapture={() => setMexeu(true)}
+      onChangeCapture={() => setMexeu(true)}
+      onSubmitCapture={() => setMexeu(false)}
+      onClickCapture={(e) => {
+        // "Cancelar" dos formulários passa pela mesma pergunta do X
+        const alvo = e.target as HTMLElement;
+        if (mexeu && alvo.closest('[data-modal-cancel]')) {
+          e.preventDefault();
+          e.stopPropagation();
+          void fechar();
+        }
+      }}
     >
+      {dialog}
       <div className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden border border-line bg-white shadow-xl sm:rounded-md">
         <div className="flex shrink-0 items-start gap-3 border-b border-line px-4 py-3">
           <div className="min-w-0 flex-1">
@@ -768,7 +814,7 @@ function SettingsModal({
           <button
             type="button"
             className="icon-btn shrink-0"
-            onClick={onClose}
+            onClick={() => void fechar()}
             aria-label="Fechar"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -995,26 +1041,37 @@ export default function AdminSettingsPage() {
     window.history.replaceState({}, '', window.location.pathname);
   }, []);
 
-  useEffect(() => {
+  /**
+   * Os modais editam `store` direto; fechar sem salvar deixava na tela o
+   * valor que não foi gravado. Recarregar do servidor desfaz isso.
+   */
+  async function carregarLoja(primeiraVez = false) {
     const { token, storeSlug } = auth();
     if (!token) return;
-    api<Store>('/stores/me', { token, storeSlug })
-      .then((s) => {
-        const next = {
-          ...s,
-          sellerPhone: s.sellerPhone ? formatPhoneBr(s.sellerPhone) : s.sellerPhone,
-          marqueeEnabled: s.marqueeEnabled !== false,
-          marqueeImages: asImages(s.marqueeImages),
-          freteTransportadoras: asCarrierIds(s.freteTransportadoras),
-        };
-        setStore(next);
-        setMpPublicKey(s.mpPublicKey || '');
-        if (!hasOriginAddress(next)) {
-          setOriginModalOpen(true);
-          setOpenSection('shipping');
-        }
-      })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Erro'));
+    try {
+      const s = await api<Store>('/stores/me', { token, storeSlug });
+      const next = {
+        ...s,
+        sellerPhone: s.sellerPhone ? formatPhoneBr(s.sellerPhone) : s.sellerPhone,
+        marqueeEnabled: s.marqueeEnabled !== false,
+        marqueeImages: asImages(s.marqueeImages),
+        freteTransportadoras: asCarrierIds(s.freteTransportadoras),
+      };
+      setStore(next);
+      setMpPublicKey(s.mpPublicKey || '');
+      setMpAccessToken('');
+      if (primeiraVez && !hasOriginAddress(next)) {
+        setOriginModalOpen(true);
+        setOpenSection('shipping');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro');
+    }
+  }
+
+  useEffect(() => {
+    void carregarLoja(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -1819,6 +1876,7 @@ export default function AdminSettingsPage() {
 
       {identModal ? (
         <SettingsModal
+          onDescartar={() => void carregarLoja()}
           title={IDENT_MODAL_TITULO[identModal]}
           hint={IDENT_MODAL_HINT[identModal]}
           erro={error}
@@ -2078,6 +2136,7 @@ export default function AdminSettingsPage() {
               <button
                 type="button"
                 className="btn btn-ghost order-2 sm:order-1"
+                data-modal-cancel
                 onClick={() => setIdentModal(null)}
               >
                 Cancelar
@@ -2335,6 +2394,7 @@ export default function AdminSettingsPage() {
 
       {freteModal ? (
         <SettingsModal
+          onDescartar={() => void carregarLoja()}
           title={FRETE_MODAL_TITULO[freteModal]}
           hint={FRETE_MODAL_HINT[freteModal]}
           erro={error}
@@ -2796,6 +2856,7 @@ export default function AdminSettingsPage() {
               <button
                 type="button"
                 className="btn btn-ghost order-2 sm:order-1"
+                data-modal-cancel
                 onClick={() => setFreteModal(null)}
               >
                 Cancelar
@@ -2900,6 +2961,7 @@ export default function AdminSettingsPage() {
 
       {pagamentoModal ? (
         <SettingsModal
+          onDescartar={() => void carregarLoja()}
           title={PAGAMENTO_MODAL_TITULO[pagamentoModal]}
           hint={PAGAMENTO_MODAL_HINT[pagamentoModal]}
           erro={error}
@@ -3076,6 +3138,7 @@ export default function AdminSettingsPage() {
               <button
                 type="button"
                 className="btn btn-ghost order-2 sm:order-1"
+                data-modal-cancel
                 onClick={() => setPagamentoModal(null)}
               >
                 {pagamentoModal === 'webhook' ? 'Fechar' : 'Cancelar'}
@@ -3138,6 +3201,7 @@ export default function AdminSettingsPage() {
 
         {perfilModal ? (
           <SettingsModal
+          onDescartar={() => void carregarLoja()}
             title={PERFIL_MODAL_TITULO[perfilModal]}
             hint={PERFIL_MODAL_HINT[perfilModal]}
             erro={error}
@@ -3343,6 +3407,7 @@ export default function AdminSettingsPage() {
                 <button
                   type="button"
                   className="btn btn-ghost order-2 sm:order-1"
+                  data-modal-cancel
                   onClick={() => setPerfilModal(null)}
                 >
                   Cancelar
@@ -3389,6 +3454,7 @@ export default function AdminSettingsPage() {
 
         {politicaModal ? (
           <SettingsModal
+          onDescartar={() => void carregarLoja()}
             title={
               POLITICAS.find((p) => p.campo === politicaModal)?.titulo ||
               'Política'
@@ -3434,6 +3500,7 @@ export default function AdminSettingsPage() {
                 <button
                   type="button"
                   className="btn btn-ghost order-2 sm:order-1"
+                  data-modal-cancel
                   onClick={() => setPoliticaModal(null)}
                 >
                   Cancelar
@@ -3502,6 +3569,7 @@ export default function AdminSettingsPage() {
 
         {nfeModal ? (
           <SettingsModal
+          onDescartar={() => void carregarLoja()}
             title={
               nfeModal === 'emissao'
                 ? 'Emissão de NFC-e'
@@ -3638,6 +3706,7 @@ export default function AdminSettingsPage() {
                 <button
                   type="button"
                   className="btn btn-ghost order-2 sm:order-1"
+                  data-modal-cancel
                   onClick={() => setNfeModal(null)}
                 >
                   Cancelar

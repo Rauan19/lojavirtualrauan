@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { useEscapeKey } from '@/lib/modal-guards';
 import { PaginationBar } from '@/components/PaginationBar';
 import { api, thumbUrl, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
@@ -267,6 +268,10 @@ export default function AdminOrdersPage() {
   const [labelBusyId, setLabelBusyId] = useState<string | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [invoice, setInvoice] = useState<InvoiceInfo | null>(null);
+  useEscapeKey(detail !== null && !detailLoading, () => {
+    setDetail(null);
+    setInvoice(null);
+  });
   const [invoiceBusy, setInvoiceBusy] = useState(false);
   const [bulkBusy, setBulkBusy] = useState(false);
   const [printerOpen, setPrinterOpen] = useState(false);

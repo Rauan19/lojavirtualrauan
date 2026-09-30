@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { useEscapeKey, useUnsavedWarning } from '@/lib/modal-guards';
 import { PaginationBar } from '@/components/PaginationBar';
 import { api, thumbUrl, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
@@ -345,6 +346,13 @@ export default function AdminProductsPage() {
     }
   }, [editForm]);
 
+  useEscapeKey(editForm !== null, () => void closeEdit());
+  useUnsavedWarning(
+    editForm !== null &&
+      editSnapshot.current !== null &&
+      JSON.stringify(editForm) !== editSnapshot.current,
+  );
+
   async function closeEdit() {
     if (editBusy) return;
     const mudou =
@@ -617,6 +625,9 @@ export default function AdminProductsPage() {
       files.length ||
       draftVariants.length,
   );
+
+  useEscapeKey(createOpen, () => void closeCreate());
+  useUnsavedWarning(createOpen && createDirty);
 
   async function closeCreate() {
     if (loading) return;

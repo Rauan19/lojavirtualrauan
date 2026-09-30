@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { useEscapeKey } from '@/lib/modal-guards';
 import { api, mediaUrl } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 
@@ -43,6 +44,9 @@ export default function AdminCategoriesPage() {
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
+  useEscapeKey(editing !== null, () => {
+    if (!busy) setEditing(null);
+  });
   const [editName, setEditName] = useState('');
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editParentId, setEditParentId] = useState('');
