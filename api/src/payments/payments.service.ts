@@ -18,6 +18,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SecretsService } from '../common/secrets/secrets.service';
 import { buildMercadoPagoWebhookUrl } from '../common/utils/mercadopago-webhook-url';
 import { MercadoPagoOauthService } from './mercadopago-oauth.service';
+import {
+  PlatformFeeService,
+  type ComissaoDoPedido,
+} from '../platform-fee/platform-fee.service';
 
 type MpPayment = {
   id: number;
@@ -46,6 +50,7 @@ export class PaymentsService {
     @Inject(forwardRef(() => OrdersService))
     private readonly ordersService: OrdersService,
     private readonly mpOauth: MercadoPagoOauthService,
+    private readonly platformFee: PlatformFeeService,
   ) {}
 
   /** URL pública do webhook (compra + reembolso), para exibir no painel. */
@@ -390,7 +395,8 @@ export class PaymentsService {
       };
     }
 
-    return this.createProPreference(store, order, amount);
+    const comissao = await this.platformFee.paraPedido(storeId, order);
+    return this.createProPreference(store, order, amount, comissao);
   }
 
   private async createProPreference(
@@ -409,6 +415,7 @@ export class PaymentsService {
       shippingMethod: string | null;
     },
     amount: number,
+    comissao: ComissaoDoPedido | null,
   ) {
     const items = this.buildPreferenceItems(order);
     const notificationUrl = this.notificationUrl(store.id);
@@ -422,8 +429,11 @@ export class PaymentsService {
       metadata: {
         store_id: store.id,
         order_id: order.id,
+        ...(comissao ? { platform_fee_cents: comissao.feeCents } : {}),
       },
     };
+    // Comissão da plataforma (split): o Mercado Pago separa sozinho
+    if (comissao) body.marketplace_fee = comissao.feeReais;
     if (notificationUrl) {
       body.notification_url = notificationUrl;
     }
@@ -536,6 +546,16 @@ export class PaymentsService {
           ? issuer
           : formData.issuer_id;
       }
+    }
+
+    // Comissão da plataforma (split): o Mercado Pago separa sozinho
+    const comissao = await this.platformFee.paraPedido(storeId, order);
+    if (comissao) {
+      paymentBody.application_fee = comissao.feeReais;
+      paymentBody.metadata = {
+        ...(paymentBody.metadata as Record<string, unknown>),
+        platform_fee_cents: comissao.feeCents,
+      };
     }
 
     const notificationUrl = this.notificationUrl(storeId);
