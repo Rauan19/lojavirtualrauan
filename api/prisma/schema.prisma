@@ -143,6 +143,19 @@ model Store {
 
   mpAccessToken    String?
   mpPublicKey      String?
+  /**
+   * Conexão pelo "Conectar com Mercado Pago" (OAuth do app da Vendira). Com
+   * ela a plataforma pode cobrar comissão por venda (split). Loja com token
+   * colado na mão fica com estes campos nulos.
+   * mpAccessToken acima continua sendo o token usado nos pagamentos.
+   */
+  mpRefreshToken   String?
+  mpTokenExpiresAt DateTime?
+  /** user_id da conta Mercado Pago que autorizou. */
+  mpUserId         String?
+  mpConnectedAt    DateTime?
+  /** false = conectou uma conta de teste (sandbox). */
+  mpLiveMode       Boolean?
   checkoutMode     String      @default("personalized")
   freteModo        String      @default("manual")
   freteValorFixo   Decimal?    @db.Decimal(10, 2)

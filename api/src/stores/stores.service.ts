@@ -778,6 +778,13 @@ export class StoresService {
     const nextAccessToken = dto.mpAccessToken?.trim() || null;
     if (nextAccessToken) {
       data.mpAccessToken = this.secrets.encrypt(nextAccessToken);
+      // Token colado substitui a conexão OAuth: sem isto o refresh antigo
+      // sobrescreveria o token novo na próxima renovação.
+      data.mpRefreshToken = null;
+      data.mpTokenExpiresAt = null;
+      data.mpUserId = null;
+      data.mpConnectedAt = null;
+      data.mpLiveMode = null;
     }
     if (dto.mpPublicKey?.trim()) {
       data.mpPublicKey = dto.mpPublicKey.trim();
@@ -1163,6 +1170,7 @@ export class StoresService {
   private toAdminStore<T extends Record<string, unknown>>(store: T) {
     const {
       mpAccessToken,
+      mpRefreshToken,
       freteToken,
       freteRefreshToken,
       nfeApiToken,
@@ -1170,6 +1178,7 @@ export class StoresService {
       ...rest
     } = store as T & {
         mpAccessToken?: string | null;
+        mpRefreshToken?: string | null;
         freteToken?: string | null;
         freteRefreshToken?: string | null;
         nfeApiToken?: string | null;
@@ -1188,6 +1197,8 @@ export class StoresService {
         ? `${token.slice(0, 14)}…${token.slice(-4)}`
         : null,
       mpPublicKeyHint: pk ? `${pk.slice(0, 18)}…` : null,
+      // Mesma ideia do frete: só a conexão OAuth permite cobrar comissão
+      mpOauthConectado: Boolean(mpRefreshToken),
       freteTokenSet: Boolean(freteToken),
       /*
        * Conectado por OAuth e diferente de ter um token colado: so no

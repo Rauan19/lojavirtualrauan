@@ -17,6 +17,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { SecretsService } from '../common/secrets/secrets.service';
 import { buildMercadoPagoWebhookUrl } from '../common/utils/mercadopago-webhook-url';
+import { MercadoPagoOauthService } from './mercadopago-oauth.service';
 
 type MpPayment = {
   id: number;
@@ -44,6 +45,7 @@ export class PaymentsService {
     private readonly secrets: SecretsService,
     @Inject(forwardRef(() => OrdersService))
     private readonly ordersService: OrdersService,
+    private readonly mpOauth: MercadoPagoOauthService,
   ) {}
 
   /** URL pública do webhook (compra + reembolso), para exibir no painel. */
@@ -260,6 +262,7 @@ export class PaymentsService {
     orderId: string,
     customerUserId?: string,
   ) {
+    await this.mpOauth.ensureFreshToken(storeId);
     const rawStore = await this.prisma.store.findUnique({
       where: { id: storeId },
     });
@@ -950,6 +953,7 @@ export class PaymentsService {
   }
 
   async refundOrder(storeId: string, orderId: string) {
+    await this.mpOauth.ensureFreshToken(storeId);
     const rawStore = await this.prisma.store.findUnique({
       where: { id: storeId },
     });
@@ -1046,6 +1050,7 @@ export class PaymentsService {
    * Mescla com "sem juros" da loja: até freeUntil divide o valor; acima usa taxa/valor do MP.
    */
   private async loadMpCreds(storeId: string) {
+    await this.mpOauth.ensureFreshToken(storeId);
     const rawStore = await this.prisma.store.findUnique({
       where: { id: storeId },
       select: { mpAccessToken: true, mpPublicKey: true },

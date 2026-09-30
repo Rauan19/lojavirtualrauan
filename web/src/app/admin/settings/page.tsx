@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
+import { BRAND } from '@/lib/brand';
 import { api, mediaUrl } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 import { formatPhoneBr } from '@/lib/contact';
@@ -37,6 +38,10 @@ type Store = {
   freteGratisAcima?: string | null;
   freteTokenSet?: boolean;
   freteOauthConectado?: boolean;
+  /** Conectado pelo "Conectar com Mercado Pago" (permite a comissão da plataforma). */
+  mpOauthConectado?: boolean;
+  /** false = conta de vendedor de teste. */
+  mpLiveMode?: boolean | null;
   freteContaNome?: string | null;
   freteContaEmail?: string | null;
   freteCepOrigem?: string | null;
@@ -777,6 +782,7 @@ export default function AdminSettingsPage() {
   const [nfeCscToken, setNfeCscToken] = useState('');
   const [meHelpOpen, setMeHelpOpen] = useState(false);
   const [meBusy, setMeBusy] = useState(false);
+  const [mpBusy, setMpBusy] = useState(false);
   const [freteModal, setFreteModal] = useState<
     'calculo' | 'origem' | 'conexao' | 'etiqueta' | null
   >(null);
@@ -858,6 +864,65 @@ export default function AdminSettingsPage() {
       setMeBusy(false);
     }
   }
+
+  /*
+   * Mesmo desenho do Melhor Envio: a autorização acontece no site do Mercado
+   * Pago. É essa conexão (e não o token colado) que permite a comissão da
+   * plataforma em cada venda.
+   */
+  async function conectarMercadoPago() {
+    const { token, storeSlug } = auth();
+    if (!token) return;
+    setMpBusy(true);
+    setError('');
+    try {
+      const { url } = await api<{ url: string }>(
+        '/admin/payments/mercadopago/authorize',
+        { token, storeSlug },
+      );
+      window.location.href = url;
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Falha ao abrir o Mercado Pago',
+      );
+      setMpBusy(false);
+    }
+  }
+
+  async function desconectarMercadoPago() {
+    const { token, storeSlug } = auth();
+    if (!token) return;
+    setMpBusy(true);
+    setError('');
+    try {
+      await api('/admin/payments/mercadopago/disconnect', {
+        method: 'POST',
+        token,
+        storeSlug,
+      });
+      const atualizada = await api<Store>('/stores/me', { token, storeSlug });
+      setStore(atualizada);
+      setMessage('Mercado Pago desconectado. O checkout fica desligado até conectar de novo.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Falha ao desconectar');
+    } finally {
+      setMpBusy(false);
+    }
+  }
+
+  /* Volta do Mercado Pago: o callback redireciona para cá com o resultado. */
+  useEffect(() => {
+    const status = new URLSearchParams(window.location.search).get(
+      'mercadopago',
+    );
+    if (!status) return;
+    if (status === 'conectado') {
+      setMessage('Mercado Pago conectado. A loja já pode receber pagamentos.');
+    } else {
+      setError('Não foi possível conectar ao Mercado Pago. Tente de novo.');
+    }
+    window.history.replaceState({}, '', window.location.pathname);
+  }, []);
 
   /* Volta do Melhor Envio: o callback redireciona para ca com o resultado. */
   useEffect(() => {
@@ -2696,14 +2761,41 @@ export default function AdminSettingsPage() {
       <div className="flex flex-col gap-2">
         <SettingsRow
           icon={<IconCartao />}
-          title="Credenciais do Mercado Pago"
+          title="Conta do Mercado Pago"
           value={
-            store.mpAccessTokenSet && store.mpPublicKey
-              ? `Configurado · ${store.mpAccessTokenHint || 'token salvo'}`
-              : 'Pendente — sem isso o checkout não abre'
+            store.mpOauthConectado
+              ? `Conectada pela ${BRAND.name}${
+                  store.mpLiveMode === false ? ' · conta de teste' : ''
+                }`
+              : store.mpAccessTokenSet
+                ? 'Usando token colado à mão · conecte para renovar sozinho'
+                : 'Não conectada — sem isso o checkout não abre'
           }
-          tone={store.mpAccessTokenSet && store.mpPublicKey ? 'ok' : 'pendente'}
-          cta={store.mpAccessTokenSet ? 'Gerenciar' : 'Configurar'}
+          tone={store.mpOauthConectado ? 'ok' : 'pendente'}
+          cta={
+            mpBusy
+              ? 'Aguarde...'
+              : store.mpOauthConectado
+                ? 'Desconectar'
+                : 'Conectar'
+          }
+          onEdit={() => {
+            if (mpBusy) return;
+            void (store.mpOauthConectado
+              ? desconectarMercadoPago()
+              : conectarMercadoPago());
+          }}
+        />
+
+        <SettingsRow
+          icon={<IconCartao />}
+          title="Token manual (avançado)"
+          value={
+            store.mpAccessTokenSet && !store.mpOauthConectado
+              ? `Em uso · ${store.mpAccessTokenHint || 'token salvo'}`
+              : 'Para quem já integrou colando Access Token e Public Key'
+          }
+          cta={store.mpAccessTokenSet && !store.mpOauthConectado ? 'Gerenciar' : 'Abrir'}
           onEdit={() => setPagamentoModal('credenciais')}
         />
 

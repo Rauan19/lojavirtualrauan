@@ -14,6 +14,7 @@ const STORE_SECRET_FIELDS = [
   'freteRefreshToken',
   'nfeApiToken',
   'nfeCscToken',
+  'mpRefreshToken',
 ] as const;
 
 type StoreSecretField = (typeof STORE_SECRET_FIELDS)[number];
