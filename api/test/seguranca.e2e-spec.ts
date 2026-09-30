@@ -259,8 +259,54 @@ describe('Segurança e multi-tenant (e2e)', () => {
 
       // 2 dias de atraso: ainda na carência de 7
       expect(a.status).toBe(StoreStatus.PAST_DUE);
-      // 30 dias: passou da carência
-      expect(b.status).toBe(StoreStatus.SUSPENDED);
+      // 30 dias: passou da carência → cai no plano grátis e segue vendendo
+      expect(b.status).toBe(StoreStatus.ACTIVE);
+      expect(b.planName).toBe('plan-seed-comeco');
+      expect(b.planDueAt).toBeNull();
+    });
+
+    it('teste grátis vencido vai para o plano grátis, não para atraso', async () => {
+      const cron = app.get(BillingCronService);
+      await prisma.store.update({
+        where: { id: lojaA.store.id },
+        data: {
+          status: StoreStatus.TRIAL,
+          planDueAt: new Date(Date.now() - 60 * 1000),
+        },
+      });
+      await cron.sweep();
+      const a = await prisma.store.findUniqueOrThrow({
+        where: { id: lojaA.store.id },
+      });
+      expect(a.status).toBe(StoreStatus.ACTIVE);
+      expect(a.planName).toBe('plan-seed-comeco');
+    });
+
+    it('sem plano grátis no catálogo, vale a régua antiga (suspende)', async () => {
+      const cron = app.get(BillingCronService);
+      await prisma.platformPlan.update({
+        where: { id: 'plan-seed-comeco' },
+        data: { active: false },
+      });
+      try {
+        await prisma.store.update({
+          where: { id: lojaB.store.id },
+          data: {
+            status: StoreStatus.ACTIVE,
+            planDueAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          },
+        });
+        await cron.sweep();
+        const b = await prisma.store.findUniqueOrThrow({
+          where: { id: lojaB.store.id },
+        });
+        expect(b.status).toBe(StoreStatus.SUSPENDED);
+      } finally {
+        await prisma.platformPlan.update({
+          where: { id: 'plan-seed-comeco' },
+          data: { active: true },
+        });
+      }
     });
 
     it('não mexe em loja em dia', async () => {

@@ -11,6 +11,9 @@ async function fotoDeCelular(width = 4000, height = 3000) {
     .toBuffer();
 }
 
+// Imagem de 12 MP: com a suíte inteira rodando junto, passa dos 5s padrão
+jest.setTimeout(30_000);
+
 describe('optimizeImage', () => {
   it('reduz foto grande para WebP de no máximo 1600px, bem menor', async () => {
     const input = await fotoDeCelular();

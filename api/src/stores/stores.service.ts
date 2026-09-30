@@ -188,9 +188,18 @@ export class StoresService {
    * acontece depois em Configurações → Planos. Sem planId (fluxo atual do
    * signup público, que não pergunta plano), cai no primeiro plano ativo.
    */
+  /**
+   * Plano do teste grátis. Sem escolha, é o plano pago em destaque: o
+   * lojista experimenta o melhor e, se não assinar, cai no grátis.
+   */
   private async resolvePlan(planId?: string): Promise<PlatformPlan> {
     const plans = await this.platformPlansService.listActive();
-    return plans.find((p) => p.id === planId) || plans[0];
+    const escolhido = plans.find((p) => p.id === planId);
+    if (escolhido) return escolhido;
+    const pagosMensais = plans.filter((p) => p.amount > 0 && p.periodDays < 360);
+    return (
+      pagosMensais.find((p) => p.highlight) ?? pagosMensais[0] ?? plans[0]
+    );
   }
 
   async create(dto: CreateStoreDto) {
@@ -547,6 +556,23 @@ export class StoresService {
   }
 
   async updateBranding(storeId: string, dto: UpdateStoreBrandingDto) {
+    /*
+     * O formulário manda o domínio em todo salvamento; só barra quando é um
+     * domínio novo. Tirar o domínio (vazio) sempre pode.
+     */
+    const novoDominio =
+      dto.customDomain !== undefined
+        ? normalizeCustomDomain(dto.customDomain)
+        : null;
+    if (novoDominio) {
+      const atual = await this.prisma.store.findUnique({
+        where: { id: storeId },
+        select: { customDomain: true },
+      });
+      if (atual?.customDomain !== novoDominio) {
+        await this.planLimits.assertCustomDomainIncluded(storeId);
+      }
+    }
     return this.prisma.store.update({
       where: { id: storeId },
       data: {

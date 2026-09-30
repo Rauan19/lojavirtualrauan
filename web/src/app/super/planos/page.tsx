@@ -16,6 +16,8 @@ type Plan = {
   features?: string[];
   maxProducts?: number | null;
   nfeIncluded?: boolean;
+  feeBps?: number;
+  customDomainIncluded?: boolean;
   active: boolean;
 };
 
@@ -30,6 +32,9 @@ const emptyForm = {
   /** Vazio = sem limite. */
   maxProducts: '',
   nfeIncluded: true,
+  /** Em %, como o Super Admin digita (ex.: "2" ou "0,5"). */
+  feePercent: '',
+  customDomainIncluded: true,
 };
 
 function money(value: number) {
@@ -113,6 +118,8 @@ export default function SuperPlanosPage() {
       features: (plan.features || []).join('\n'),
       maxProducts: plan.maxProducts ? String(plan.maxProducts) : '',
       nfeIncluded: plan.nfeIncluded ?? true,
+      feePercent: plan.feeBps ? String(plan.feeBps / 100).replace('.', ',') : '',
+      customDomainIncluded: plan.customDomainIncluded ?? true,
     });
     setShowForm(true);
   }
@@ -139,6 +146,11 @@ export default function SuperPlanosPage() {
         // 0 = sem limite (a API grava null)
         maxProducts: Number(form.maxProducts) || 0,
         nfeIncluded: form.nfeIncluded,
+        // "2" → 200 pontos-base; vazio = sem taxa
+        feeBps: Math.round(
+          (Number(form.feePercent.replace(',', '.')) || 0) * 100,
+        ),
+        customDomainIncluded: form.customDomainIncluded,
       };
       if (editingId) {
         await api(`/billing/platform/plans/${editingId}`, {
@@ -281,6 +293,11 @@ export default function SuperPlanosPage() {
                       ? `até ${plan.maxProducts} produtos`
                       : 'produtos ilimitados'}{' '}
                     · {plan.nfeIncluded === false ? 'sem NF-e' : 'com NF-e'}
+                    {' · '}
+                    {plan.feeBps
+                      ? `taxa ${String(plan.feeBps / 100).replace('.', ',')}% por venda`
+                      : 'sem taxa por venda'}
+                    {plan.customDomainIncluded === false ? ' · sem domínio próprio' : ''}
                   </p>
                   {plan.description ? (
                     <p className="mt-1 text-xs text-muted">{plan.description}</p>
@@ -408,11 +425,35 @@ export default function SuperPlanosPage() {
               />
               Inclui nota fiscal (NF-e/NFC-e)
             </label>
+            <div>
+              <label className="label" htmlFor="plan-fee">
+                Taxa por venda (%)
+              </label>
+              <input
+                id="plan-fee"
+                className="field"
+                inputMode="decimal"
+                placeholder="Ex.: 2 ou 0,5 (vazio = sem taxa)"
+                value={form.feePercent}
+                onChange={(e) => setForm({ ...form, feePercent: e.target.value })}
+              />
+            </div>
+            <label className="flex items-center gap-2 self-end pb-2 text-sm">
+              <input
+                type="checkbox"
+                checked={form.customDomainIncluded}
+                onChange={(e) =>
+                  setForm({ ...form, customDomainIncluded: e.target.checked })
+                }
+              />
+              Permite domínio próprio
+            </label>
           </div>
           <p className="text-xs text-muted">
             Os limites valem de verdade: a loja não cadastra produto acima do
-            limite nem emite nota se o plano não incluir. No teste grátis tudo
-            fica liberado.
+            limite nem emite nota se o plano não incluir. No teste grátis os
+            recursos ficam liberados. Toda mudança de preço ou taxa fica
+            registrada com quem mudou.
           </p>
           <label className="flex items-center gap-2 text-sm">
             <input

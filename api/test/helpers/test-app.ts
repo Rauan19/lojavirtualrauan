@@ -44,7 +44,7 @@ export async function resetDb(prisma: PrismaService) {
       "ProductImage", "Product", "Category", "Coupon", "Promotion",
       "Invoice", "PlatformInvoice", "PasswordResetToken", "User", "Store",
       "AccessLog",
-      "PlatformSettings"
+      "PlatformSettings", "PlatformFeeEntry", "PlatformPlanChange"
     RESTART IDENTITY CASCADE
   `);
 }

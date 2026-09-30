@@ -11,6 +11,10 @@ export type PlatformPlan = {
   maxProducts?: number | null;
   /** NF-e/NFC-e liberada. Ausente = liberada. */
   nfeIncluded?: boolean;
+  /** Comissão por venda em pontos-base (200 = 2%). Ausente = 0. */
+  feeBps?: number;
+  /** Domínio próprio liberado. Ausente = liberado. */
+  customDomainIncluded?: boolean;
 };
 
 /**
@@ -20,14 +24,33 @@ export type PlatformPlan = {
  */
 export const DEFAULT_PLATFORM_PLANS: PlatformPlan[] = [
   {
+    id: 'comeco',
+    name: 'Começo',
+    description: 'Para começar a vender sem mensalidade.',
+    amount: 0,
+    periodDays: 30,
+    badge: 'Grátis',
+    maxProducts: 50,
+    nfeIncluded: false,
+    feeBps: 200,
+    customDomainIncluded: false,
+    features: [
+      'Loja completa, sem mensalidade',
+      'Até 50 produtos',
+      'Taxa de 2% por venda',
+    ],
+  },
+  {
     id: 'essencial',
     name: 'Essencial',
     description: 'Para começar a vender online com marca própria.',
-    amount: 69.9,
+    amount: 59.9,
     periodDays: 30,
     badge: 'Para começar',
-    maxProducts: 100,
+    maxProducts: 300,
     nfeIncluded: false,
+    feeBps: 100,
+    customDomainIncluded: true,
     features: [
       'Loja completa com domínio próprio',
       'Até 100 produtos',
@@ -46,6 +69,8 @@ export const DEFAULT_PLATFORM_PLANS: PlatformPlan[] = [
     highlight: true,
     maxProducts: null,
     nfeIncluded: true,
+    feeBps: 50,
+    customDomainIncluded: true,
     features: [
       'Tudo do Essencial',
       'Produtos ilimitados',
@@ -61,6 +86,8 @@ export const DEFAULT_PLATFORM_PLANS: PlatformPlan[] = [
     badge: 'Loja maior',
     maxProducts: null,
     nfeIncluded: true,
+    feeBps: 50,
+    customDomainIncluded: true,
     features: [
       'Tudo do Profissional',
       'Suporte prioritário pelo WhatsApp',
@@ -70,12 +97,14 @@ export const DEFAULT_PLATFORM_PLANS: PlatformPlan[] = [
   {
     id: 'essencial-anual',
     name: 'Essencial',
-    description: 'Pagamento anual. Equivale a R$ 58,25 por mês.',
-    amount: 699,
+    description: 'Pagamento anual. Equivale a R$ 49,92 por mês.',
+    amount: 599,
     periodDays: 365,
     badge: '2 meses grátis',
-    maxProducts: 100,
+    maxProducts: 300,
     nfeIncluded: false,
+    feeBps: 100,
+    customDomainIncluded: true,
     features: [
       'Loja completa com domínio próprio',
       'Até 100 produtos',
@@ -94,6 +123,8 @@ export const DEFAULT_PLATFORM_PLANS: PlatformPlan[] = [
     highlight: true,
     maxProducts: null,
     nfeIncluded: true,
+    feeBps: 50,
+    customDomainIncluded: true,
     features: [
       'Tudo do Essencial',
       'Produtos ilimitados',
@@ -109,6 +140,8 @@ export const DEFAULT_PLATFORM_PLANS: PlatformPlan[] = [
     badge: '2 meses grátis',
     maxProducts: null,
     nfeIncluded: true,
+    feeBps: 50,
+    customDomainIncluded: true,
     features: [
       'Tudo do Profissional',
       'Suporte prioritário pelo WhatsApp',

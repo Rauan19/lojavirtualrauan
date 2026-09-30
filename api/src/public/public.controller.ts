@@ -2,6 +2,7 @@ import { Controller, Get, NotFoundException, Query } from '@nestjs/common';
 import { StoreStatus } from '@prisma/client';
 import { BillingService } from '../billing/billing.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { PlanLimitsService } from '../plan-limits/plan-limits.service';
 import { normalizeCustomDomain } from '../common/utils/normalize-domain';
 
 /**
@@ -12,6 +13,7 @@ export class PublicController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly billingService: BillingService,
+    private readonly planLimits: PlanLimitsService,
   ) {}
 
   /** Planos exibidos no signup — antes de existir conta não dá pra chamar a rota autenticada. */
@@ -51,11 +53,24 @@ export class PublicController {
       where: {
         OR: [{ customDomain: host }, { customDomain: `www.${host}` }],
       },
-      select: { slug: true, name: true, status: true, customDomain: true },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        status: true,
+        customDomain: true,
+      },
     });
 
     if (!store) {
       throw new NotFoundException('Loja não encontrada para este domínio');
+    }
+    /*
+     * Plano sem domínio próprio (ex.: Começo, ou quem caiu nele): o domínio
+     * para de abrir a loja, que segue no endereço da plataforma.
+     */
+    if (!(await this.planLimits.forStore(store.id)).customDomainIncluded) {
+      throw new NotFoundException('Domínio próprio não incluído no plano da loja');
     }
 
     return {

@@ -319,7 +319,7 @@ export default async function HomePage() {
               </p>
             ) : null}
 
-            <div className="mt-10 grid gap-4 md:grid-cols-3">
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {plans
                 .filter((plan, _i, all) =>
                   all.some((p) => p.periodDays < 360) ? plan.periodDays < 360 : true,
@@ -338,8 +338,14 @@ export default async function HomePage() {
                   ) : null}
                   <h3 className="text-base font-bold text-[#171a1f]">{plan.name}</h3>
                   <p className="mt-1 text-2xl font-bold text-[#171a1f]">
-                    {money(plan.amount)}
-                    <span className="text-sm font-normal text-muted">/mês</span>
+                    {plan.amount > 0 ? (
+                      <>
+                        {money(plan.amount)}
+                        <span className="text-sm font-normal text-muted">/mês</span>
+                      </>
+                    ) : (
+                      'Grátis'
+                    )}
                   </p>
                   {plan.description ? (
                     <p className="mt-2 text-sm leading-relaxed text-[#4a5560]">

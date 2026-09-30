@@ -93,6 +93,70 @@ export class BillingService {
     return { trialDays: days };
   }
 
+  /**
+   * Plano grátis do catálogo (Começo). É para onde vai a loja que termina o
+   * teste sem assinar ou atrasa a mensalidade: continua vendendo, a
+   * plataforma segue ganhando pela comissão. null = catálogo sem plano grátis.
+   */
+  async planoGratis(): Promise<PlatformPlan | null> {
+    const gratis = (await this.listPlans()).filter(
+      (p) => p.amount <= 0 && p.periodDays < 360,
+    );
+    return gratis.find((p) => p.id.includes('comeco')) ?? gratis[0] ?? null;
+  }
+
+  /**
+   * Coloca a loja no plano grátis. `escolha` = o lojista pediu (cancela a
+   * assinatura do cartão, se houver); `fim-do-teste`/`atraso` = régua.
+   */
+  async moverParaGratis(
+    storeId: string,
+    motivo: 'escolha' | 'fim-do-teste' | 'atraso',
+  ) {
+    const plano = await this.planoGratis();
+    if (!plano) {
+      throw new BadRequestException('Não há plano grátis disponível.');
+    }
+    const store = await this.prisma.store.findUnique({
+      where: { id: storeId },
+      select: { mpPreapprovalId: true, mpSubscriptionStatus: true },
+    });
+    if (!store) throw new NotFoundException('Loja não encontrada');
+
+    let assinaturaCancelada = false;
+    if (
+      motivo === 'escolha' &&
+      store.mpPreapprovalId &&
+      store.mpSubscriptionStatus !== 'cancelled'
+    ) {
+      const token = await this.platformAccessToken();
+      await this.cancelPreapproval(store.mpPreapprovalId, token).catch(
+        (err) =>
+          this.logger.warn(
+            `Não cancelou a assinatura ao ir para o grátis · loja ${storeId}: ${
+              err instanceof Error ? err.message : String(err)
+            }`,
+          ),
+      );
+      assinaturaCancelada = true;
+    }
+
+    await this.prisma.store.update({
+      where: { id: storeId },
+      data: {
+        status: StoreStatus.ACTIVE,
+        planName: plano.id,
+        planDueAt: null,
+        monthlyFee: new Prisma.Decimal(0),
+        // Sem mensalidade não há ciclo de Pix para gerar
+        billingMethod: BILLING_METHOD.CARD,
+        ...(assinaturaCancelada ? { mpSubscriptionStatus: 'cancelled' } : {}),
+      },
+    });
+    this.logger.log(`Loja ${storeId} no plano ${plano.name} (${motivo})`);
+    return plano;
+  }
+
   async getPlan(planId: string): Promise<PlatformPlan> {
     const plan = (await this.listPlans()).find((p) => p.id === planId);
     if (!plan) {
@@ -702,6 +766,31 @@ export class BillingService {
     });
     if (!store) throw new NotFoundException('Loja não encontrada');
 
+    // Teste vencido: vai para o grátis na hora, sem esperar a varredura
+    if (
+      store.status === StoreStatus.TRIAL &&
+      store.planDueAt &&
+      store.planDueAt.getTime() <= Date.now() &&
+      (await this.planoGratis())
+    ) {
+      await this.moverParaGratis(storeId, 'fim-do-teste');
+      store = await this.prisma.store.findUniqueOrThrow({
+        where: { id: storeId },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          status: true,
+          planName: true,
+          planDueAt: true,
+          monthlyFee: true,
+          mpPreapprovalId: true,
+          mpSubscriptionStatus: true,
+          billingMethod: true,
+        },
+      });
+    }
+
     if (
       (store.status === StoreStatus.ACTIVE ||
         store.status === StoreStatus.TRIAL) &&
@@ -825,6 +914,11 @@ export class BillingService {
     }
 
     const plan = await this.getPlan(planId);
+    if (plan.amount <= 0) {
+      throw new BadRequestException(
+        'Este plano é grátis e não tem cobrança. Use "Usar o plano grátis".',
+      );
+    }
     const token = await this.platformAccessToken();
     const preapprovalPlanId = await this.ensurePreapprovalPlan(plan, token);
 
@@ -1030,6 +1124,11 @@ export class BillingService {
    */
   async createCheckout(storeId: string, planId: string, payerEmail?: string) {
     const plan = await this.getPlan(planId);
+    if (plan.amount <= 0) {
+      throw new BadRequestException(
+        'Este plano é grátis e não tem cobrança. Use "Usar o plano grátis".',
+      );
+    }
     const token = await this.platformAccessToken();
 
     const store = await this.prisma.store.findUnique({
@@ -1290,6 +1389,11 @@ export class BillingService {
   /** Lojista escolhe pagar por Pix e recebe a primeira cobrança. */
   async subscribeWithPix(storeId: string, planId: string) {
     const plan = await this.getPlan(planId);
+    if (plan.amount <= 0) {
+      throw new BadRequestException(
+        'Este plano é grátis e não tem cobrança. Use "Usar o plano grátis".',
+      );
+    }
     await this.prisma.store.update({
       where: { id: storeId },
       data: { billingMethod: BILLING_METHOD.PIX },
@@ -1357,6 +1461,11 @@ export class BillingService {
      * a plataforma de graça até alguém reparar.
      */
     const plan = await this.planoParaCobranca(planId || store.planName);
+    if (plan.amount <= 0) {
+      throw new BadRequestException(
+        'Este plano é grátis e não tem cobrança. Use "Usar o plano grátis".',
+      );
+    }
 
     const pagador = documentoDoPagador(
       store.sellerDocType,

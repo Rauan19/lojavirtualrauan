@@ -55,15 +55,22 @@ export class BillingController {
   @Post('platform/plans')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN)
-  createPlan(@Body() dto: CreatePlatformPlanDto) {
-    return this.platformPlansService.create(dto);
+  createPlan(
+    @Body() dto: CreatePlatformPlanDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.platformPlansService.create(dto, user.id);
   }
 
   @Patch('platform/plans/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN)
-  updatePlan(@Param('id') id: string, @Body() dto: UpdatePlatformPlanDto) {
-    return this.platformPlansService.update(id, dto);
+  updatePlan(
+    @Param('id') id: string,
+    @Body() dto: UpdatePlatformPlanDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.platformPlansService.update(id, dto, user.id);
   }
 
   @Delete('platform/plans/:id')
@@ -216,6 +223,16 @@ export class BillingController {
   ) {
     const planId = body?.planId?.trim() || 'mensal';
     return this.billingService.createCheckout(store.id, planId, user.email);
+  }
+
+  /** Troca para o plano grátis agora (cancela a assinatura do cartão). */
+  @Post('free')
+  @UseGuards(JwtAuthGuard, RolesGuard, TenantGuard)
+  @Roles(Role.STORE_ADMIN, Role.SUPER_ADMIN)
+  @AllowPastDue()
+  async usarGratis(@CurrentStore() store: TenantStore) {
+    await this.billingService.moverParaGratis(store.id, 'escolha');
+    return this.billingService.mySubscription(store.id);
   }
 
   @Post('cancel')

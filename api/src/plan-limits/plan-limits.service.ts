@@ -8,14 +8,21 @@ export type PlanLimits = {
   planName: string | null;
   maxProducts: number | null;
   nfeIncluded: boolean;
-  /** true enquanto a loja está no teste grátis: tudo liberado. */
+  customDomainIncluded: boolean;
+  /**
+   * Comissão por venda do plano, em pontos-base (200 = 2%). Vale também no
+   * teste grátis: o teste libera recursos, não isenta a venda.
+   */
+  feeBps: number;
+  /** true enquanto a loja está no teste grátis: recursos liberados. */
   trial: boolean;
 };
 
-const SEM_LIMITE: Omit<PlanLimits, 'trial'> = {
+const SEM_LIMITE: Omit<PlanLimits, 'trial' | 'feeBps'> = {
   planName: null,
   maxProducts: null,
   nfeIncluded: true,
+  customDomainIncluded: true,
 };
 
 /**
@@ -29,6 +36,7 @@ const IDS_ANTIGOS: Record<string, string> = {
   essencial: 'plan-seed-essencial',
   mensal: 'plan-seed-mensal',
   pro: 'plan-seed-pro',
+  comeco: 'plan-seed-comeco',
 };
 
 /**
@@ -49,24 +57,28 @@ export class PlanLimitsService {
       where: { id: storeId },
       select: { status: true, planName: true },
     });
-    if (!store) return { ...SEM_LIMITE, trial: false };
-    if (store.status === StoreStatus.TRIAL) {
-      return { ...SEM_LIMITE, trial: true };
-    }
+    if (!store) return { ...SEM_LIMITE, feeBps: 0, trial: false };
 
     const plan = await this.findPlan(store.planName);
+    const feeBps = plan?.feeBps ?? 0;
+    if (store.status === StoreStatus.TRIAL) {
+      return { ...SEM_LIMITE, feeBps, trial: true };
+    }
+
     if (!plan) {
       if (store.planName) {
         this.logger.warn(
           `Plano "${store.planName}" da loja ${storeId} não encontrado; sem limites.`,
         );
       }
-      return { ...SEM_LIMITE, trial: false };
+      return { ...SEM_LIMITE, feeBps: 0, trial: false };
     }
     return {
       planName: plan.name,
       maxProducts: plan.maxProducts ?? null,
       nfeIncluded: plan.nfeIncluded ?? true,
+      customDomainIncluded: plan.customDomainIncluded ?? true,
+      feeBps,
       trial: false,
     };
   }
@@ -93,6 +105,16 @@ export class PlanLimitsService {
     }
   }
 
+  /** Lança 403 se o plano da loja não permite domínio próprio. */
+  async assertCustomDomainIncluded(storeId: string) {
+    const limits = await this.forStore(storeId);
+    if (!limits.customDomainIncluded) {
+      throw new ForbiddenException(
+        `Domínio próprio não faz parte do plano ${limits.planName}. Mude de plano em Configurações → Planos para usar www.sualoja.com.br.`,
+      );
+    }
+  }
+
   private async findPlan(planName: string | null) {
     const key = planName?.trim();
     if (!key) return null;
@@ -104,6 +126,8 @@ export class PlanLimitsService {
         periodDays: true,
         maxProducts: true,
         nfeIncluded: true,
+        feeBps: true,
+        customDomainIncluded: true,
       },
     });
     const catalog = rows.length > 0 ? rows : DEFAULT_PLATFORM_PLANS;

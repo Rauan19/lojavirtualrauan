@@ -4,6 +4,7 @@ import {
   IsBoolean,
   IsInt,
   IsOptional,
+  Max,
   IsString,
   Min,
   MinLength,
@@ -51,6 +52,18 @@ export class CreatePlatformPlanDto {
   @IsOptional()
   @IsBoolean()
   nfeIncluded?: boolean;
+
+  /** Comissão por venda em pontos-base: 200 = 2%. Máximo 10%. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(1000)
+  feeBps?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  customDomainIncluded?: boolean;
 
   @IsOptional()
   @Type(() => Number)
@@ -106,6 +119,18 @@ export class UpdatePlatformPlanDto {
   @IsOptional()
   @IsBoolean()
   nfeIncluded?: boolean;
+
+  /** Comissão por venda em pontos-base: 200 = 2%. Máximo 10%. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(1000)
+  feeBps?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  customDomainIncluded?: boolean;
 
   @IsOptional()
   @Type(() => Number)

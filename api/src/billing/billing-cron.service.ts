@@ -191,6 +191,25 @@ export class BillingCronService implements OnModuleInit, OnModuleDestroy {
   async sweep() {
     try {
       const now = new Date();
+      /*
+       * Com plano grátis no catálogo, ninguém sai do ar por falta de
+       * pagamento: o teste que acaba e o atraso que passa da carência levam a
+       * loja para o grátis (vende com a comissão do plano). Sem plano grátis,
+       * vale a régua antiga: atraso → suspensão.
+       */
+      const gratis = await this.billing.planoGratis();
+
+      let fimDoTeste = 0;
+      if (gratis) {
+        const testes = await this.prisma.store.findMany({
+          where: { status: StoreStatus.TRIAL, planDueAt: { not: null, lte: now } },
+          select: { id: true },
+        });
+        for (const loja of testes) {
+          await this.billing.moverParaGratis(loja.id, 'fim-do-teste');
+          fimDoTeste++;
+        }
+      }
 
       const pastDue = await this.prisma.store.updateMany({
         where: {
@@ -203,28 +222,51 @@ export class BillingCronService implements OnModuleInit, OnModuleDestroy {
       const suspendCutoff = new Date(
         now.getTime() - this.graceDays() * 24 * 60 * 60 * 1000,
       );
-      const suspended = await this.prisma.store.updateMany({
-        where: {
-          status: StoreStatus.PAST_DUE,
-          planDueAt: { not: null, lte: suspendCutoff },
-        },
-        data: { status: StoreStatus.SUSPENDED },
-      });
+      let paraGratis = 0;
+      let suspended = 0;
+      if (gratis) {
+        const atrasadas = await this.prisma.store.findMany({
+          where: {
+            status: StoreStatus.PAST_DUE,
+            planDueAt: { not: null, lte: suspendCutoff },
+          },
+          select: { id: true },
+        });
+        for (const loja of atrasadas) {
+          await this.billing.moverParaGratis(loja.id, 'atraso');
+          paraGratis++;
+        }
+      } else {
+        suspended = (
+          await this.prisma.store.updateMany({
+            where: {
+              status: StoreStatus.PAST_DUE,
+              planDueAt: { not: null, lte: suspendCutoff },
+            },
+            data: { status: StoreStatus.SUSPENDED },
+          })
+        ).count;
+      }
 
-      if (pastDue.count > 0 || suspended.count > 0) {
+      if (fimDoTeste || pastDue.count || paraGratis || suspended) {
         this.logger.log(
-          `Régua de cobrança: ${pastDue.count} loja(s) em atraso, ${suspended.count} suspensa(s)`,
+          `Régua de cobrança: ${fimDoTeste} teste(s) no grátis, ${pastDue.count} em atraso, ${paraGratis} atrasada(s) no grátis, ${suspended} suspensa(s)`,
         );
       }
 
-      return { pastDue: pastDue.count, suspended: suspended.count };
+      return {
+        fimDoTeste,
+        pastDue: pastDue.count,
+        paraGratis,
+        suspended,
+      };
     } catch (err) {
       this.logger.error(
         `Falha na régua de cobrança: ${
           err instanceof Error ? err.message : String(err)
         }`,
       );
-      return { pastDue: 0, suspended: 0 };
+      return { fimDoTeste: 0, pastDue: 0, paraGratis: 0, suspended: 0 };
     }
   }
 }

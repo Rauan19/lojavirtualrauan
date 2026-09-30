@@ -234,6 +234,12 @@ model Store {
   promotions        Promotion[]
   invoices          Invoice[]
   platformInvoices  PlatformInvoice[]
+  platformFeeEntries PlatformFeeEntry[]
+  /**
+   * Comissão por venda nesta loja: null segue o geral (PLATFORM_FEE_ENABLED),
+   * true/false força. Serve para ligar aos poucos e desligar na hora.
+   */
+  platformFeeEnabled Boolean?
   reviews           Review[]
   favorites         Favorite[]
 }
@@ -539,11 +545,21 @@ model Order {
    * expirar ou estornar. Serve de trava contra devolver estoque 2x.
    */
   stockReserved     Boolean       @default(false)
+  /**
+   * Comissão da plataforma, fotografada quando a cobrança é criada: mudar a
+   * taxa do plano depois não mexe em pedido antigo. Em centavos (inteiro,
+   * sem erro de arredondamento). Base = produtos − desconto, sem frete.
+   * Nulo = pedido sem comissão (antes do split ou plano sem taxa).
+   */
+  platformFeeBps    Int?
+  platformFeeBaseCents Int?
+  platformFeeCents  Int?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
   store    Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
   customer Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  platformFeeEntries PlatformFeeEntry[]
   coupon   Coupon?     @relation(fields: [couponId], references: [id], onDelete: SetNull)
   items    OrderItem[]
   shipmentEvents ShipmentEvent[]
@@ -744,6 +760,13 @@ model PlatformPlan {
   maxProducts Int?
   /** Emissão de NF-e/NFC-e (manual e automática) liberada neste plano. */
   nfeIncluded Boolean  @default(true)
+  /**
+   * Comissão da plataforma por venda, em pontos-base (200 = 2%). Cobrada pelo
+   * split do Mercado Pago (application_fee). 0 = sem comissão.
+   */
+  feeBps      Int      @default(0)
+  /** Permite ligar domínio próprio (www.minhaloja.com.br). */
+  customDomainIncluded Boolean @default(true)
   /** Desativado some da lista de escolha, mas não quebra loja que já usa o nome. */
   active      Boolean  @default(true)
   order       Int      @default(0)
@@ -783,4 +806,49 @@ model ShipmentEvent {
    */
   @@unique([orderId, origem, codigo, ocorridoEm])
   @@index([orderId, ocorridoEm])
+}
+
+
+enum PlatformFeeEntryType {
+  CHARGE
+  REFUND
+  CHARGEBACK
+  ADJUSTMENT
+}
+
+/**
+ * Livro de comissões da plataforma. Só recebe linhas novas (nunca edita nem
+ * apaga): é daqui que saem relatório, conciliação e a base da NFS-e.
+ * amountCents é positivo na cobrança e negativo no estorno/chargeback.
+ * `idempotencyKey` impede lançar duas vezes o mesmo movimento quando o
+ * Mercado Pago reenvia o aviso (ex.: "charge:123", "refund:123:456").
+ */
+model PlatformFeeEntry {
+  id             String               @id @default(cuid())
+  storeId        String
+  orderId        String?
+  type           PlatformFeeEntryType
+  amountCents    Int
+  mpPaymentId    String?
+  idempotencyKey String               @unique
+  note           String?
+  createdAt      DateTime             @default(now())
+
+  store Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  order Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([storeId, createdAt])
+  @@index([createdAt])
+  @@index([orderId])
+}
+
+/** Quem mudou o quê num plano — preço e taxa mexem no dinheiro de todo mundo. */
+model PlatformPlanChange {
+  id          String   @id @default(cuid())
+  planId      String
+  changedById String?
+  changes     Json
+  createdAt   DateTime @default(now())
+
+  @@index([planId, createdAt])
 }

@@ -18,6 +18,8 @@ type Plan = {
   features?: string[];
   maxProducts?: number | null;
   nfeIncluded?: boolean;
+  /** Taxa por venda em pontos-base (200 = 2%). */
+  feeBps?: number;
 };
 
 /** Plano anual: 365 dias no catálogo; tudo a partir de ~1 ano conta como anual. */
@@ -554,6 +556,35 @@ export function AdminPlanosInner() {
   const limits = data?.limits;
   const cicloTexto = periodo === 'anual' ? 'todo ano' : 'todo mês';
 
+  const [usandoGratis, setUsandoGratis] = useState(false);
+
+  async function usarGratis() {
+    const ok = await confirm({
+      title: 'Mudar para o plano grátis?',
+      message:
+        'A mensalidade para, a assinatura do cartão é cancelada e os limites do plano grátis passam a valer agora.',
+      confirmLabel: 'Mudar para o grátis',
+    });
+    if (!ok) return;
+    const user = getUser();
+    const token = getToken();
+    if (!user?.store?.slug || !token) return;
+    setUsandoGratis(true);
+    setError('');
+    try {
+      const res = await api<BillingMe>('/billing/free', {
+        method: 'POST',
+        token,
+        storeSlug: user.store.slug,
+      });
+      setData(res);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Não foi possível mudar de plano');
+    } finally {
+      setUsandoGratis(false);
+    }
+  }
+
   /** Troca mensal ⇄ anual mantendo o mesmo plano (pelo nome) selecionado. */
   function trocarPeriodo(alvo: 'mensal' | 'anual') {
     const lista = plans.filter((p) => (alvo === 'anual') === isAnual(p));
@@ -874,7 +905,11 @@ export function AdminPlanosInner() {
           </div>
         ) : null}
 
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div
+          className={`grid gap-4 sm:grid-cols-2 ${
+            planosVisiveis.length >= 4 ? 'xl:grid-cols-4' : 'lg:grid-cols-3'
+          }`}
+        >
           {planosVisiveis.map((plan) => {
             const active = selectedId === plan.id;
             const isCurrent = currentPlanId === plan.id;
@@ -934,12 +969,17 @@ export function AdminPlanosInner() {
 
                 <div className="mt-5">
                   <p className="text-3xl font-bold tracking-tight">
-                    {money(plan.amount)}
+                    {plan.amount > 0 ? money(plan.amount) : 'Grátis'}
                   </p>
                   <p className="mt-0.5 text-xs text-muted">
-                    {isAnual(plan)
-                      ? `por ano · equivale a ${money(plan.amount / 12)} por mês`
-                      : 'por mês'}
+                    {plan.amount <= 0
+                      ? 'sem mensalidade'
+                      : isAnual(plan)
+                        ? `por ano · equivale a ${money(plan.amount / 12)} por mês`
+                        : 'por mês'}
+                    {plan.feeBps
+                      ? ` · ${String(plan.feeBps / 100).replace('.', ',')}% por venda`
+                      : ''}
                   </p>
                 </div>
 
@@ -969,122 +1009,147 @@ export function AdminPlanosInner() {
           })}
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
-          <div className="border-b border-black/[0.06] bg-[#fafafa] px-5 py-3">
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted">
-              Checkout de assinatura
+        {selected && selected.amount <= 0 ? (
+          <div className="rounded-2xl border border-black/10 bg-white px-5 py-4 shadow-sm">
+            <p className="text-sm font-bold">Plano {selected.name} · sem mensalidade</p>
+            <p className="mt-1 text-sm text-muted">
+              A loja continua vendendo normalmente. No lugar da mensalidade, a{' '}
+              {BRAND.name} fica com{' '}
+              {String((selected.feeBps ?? 0) / 100).replace('.', ',')}% de cada
+              venda, descontado automaticamente pelo Mercado Pago. Os limites do
+              plano passam a valer na hora.
             </p>
-            <p className="mt-0.5 text-sm font-bold">
-              {selected
-                ? `Plano ${selected.name} · ${money(selected.amount)}${isAnual(selected) ? '/ano' : '/mês'}`
-                : 'Selecione um plano'}
-            </p>
+            <button
+              type="button"
+              className="btn btn-accent mt-4"
+              disabled={currentPlanId === selected.id || usandoGratis}
+              onClick={() => void usarGratis()}
+            >
+              {currentPlanId === selected.id
+                ? 'Você já está neste plano'
+                : usandoGratis
+                  ? 'Trocando...'
+                  : 'Usar o plano grátis'}
+            </button>
           </div>
-
-          <div className="px-5 py-4">
-            {selected ? (
-              <div className="mb-4 grid gap-0 sm:grid-cols-2 sm:gap-x-8">
-                <DetailRow
-                  label="Produto"
-                  value={`${periodo === 'anual' ? 'Anuidade' : 'Mensalidade'} ${BRAND.name}`}
-                />
-                <DetailRow
-                  label="Cobrança"
-                  value={`${money(selected.amount)} / mês`}
-                  hint="Recorrente · checkout de Assinaturas do MP"
-                />
-              </div>
-            ) : null}
-
-            {/*
-              Cartão e Pix são mecanismos diferentes, não só um botão a mais:
-              no cartão o Mercado Pago cobra sozinho todo mês; em Pix a
-              recorrência não existe na API deles, então geramos uma cobrança
-              nova a cada ciclo e o lojista precisa pagar. A escolha diz isso
-              com todas as letras — descobrir depois seria péssimo.
-            */}
-            <div className="mb-4 grid gap-2 sm:grid-cols-2">
-              {(
-                [
-                  {
-                    id: 'CARD' as const,
-                    titulo: 'Cartão de crédito',
-                    desc: `Renova sozinho ${cicloTexto}. Você não precisa fazer nada.`,
-                  },
-                  {
-                    id: 'PIX' as const,
-                    titulo: 'Pix',
-                    desc: `Geramos a cobrança ${cicloTexto} e avisamos. Você paga o QR a cada ciclo.`,
-                  },
-                ]
-              ).map((op) => (
-                <label
-                  key={op.id}
-                  className={`flex cursor-pointer gap-2.5 rounded-xl border p-3 text-sm transition-colors ${
-                    metodo === op.id
-                      ? 'border-accent bg-accent/[0.04]'
-                      : 'border-black/10 hover:border-black/20'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="metodo-pagamento"
-                    className="mt-1 shrink-0"
-                    checked={metodo === op.id}
-                    onChange={() => setMetodo(op.id)}
-                  />
-                  <span>
-                    <span className="font-bold">{op.titulo}</span>
-                    <span className="mt-0.5 block text-[12px] leading-snug text-muted">
-                      {op.desc}
-                    </span>
-                  </span>
-                </label>
-              ))}
+        ) : (
+          <div className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
+            <div className="border-b border-black/[0.06] bg-[#fafafa] px-5 py-3">
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted">
+                Checkout de assinatura
+              </p>
+              <p className="mt-0.5 text-sm font-bold">
+                {selected
+                  ? `Plano ${selected.name} · ${money(selected.amount)}${isAnual(selected) ? '/ano' : '/mês'}`
+                  : 'Selecione um plano'}
+              </p>
             </div>
 
-            {metodo === 'CARD' ? (
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  className="btn"
-                  disabled={
-                    !selected ||
-                    !data?.paymentsEnabled ||
-                    payingId !== null ||
-                    Boolean(
-                      store?.recurringActive && store.planName === selected?.id,
-                    )
-                  }
-                  onClick={() => void startSubscriptionCheckout()}
-                >
-                  {payingId
-                    ? 'Abrindo assinatura…'
-                    : store?.recurringActive && store.planName === selected?.id
-                      ? 'Já assinado'
-                      : selected
-                        ? 'Assinar no Mercado Pago'
-                        : 'Selecione um plano'}
-                </button>
-                <p className="max-w-md text-[11px] leading-snug text-muted">
-                  Abre o checkout do Mercado Pago em nova aba para autorizar o
-                  cartão. A cobrança renova {cicloTexto} automaticamente.
-                </p>
+            <div className="px-5 py-4">
+              {selected ? (
+                <div className="mb-4 grid gap-0 sm:grid-cols-2 sm:gap-x-8">
+                  <DetailRow
+                    label="Produto"
+                    value={`${periodo === 'anual' ? 'Anuidade' : 'Mensalidade'} ${BRAND.name}`}
+                  />
+                  <DetailRow
+                    label="Cobrança"
+                    value={`${money(selected.amount)} / mês`}
+                    hint="Recorrente · checkout de Assinaturas do MP"
+                  />
+                </div>
+              ) : null}
+
+              {/*
+                Cartão e Pix são mecanismos diferentes, não só um botão a mais:
+                no cartão o Mercado Pago cobra sozinho todo mês; em Pix a
+                recorrência não existe na API deles, então geramos uma cobrança
+                nova a cada ciclo e o lojista precisa pagar. A escolha diz isso
+                com todas as letras — descobrir depois seria péssimo.
+              */}
+              <div className="mb-4 grid gap-2 sm:grid-cols-2">
+                {(
+                  [
+                    {
+                      id: 'CARD' as const,
+                      titulo: 'Cartão de crédito',
+                      desc: `Renova sozinho ${cicloTexto}. Você não precisa fazer nada.`,
+                    },
+                    {
+                      id: 'PIX' as const,
+                      titulo: 'Pix',
+                      desc: `Geramos a cobrança ${cicloTexto} e avisamos. Você paga o QR a cada ciclo.`,
+                    },
+                  ]
+                ).map((op) => (
+                  <label
+                    key={op.id}
+                    className={`flex cursor-pointer gap-2.5 rounded-xl border p-3 text-sm transition-colors ${
+                      metodo === op.id
+                        ? 'border-accent bg-accent/[0.04]'
+                        : 'border-black/10 hover:border-black/20'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="metodo-pagamento"
+                      className="mt-1 shrink-0"
+                      checked={metodo === op.id}
+                      onChange={() => setMetodo(op.id)}
+                    />
+                    <span>
+                      <span className="font-bold">{op.titulo}</span>
+                      <span className="mt-0.5 block text-[12px] leading-snug text-muted">
+                        {op.desc}
+                      </span>
+                    </span>
+                  </label>
+                ))}
               </div>
-            ) : (
-              <PixBox
-                pix={pix}
-                busy={pixBusy}
-                copiado={pixCopiado}
-                podeGerar={Boolean(selected) && Boolean(data?.paymentsEnabled)}
-                jaAssinante={store?.billingMethod === 'PIX'}
-                onGerar={() => void gerarPix(store?.billingMethod !== 'PIX')}
-                onCopiar={() => void copiarPix()}
-                onAtualizar={() => void carregarPix()}
-              />
-            )}
+
+              {metodo === 'CARD' ? (
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    className="btn"
+                    disabled={
+                      !selected ||
+                      !data?.paymentsEnabled ||
+                      payingId !== null ||
+                      Boolean(
+                        store?.recurringActive && store.planName === selected?.id,
+                      )
+                    }
+                    onClick={() => void startSubscriptionCheckout()}
+                  >
+                    {payingId
+                      ? 'Abrindo assinatura…'
+                      : store?.recurringActive && store.planName === selected?.id
+                        ? 'Já assinado'
+                        : selected
+                          ? 'Assinar no Mercado Pago'
+                          : 'Selecione um plano'}
+                  </button>
+                  <p className="max-w-md text-[11px] leading-snug text-muted">
+                    Abre o checkout do Mercado Pago em nova aba para autorizar o
+                    cartão. A cobrança renova {cicloTexto} automaticamente.
+                  </p>
+                </div>
+              ) : (
+                <PixBox
+                  pix={pix}
+                  busy={pixBusy}
+                  copiado={pixCopiado}
+                  podeGerar={Boolean(selected) && Boolean(data?.paymentsEnabled)}
+                  jaAssinante={store?.billingMethod === 'PIX'}
+                  onGerar={() => void gerarPix(store?.billingMethod !== 'PIX')}
+                  onCopiar={() => void copiarPix()}
+                  onAtualizar={() => void carregarPix()}
+                />
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </section>
       ) : null}
 

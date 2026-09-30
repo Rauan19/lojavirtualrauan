@@ -26,6 +26,8 @@ export class PlatformPlansService {
     features: Prisma.JsonValue;
     maxProducts: number | null;
     nfeIncluded: boolean;
+    feeBps: number;
+    customDomainIncluded: boolean;
   }): PlatformPlan {
     return {
       id: row.id,
@@ -40,6 +42,8 @@ export class PlatformPlansService {
         : undefined,
       maxProducts: row.maxProducts,
       nfeIncluded: row.nfeIncluded,
+      feeBps: row.feeBps,
+      customDomainIncluded: row.customDomainIncluded,
     };
   }
 
@@ -63,7 +67,22 @@ export class PlatformPlansService {
     return rows.map((r) => ({ ...this.toDto(r), active: r.active }));
   }
 
-  async create(dto: CreatePlatformPlanDto) {
+  /** Guarda quem mudou o quê — preço e taxa mexem no dinheiro de todo mundo. */
+  private async registrarAlteracao(
+    planId: string,
+    changedById: string | undefined,
+    changes: Record<string, unknown>,
+  ) {
+    await this.prisma.platformPlanChange.create({
+      data: {
+        planId,
+        changedById: changedById ?? null,
+        changes: changes as Prisma.InputJsonValue,
+      },
+    });
+  }
+
+  async create(dto: CreatePlatformPlanDto, changedById?: string) {
     const maxOrder = await this.prisma.platformPlan.aggregate({
       _max: { order: true },
     });
@@ -78,13 +97,16 @@ export class PlatformPlansService {
         features: dto.features?.length ? dto.features : undefined,
         maxProducts: dto.maxProducts || null,
         nfeIncluded: dto.nfeIncluded ?? true,
+        feeBps: dto.feeBps ?? 0,
+        customDomainIncluded: dto.customDomainIncluded ?? true,
         order: dto.order ?? (maxOrder._max.order ?? -1) + 1,
       },
     });
+    await this.registrarAlteracao(row.id, changedById, { criado: dto });
     return { ...this.toDto(row), active: row.active };
   }
 
-  async update(id: string, dto: UpdatePlatformPlanDto) {
+  async update(id: string, dto: UpdatePlatformPlanDto, changedById?: string) {
     const existing = await this.prisma.platformPlan.findUnique({
       where: { id },
     });
@@ -115,10 +137,25 @@ export class PlatformPlansService {
         ...(dto.nfeIncluded !== undefined
           ? { nfeIncluded: dto.nfeIncluded }
           : {}),
+        ...(dto.feeBps !== undefined ? { feeBps: dto.feeBps } : {}),
+        ...(dto.customDomainIncluded !== undefined
+          ? { customDomainIncluded: dto.customDomainIncluded }
+          : {}),
         ...(dto.active !== undefined ? { active: dto.active } : {}),
         ...(dto.order !== undefined ? { order: dto.order } : {}),
       },
     });
+    const antes = existing as unknown as Record<string, unknown>;
+    const depois = row as unknown as Record<string, unknown>;
+    const mudou: Record<string, { de: unknown; para: unknown }> = {};
+    for (const campo of Object.keys(dto)) {
+      if (JSON.stringify(antes[campo]) !== JSON.stringify(depois[campo])) {
+        mudou[campo] = { de: antes[campo], para: depois[campo] };
+      }
+    }
+    if (Object.keys(mudou).length > 0) {
+      await this.registrarAlteracao(id, changedById, mudou);
+    }
     return { ...this.toDto(row), active: row.active };
   }
 
