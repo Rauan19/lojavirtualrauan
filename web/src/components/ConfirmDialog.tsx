@@ -4,8 +4,19 @@ import {
   useCallback,
   useEffect,
   useState,
+  type FormEvent,
   type ReactNode,
 } from 'react';
+
+/** Campo opcional dentro do popup — substitui o window.prompt. */
+export type ConfirmField = {
+  label: string;
+  /** "password" esconde o que é digitado (o window.prompt mostrava em claro). */
+  type?: 'text' | 'password' | 'textarea';
+  placeholder?: string;
+  /** Sem valor o botão de confirmar fica desativado. */
+  required?: boolean;
+};
 
 export type ConfirmOptions = {
   title: string;
@@ -14,16 +25,17 @@ export type ConfirmOptions = {
   cancelLabel?: string;
   /** Botão de confirmação em vermelho (excluir / ação destrutiva) */
   danger?: boolean;
+  field?: ConfirmField;
 };
 
 type Pending = ConfirmOptions & {
-  resolve: (value: boolean) => void;
+  resolve: (value: string | null) => void;
 };
 
 type ConfirmDialogProps = ConfirmOptions & {
   open: boolean;
   busy?: boolean;
-  onConfirm: () => void;
+  onConfirm: (value: string) => void;
   onCancel: () => void;
 };
 
@@ -35,11 +47,15 @@ export function ConfirmDialog({
   cancelLabel = 'Cancelar',
   danger = false,
   busy = false,
+  field,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const [value, setValue] = useState('');
+
   useEffect(() => {
     if (!open) return;
+    setValue('');
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => {
@@ -54,18 +70,31 @@ export function ConfirmDialog({
 
   if (!open) return null;
 
+  const faltaValor = Boolean(field?.required && !value.trim());
+
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    if (busy || faltaValor) return;
+    onConfirm(value);
+  }
+
   return (
     <div
+      data-confirm-dialog
       className="fixed inset-0 z-[100] flex items-end justify-center bg-black/45 p-0 sm:items-center sm:p-4"
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"
       aria-describedby="confirm-dialog-desc"
       onClick={(e) => {
-        if (e.target === e.currentTarget && !busy) onCancel();
+        // Com campo digitado, clicar fora não pode jogar o texto fora
+        if (e.target === e.currentTarget && !busy && !value) onCancel();
       }}
     >
-      <div className="w-full max-w-md border border-line bg-white p-5 shadow-xl sm:rounded-md">
+      <form
+        onSubmit={submit}
+        className="w-full max-w-md border border-line bg-white p-5 shadow-xl sm:rounded-md"
+      >
         <h2 id="confirm-dialog-title" className="text-base font-bold text-ink">
           {title}
         </h2>
@@ -75,6 +104,34 @@ export function ConfirmDialog({
         >
           {message}
         </p>
+        {field ? (
+          <div className="mt-4">
+            <label className="label" htmlFor="confirm-dialog-field">
+              {field.label}
+            </label>
+            {field.type === 'textarea' ? (
+              <textarea
+                id="confirm-dialog-field"
+                className="field min-h-[88px]"
+                value={value}
+                placeholder={field.placeholder}
+                onChange={(e) => setValue(e.target.value)}
+                autoFocus
+              />
+            ) : (
+              <input
+                id="confirm-dialog-field"
+                className="field"
+                type={field.type === 'password' ? 'password' : 'text'}
+                autoComplete={field.type === 'password' ? 'current-password' : 'off'}
+                value={value}
+                placeholder={field.placeholder}
+                onChange={(e) => setValue(e.target.value)}
+                autoFocus
+              />
+            )}
+          </div>
+        ) : null}
         <div className="mt-5 flex flex-wrap justify-end gap-2">
           <button
             type="button"
@@ -85,39 +142,48 @@ export function ConfirmDialog({
             {cancelLabel}
           </button>
           <button
-            type="button"
+            type="submit"
             className={danger ? 'btn btn-danger' : 'btn btn-accent'}
-            disabled={busy}
-            autoFocus
-            onClick={onConfirm}
+            disabled={busy || faltaValor}
+            autoFocus={!field}
           >
             {confirmLabel}
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
 
-/** Substitui window.confirm por um popup da loja. */
+/** Substitui window.confirm e window.prompt por um popup da loja. */
 export function useConfirm() {
   const [pending, setPending] = useState<Pending | null>(null);
 
-  const confirm = useCallback((options: ConfirmOptions) => {
-    return new Promise<boolean>((resolve) => {
+  const open = useCallback((options: ConfirmOptions) => {
+    return new Promise<string | null>((resolve) => {
       setPending({ ...options, resolve });
     });
   }, []);
 
-  const close = useCallback(
-    (value: boolean) => {
-      setPending((cur) => {
-        cur?.resolve(value);
-        return null;
-      });
-    },
-    [],
+  /** Sim/não. */
+  const confirm = useCallback(
+    async (options: Omit<ConfirmOptions, 'field'>) =>
+      (await open(options)) !== null,
+    [open],
   );
+
+  /** Pede um texto. Devolve null se cancelar. */
+  const ask = useCallback(
+    (options: ConfirmOptions & { field: ConfirmField }) => open(options),
+    [open],
+  );
+
+  const close = useCallback((value: string | null) => {
+    setPending((cur) => {
+      cur?.resolve(value);
+      return null;
+    });
+  }, []);
 
   const dialog: ReactNode = pending ? (
     <ConfirmDialog
@@ -127,10 +193,11 @@ export function useConfirm() {
       confirmLabel={pending.confirmLabel}
       cancelLabel={pending.cancelLabel}
       danger={pending.danger}
-      onConfirm={() => close(true)}
-      onCancel={() => close(false)}
+      field={pending.field}
+      onConfirm={(value) => close(value)}
+      onCancel={() => close(null)}
     />
   ) : null;
 
-  return { confirm, dialog };
+  return { confirm, ask, dialog };
 }

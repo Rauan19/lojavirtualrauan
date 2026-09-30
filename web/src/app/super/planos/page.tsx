@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
+import { useConfirm } from '@/components/ConfirmDialog';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 
@@ -36,6 +37,7 @@ function money(value: number) {
 }
 
 export default function SuperPlanosPage() {
+  const { confirm, dialog: confirmDialog } = useConfirm();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -175,9 +177,14 @@ export default function SuperPlanosPage() {
   }
 
   async function removePlan(plan: Plan) {
-    if (!confirm(`Apagar o plano "${plan.name}"? Não afeta lojas que já usam ele.`)) {
-      return;
-    }
+    const ok = await confirm({
+      title: `Apagar o plano "${plan.name}"?`,
+      message:
+        'Ele some da lista de planos. Lojas que já usam este plano continuam funcionando.',
+      confirmLabel: 'Apagar',
+      danger: true,
+    });
+    if (!ok) return;
     const token = getToken();
     if (!token) return;
     setError('');
@@ -191,6 +198,7 @@ export default function SuperPlanosPage() {
 
   return (
     <div className="max-w-3xl space-y-6">
+      {confirmDialog}
       <div>
         <h1 className="text-lg font-bold">Planos</h1>
         <p className="text-sm text-muted">

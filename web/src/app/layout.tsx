@@ -6,6 +6,7 @@ import {
   Playfair_Display,
   Poppins,
 } from 'next/font/google';
+import { LabelLinker } from '@/components/LabelLinker';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { BRAND } from '@/lib/brand';
 import { siteUrl } from '@/lib/seo';
@@ -108,6 +109,7 @@ export default function RootLayout({
         className={`${barlow.variable} ${manrope.variable} ${storeModern.variable} ${storeFriendly.variable} ${storeElegant.variable} antialiased`}
       >
         <ScrollToTop />
+        <LabelLinker />
         {children}
       </body>
     </html>

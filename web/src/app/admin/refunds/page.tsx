@@ -45,7 +45,7 @@ const MOTIVO_LABEL: Record<string, string> = {
 const PAGE_SIZE = 10;
 
 export default function AdminRefundsPage() {
-  const { confirm, dialog: confirmDialog } = useConfirm();
+  const { confirm, ask, dialog: confirmDialog } = useConfirm();
   const [items, setItems] = useState<RefundOrder[]>([]);
   const [page, setPage] = useState(1);
   const [showAll, setShowAll] = useState(false);
@@ -146,7 +146,19 @@ export default function AdminRefundsPage() {
   async function reject(id: string) {
     const { token, storeSlug } = auth();
     if (!token) return;
-    const reason = window.prompt('Motivo da recusa (opcional)') || undefined;
+    const motivo = await ask({
+      title: 'Recusar a solicitação?',
+      message: 'O cliente recebe um e-mail avisando. O motivo aparece para ele.',
+      confirmLabel: 'Recusar',
+      danger: true,
+      field: {
+        label: 'Motivo da recusa (opcional)',
+        type: 'textarea',
+        placeholder: 'Ex.: o prazo de 7 dias para desistência já passou.',
+      },
+    });
+    if (motivo === null) return;
+    const reason = motivo.trim() || undefined;
     setBusyId(id);
     setError('');
     setMessage('');

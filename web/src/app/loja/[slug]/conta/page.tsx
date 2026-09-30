@@ -29,7 +29,7 @@ const emptyForm = {
 
 export default function ContaPage() {
   const params = useParams<{ slug: string }>();
-  const { confirm, dialog: confirmDialog } = useConfirm();
+  const { confirm, ask, dialog: confirmDialog } = useConfirm();
   const { customer, token, addresses, loading, refresh, setAddresses, logout } =
     useCustomer();
   const [lgpdBusy, setLgpdBusy] = useState(false);
@@ -72,7 +72,13 @@ export default function ContaPage() {
     if (!ok) return;
 
     // a senha é pedida de novo: a ação é irreversível
-    const senha = window.prompt('Confirme sua senha para excluir a conta:');
+    const senha = await ask({
+      title: 'Confirme sua senha',
+      message: 'Por segurança, digite a senha da sua conta para excluir.',
+      confirmLabel: 'Excluir minha conta',
+      danger: true,
+      field: { label: 'Senha', type: 'password', required: true },
+    });
     if (!senha) return;
 
     setLgpdBusy(true);
