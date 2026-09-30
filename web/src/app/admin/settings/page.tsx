@@ -657,8 +657,37 @@ function IconEtiqueta() {
  * assuntos diferentes empilhados. Aqui o lojista lê o que está valendo hoje e
  * só abre o que vai mexer.
  */
+/**
+ * Cor do quadradinho de cada ícone, por assunto. O desenho do ícone continua
+ * de linha (currentColor) e fica branco sobre a cor. "marca" = ícone que já
+ * tem a própria cor (Mercado Pago): fica sobre fundo claro.
+ */
+const ICON_TILE = {
+  loja: 'bg-[#4f46e5]',
+  imagem: 'bg-[#db2777]',
+  vitrine: 'bg-[#7c3aed]',
+  redes: 'bg-[#e1306c]',
+  grafico: 'bg-[#f97316]',
+  calculo: 'bg-[#0d9488]',
+  origem: 'bg-[#16a34a]',
+  pacote: 'bg-[#b45309]',
+  etiqueta: 'bg-[#ca8a04]',
+  cartao: 'bg-[#475569]',
+  checkout: 'bg-[#2563eb]',
+  webhook: 'bg-[#9333ea]',
+  identidade: 'bg-[#0891b2]',
+  contato: 'bg-[#0284c7]',
+  documento: 'bg-[#64748b]',
+  nota: 'bg-[#059669]',
+  chave: 'bg-[#d97706]',
+  marca: 'bg-[#e6f7fd] ring-1 ring-[#00b1ea]/30',
+  // Amostra de cores da loja: fundo branco para as cores aparecerem
+  neutro: 'bg-white ring-1 ring-black/10',
+} as const;
+
 function SettingsRow({
   icon,
+  iconTile,
   title,
   value,
   tone = 'neutro',
@@ -666,6 +695,7 @@ function SettingsRow({
   onEdit,
 }: {
   icon: ReactNode;
+  iconTile: keyof typeof ICON_TILE;
   title: string;
   value: ReactNode;
   tone?: 'neutro' | 'ok' | 'pendente';
@@ -685,7 +715,9 @@ function SettingsRow({
       onClick={onEdit}
       className="group flex w-full items-center gap-3 border border-line bg-white px-3.5 py-3 text-left transition hover:border-ink/25 hover:bg-[#fafafa]"
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-line text-muted">
+      <span
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white shadow-sm ${ICON_TILE[iconTile]}`}
+      >
         {icon}
       </span>
       <span className="min-w-0 flex-1">
@@ -1723,6 +1755,7 @@ export default function AdminSettingsPage() {
       <div className="flex flex-col gap-2">
         <SettingsRow
           icon={<IconLoja />}
+          iconTile="loja"
           title="Nome e endereço"
           value={`${store.name} · ${
             store.customDomain?.trim() || `/loja/${store.slug}`
@@ -1732,6 +1765,7 @@ export default function AdminSettingsPage() {
 
         <SettingsRow
           icon={<IconImagem />}
+          iconTile="imagem"
           title="Logo"
           value={logo ? 'Definida' : 'Nenhuma logo ainda'}
           tone={logo ? 'ok' : 'neutro'}
@@ -1740,6 +1774,7 @@ export default function AdminSettingsPage() {
         />
 
         <SettingsRow
+          iconTile="neutro"
           icon={
             <span className="flex gap-1">
               <span
@@ -1759,6 +1794,7 @@ export default function AdminSettingsPage() {
 
         <SettingsRow
           icon={<IconVitrine />}
+          iconTile="vitrine"
           title="Aparência da vitrine"
           value={identResumo.aparencia}
           onEdit={() => setIdentModal('aparencia')}
@@ -1766,6 +1802,7 @@ export default function AdminSettingsPage() {
 
         <SettingsRow
           icon={<IconRedes />}
+          iconTile="redes"
           title="Redes sociais"
           value={identResumo.redes}
           onEdit={() => setIdentModal('redes')}
@@ -1773,6 +1810,7 @@ export default function AdminSettingsPage() {
 
         <SettingsRow
           icon={<IconGrafico />}
+          iconTile="grafico"
           title="Medição de audiência"
           value={identResumo.audiencia}
           onEdit={() => setIdentModal('audiencia')}
@@ -2252,6 +2290,7 @@ export default function AdminSettingsPage() {
       <div className="flex flex-col gap-2">
         <SettingsRow
           icon={<IconCalculo />}
+          iconTile="calculo"
           title="Como calcular o frete"
           value={freteResumo.calculo}
           onEdit={() => setFreteModal('calculo')}
@@ -2259,6 +2298,7 @@ export default function AdminSettingsPage() {
 
         <SettingsRow
           icon={<IconOrigem />}
+          iconTile="origem"
           title="Endereço de origem"
           value={freteResumo.origem}
           tone={originReady ? 'ok' : 'pendente'}
@@ -2270,6 +2310,7 @@ export default function AdminSettingsPage() {
           <>
             <SettingsRow
               icon={<IconPacote />}
+              iconTile="pacote"
               title={
                 store.freteModo === 'melhor_envio'
                   ? 'Melhor Envio'
@@ -2283,6 +2324,7 @@ export default function AdminSettingsPage() {
 
             <SettingsRow
               icon={<IconEtiqueta />}
+              iconTile="etiqueta"
               title="Etiqueta e transportadoras"
               value={freteResumo.etiqueta}
               onEdit={() => setFreteModal('etiqueta')}
@@ -2771,8 +2813,8 @@ export default function AdminSettingsPage() {
       </SettingsPanel>
 
       <SettingsPanel
-        title="Pagamento (Mercado Pago)"
-        summary="Como o cliente paga o pedido na loja"
+        title="Recebimentos (Mercado Pago)"
+        summary="Onde você recebe o dinheiro das vendas"
         badge={
           <StatusPill
             ok={Boolean(store.mpAccessTokenSet && store.mpPublicKey)}
@@ -2783,18 +2825,25 @@ export default function AdminSettingsPage() {
         open={openSection === 'payments'}
         onToggle={() => toggleSection('payments')}
       >
+      <p className="mb-3 rounded-lg bg-[#e6f7fd] px-3.5 py-3 text-[13px] leading-relaxed text-[#0b4f6c]">
+        <strong>O dinheiro das vendas cai direto na sua conta do Mercado Pago.</strong>{' '}
+        Pix, cartão e boleto: o cliente paga na sua loja e o valor vai para a
+        conta que você conectar aqui. De lá você transfere para o seu banco
+        quando quiser.
+      </p>
       <div className="flex flex-col gap-2">
         <SettingsRow
           icon={<IconMercadoPago />}
-          title="Conta do Mercado Pago"
+          iconTile="marca"
+          title="Conta que recebe as vendas"
           value={
             store.mpOauthConectado
-              ? `Conectada pela ${BRAND.name}${
-                  store.mpLiveMode === false ? ' · conta de teste' : ''
+              ? `Conectada · as vendas caem nesta conta${
+                  store.mpLiveMode === false ? ' (conta de teste)' : ''
                 }`
               : store.mpAccessTokenSet
-                ? 'Usando token colado à mão · conecte para renovar sozinho'
-                : 'Não conectada — sem isso o checkout não abre'
+                ? 'Recebendo por token colado à mão · conecte para não precisar trocar'
+                : 'Nenhuma conta conectada · a loja ainda não recebe pagamentos'
           }
           tone={store.mpOauthConectado ? 'ok' : 'pendente'}
           cta={
@@ -2814,6 +2863,7 @@ export default function AdminSettingsPage() {
 
         <SettingsRow
           icon={<IconCartao />}
+          iconTile="cartao"
           title="Token manual (avançado)"
           value={
             store.mpAccessTokenSet && !store.mpOauthConectado
@@ -2826,7 +2876,8 @@ export default function AdminSettingsPage() {
 
         <SettingsRow
           icon={<IconCheckout />}
-          title="Modelo de checkout"
+          iconTile="checkout"
+          title="Tela de pagamento do cliente"
           value={
             store.checkoutMode === 'pro'
               ? 'Checkout Pro · cliente vai para o site do Mercado Pago'
@@ -2838,7 +2889,8 @@ export default function AdminSettingsPage() {
         {store.mpWebhookUrl ? (
           <SettingsRow
             icon={<IconWebhook />}
-            title="Webhook de pagamento"
+            iconTile="webhook"
+            title="Aviso automático de pagamento (webhook)"
             value={store.mpWebhookUrl}
             cta="Ver URL"
             onEdit={() => setPagamentoModal('webhook')}
@@ -3058,6 +3110,7 @@ export default function AdminSettingsPage() {
         <div className="flex flex-col gap-2">
           <SettingsRow
             icon={<IconIdentidade />}
+            iconTile="identidade"
             title="Quem emite a venda"
             value={perfilResumo.documento}
             tone={store.sellerDocument && store.sellerDocType ? 'ok' : 'pendente'}
@@ -3067,6 +3120,7 @@ export default function AdminSettingsPage() {
 
           <SettingsRow
             icon={<IconContato />}
+            iconTile="contato"
             title="Contato"
             value={perfilResumo.contato}
             onEdit={() => setPerfilModal('contato')}
@@ -3074,6 +3128,7 @@ export default function AdminSettingsPage() {
 
           <SettingsRow
             icon={<IconOrigem />}
+            iconTile="origem"
             title="Endereço do emitente"
             value={perfilResumo.endereco}
             tone={store.sellerZipCode ? 'ok' : 'neutro'}
@@ -3315,6 +3370,7 @@ export default function AdminSettingsPage() {
             <SettingsRow
               key={pol.campo}
               icon={<IconDocumento />}
+              iconTile="documento"
               title={pol.titulo}
               value={
                 (store[pol.campo] || '').trim()
@@ -3410,6 +3466,7 @@ export default function AdminSettingsPage() {
         <div className="flex flex-col gap-2">
           <SettingsRow
             icon={<IconNota />}
+            iconTile="nota"
             title="Emissão"
             value={
               store.nfeEnabled
@@ -3430,6 +3487,7 @@ export default function AdminSettingsPage() {
 
           <SettingsRow
             icon={<IconChave />}
+            iconTile="chave"
             title="Credenciais da Focus NFe"
             value={
               store.nfeApiTokenSet
