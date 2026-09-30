@@ -241,13 +241,15 @@ export class MercadoPagoOauthService implements OnModuleInit, OnModuleDestroy {
         mpTokenExpiresAt: this.expiresAt(token),
         mpUserId: token.user_id != null ? String(token.user_id) : null,
         mpConnectedAt: new Date(),
-        mpLiveMode: token.live_mode ?? null,
+        // O MP nem sempre manda live_mode; o prefixo do token diz o ambiente
+        mpLiveMode:
+          token.live_mode ?? !String(token.access_token).startsWith('TEST-'),
       },
     });
 
     this.logger.log(
       `Mercado Pago conectado · loja ${storeId} · conta ${token.user_id ?? '?'}${
-        token.live_mode === false ? ' (teste)' : ''
+        String(token.access_token).startsWith('TEST-') ? ' (teste)' : ''
       }`,
     );
     return { storeId };

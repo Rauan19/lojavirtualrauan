@@ -140,6 +140,13 @@ describe('MercadoPagoOauthService', () => {
     expect(corpo.test_token).toBe('true');
   });
 
+  it('sem live_mode na resposta, descobre pelo prefixo TEST- do token', async () => {
+    const { svc, update } = montar();
+    fetchMock.mockResolvedValue(respostaToken({ access_token: 'TEST-abc' }));
+    await svc.handleCallback('c', svc.signState('loja-1'));
+    expect(update.mock.calls[0][0].data.mpLiveMode).toBe(false);
+  });
+
   it('não grava nada se o Mercado Pago recusar o code', async () => {
     const { svc, update } = montar();
     fetchMock.mockResolvedValue(

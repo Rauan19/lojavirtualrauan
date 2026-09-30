@@ -361,6 +361,31 @@ function IconContato() {
   );
 }
 
+/** Marca do Mercado Pago (oval azul com o aperto de mãos), simplificada. */
+function IconMercadoPago() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
+      <ellipse cx="12" cy="12" rx="11" ry="7.8" fill="#00B1EA" />
+      <path
+        d="M5.6 12.1l2.6-2.4c.5-.45 1.25-.5 1.8-.1L12 11.2l2-1.6c.55-.42 1.3-.37 1.8.1l2.6 2.4"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9.2 13.2l1.9 1.6c.5.4 1.2.4 1.7 0l2.9-2.4"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function IconCartao() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden>
@@ -2760,7 +2785,7 @@ export default function AdminSettingsPage() {
       >
       <div className="flex flex-col gap-2">
         <SettingsRow
-          icon={<IconCartao />}
+          icon={<IconMercadoPago />}
           title="Conta do Mercado Pago"
           value={
             store.mpOauthConectado
