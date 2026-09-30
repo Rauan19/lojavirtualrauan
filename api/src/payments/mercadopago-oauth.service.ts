@@ -12,7 +12,8 @@ import { SecretsService } from '../common/secrets/secrets.service';
 import { SweepRunner } from '../common/utils/sweep-runner';
 import { PrismaService } from '../prisma/prisma.service';
 
-const AUTH_URL = 'https://auth.mercadopago.com.br/authorization';
+// Endereço da documentação oficial (Obter Access Token › OAuth)
+const AUTH_URL = 'https://auth.mercadopago.com/authorization';
 const TOKEN_URL = 'https://api.mercadopago.com/oauth/token';
 
 /**
@@ -221,7 +222,8 @@ export class MercadoPagoOauthService implements OnModuleInit, OnModuleDestroy {
       grant_type: 'authorization_code',
       code,
       redirect_uri: redirectUri,
-      ...(testToken ? { test_token: true } : {}),
+      // A documentação manda como texto ("true"/"false")
+      ...(testToken ? { test_token: 'true' } : {}),
     });
 
     await this.prisma.store.update({

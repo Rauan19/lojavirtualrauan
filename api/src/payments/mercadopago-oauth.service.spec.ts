@@ -62,7 +62,7 @@ describe('MercadoPagoOauthService', () => {
     const { url } = await svc.authorizeUrl('loja-1');
     const u = new URL(url);
 
-    expect(u.origin).toBe('https://auth.mercadopago.com.br');
+    expect(u.origin).toBe('https://auth.mercadopago.com');
     expect(u.searchParams.get('client_id')).toBe('app-123');
     expect(u.searchParams.get('platform_id')).toBe('mp');
     expect(u.searchParams.get('response_type')).toBe('code');
@@ -137,7 +137,7 @@ describe('MercadoPagoOauthService', () => {
     );
     await svc.handleCallback('c', svc.signState('loja-1'));
     const corpo = JSON.parse(fetchMock.mock.calls[0][1].body as string);
-    expect(corpo.test_token).toBe(true);
+    expect(corpo.test_token).toBe('true');
   });
 
   it('não grava nada se o Mercado Pago recusar o code', async () => {
