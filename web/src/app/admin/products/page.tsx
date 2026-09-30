@@ -102,6 +102,30 @@ type FreeAxis = {
   customInput: string;
 };
 
+/** Cadastro de produto em andamento, guardado no navegador. */
+type Rascunho = {
+  v: 1;
+  salvoEm: number;
+  categoryId: string;
+  name: string;
+  price: string;
+  compareAt: string;
+  installments: string;
+  stock: string;
+  weightKg: string;
+  widthCm: string;
+  heightCm: string;
+  lengthCm: string;
+  brand: string;
+  sku: string;
+  ncm: string;
+  description: string;
+  useVariants: boolean;
+  axes: FreeAxis[];
+  draftVariants: DraftVariant[];
+  createStep: number;
+};
+
 type DraftVariant = {
   key: string;
   label: string;
@@ -377,6 +401,8 @@ export default function AdminProductsPage() {
   const [useVariants, setUseVariants] = useState(false);
   const [axes, setAxes] = useState<FreeAxis[]>([]);
   const [draftVariants, setDraftVariants] = useState<DraftVariant[]>([]);
+  /** Data do rascunho recuperado ao abrir o cadastro (null = começou do zero). */
+  const [rascunhoDe, setRascunhoDe] = useState<number | null>(null);
 
   const CREATE_STEPS = [
     { id: 'dados', title: 'Dados', short: 'Produto' },
@@ -607,9 +633,102 @@ export default function AdminProductsPage() {
     setError('');
   }
 
+  /*
+   * Rascunho do cadastro no navegador: se a página recarregar, a internet
+   * cair ou o lojista fechar a aba no meio, o produto volta ao abrir de novo.
+   * Fotos não entram (arquivo não cabe no armazenamento do navegador).
+   */
+  const rascunhoKey = `vendira:rascunho-produto:${getUser()?.store?.slug ?? ''}`;
+
+  function apagarRascunho() {
+    try {
+      localStorage.removeItem(rascunhoKey);
+    } catch {
+      /* navegador sem armazenamento: nada a apagar */
+    }
+  }
+
+  function lerRascunho(): Rascunho | null {
+    try {
+      const bruto = localStorage.getItem(rascunhoKey);
+      if (!bruto) return null;
+      const r = JSON.parse(bruto) as Rascunho;
+      // Rascunho de mais de 14 dias não vale mais a pena recuperar
+      if (r.v !== 1 || Date.now() - r.salvoEm > 14 * 24 * 60 * 60 * 1000) {
+        apagarRascunho();
+        return null;
+      }
+      return r;
+    } catch {
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    if (!createOpen || !createDirty) return;
+    const t = window.setTimeout(() => {
+      const r: Rascunho = {
+        v: 1,
+        salvoEm: Date.now(),
+        categoryId,
+        name,
+        price,
+        compareAt,
+        installments,
+        stock,
+        weightKg,
+        widthCm,
+        heightCm,
+        lengthCm,
+        brand,
+        sku,
+        ncm,
+        description,
+        useVariants,
+        axes,
+        draftVariants,
+        createStep,
+      };
+      try {
+        localStorage.setItem(rascunhoKey, JSON.stringify(r));
+      } catch {
+        /* sem espaço ou navegação privada: segue sem rascunho */
+      }
+    }, 600);
+    return () => window.clearTimeout(t);
+  });
+
   function openCreate() {
     resetForm();
+    const r = lerRascunho();
+    if (r) {
+      setCategoryId(r.categoryId);
+      setName(r.name);
+      setPrice(r.price);
+      setCompareAt(r.compareAt);
+      setInstallments(r.installments);
+      setStock(r.stock);
+      setWeightKg(r.weightKg);
+      setWidthCm(r.widthCm);
+      setHeightCm(r.heightCm);
+      setLengthCm(r.lengthCm);
+      setBrand(r.brand);
+      setSku(r.sku);
+      setNcm(r.ncm);
+      setDescription(r.description);
+      setUseVariants(r.useVariants);
+      setAxes(r.axes);
+      setDraftVariants(r.draftVariants);
+      setCreateStep(r.createStep);
+    }
+    setRascunhoDe(r ? r.salvoEm : null);
     setCreateOpen(true);
+  }
+
+  function comecarDoZero() {
+    apagarRascunho();
+    resetForm();
+    setRascunhoDe(null);
   }
 
   /** Já tem algo digitado no cadastro? (estoque e medidas vêm preenchidos) */
@@ -643,6 +762,7 @@ export default function AdminProductsPage() {
     ) {
       return;
     }
+    apagarRascunho();
     setCreateOpen(false);
     resetForm();
   }
@@ -1037,6 +1157,7 @@ export default function AdminProductsPage() {
         },
       });
 
+      apagarRascunho();
       resetForm();
       setCreateOpen(false);
       setPage(1);
@@ -1315,6 +1436,28 @@ export default function AdminProductsPage() {
                 })}
               </ol>
             </div>
+
+            {rascunhoDe ? (
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-[13px] text-amber-950">
+                <span>
+                  Recuperamos o produto que você não terminou (
+                  {new Date(rascunhoDe).toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                  ). As fotos precisam ser escolhidas de novo.
+                </span>
+                <button
+                  type="button"
+                  className="text-xs font-semibold underline"
+                  onClick={comecarDoZero}
+                >
+                  Começar do zero
+                </button>
+              </div>
+            ) : null}
 
             <form
               onSubmit={(e) => {
