@@ -59,7 +59,7 @@ export class MercadoPagoOauthController {
       '',
     );
     const back = (status: string) =>
-      `${front}/admin/settings?mercadopago=${status}`;
+      `${front}/admin/settings?secao=payments&mercadopago=${status}`;
 
     if (error || !code || !state) return res.redirect(back('erro'));
     try {

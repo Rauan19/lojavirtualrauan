@@ -881,6 +881,14 @@ export default function AdminSettingsPage() {
     | 'nfe'
     | null
   >(null);
+
+  /* Link direto para uma seção: /admin/settings?secao=payments */
+  useEffect(() => {
+    const secao = new URLSearchParams(window.location.search).get('secao');
+    const validas = ['branding', 'marquee', 'shipping', 'payments', 'plan', 'profile', 'policies', 'nfe'] as const;
+    const alvo = validas.find((v) => v === secao);
+    if (alvo) setOpenSection(alvo);
+  }, []);
   const [nfeApiToken, setNfeApiToken] = useState('');
   const [nfeCscToken, setNfeCscToken] = useState('');
   const [meHelpOpen, setMeHelpOpen] = useState(false);

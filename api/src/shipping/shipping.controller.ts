@@ -81,7 +81,7 @@ export class ShippingController {
       '',
     );
     const back = (status: string) =>
-      `${front}/admin/settings?melhorenvio=${status}`;
+      `${front}/admin/settings?secao=shipping&melhorenvio=${status}`;
 
     if (error || !code || !state) {
       return res.redirect(back('erro'));

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { PrimeirosPassos } from '@/components/PrimeirosPassos';
 import {
   OrdersBarChart,
   RevenueAreaChart,
@@ -139,6 +140,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="admin-page">
+      <PrimeirosPassos />
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
           <h1>Painel</h1>
