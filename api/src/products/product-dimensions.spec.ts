@@ -12,7 +12,10 @@ function serviceFor(freteModo: string, saved: Record<string, unknown> = {}) {
     category: { findFirst: jest.fn().mockResolvedValue({ id: 'cat' }) },
     store: { findUnique: jest.fn().mockResolvedValue({ freteModo }) },
     product: {
-      findFirst: jest.fn().mockResolvedValue({ id: 'p1', ...saved }),
+      // Busca por código (sku) = código livre; o resto acha o produto salvo
+      findFirst: jest.fn((args: { where?: { sku?: unknown } }) =>
+        Promise.resolve(args?.where?.sku ? null : { id: 'p1', ...saved }),
+      ),
       create: created,
     },
     productVariant: { findMany: jest.fn().mockResolvedValue([]) },

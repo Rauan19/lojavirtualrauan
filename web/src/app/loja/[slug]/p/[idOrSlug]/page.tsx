@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { CartDrawer } from '@/components/CartDrawer';
+import { CodigoProduto } from '@/components/CodigoProduto';
 import { CartProvider, useCart } from '@/components/CartProvider';
 import { InstallmentsBlock } from '@/components/InstallmentsBlock';
 import { PaymentBadges } from '@/components/PaymentBadges';
@@ -48,6 +49,8 @@ type ProductVariant = {
 };
 
 type Product = {
+  /** Código do produto (VD…), mostrado ao cliente. */
+  sku?: string | null;
   id: string;
   name: string;
   slug: string;
@@ -450,6 +453,10 @@ function ProductInner({
               <h1 className="mt-1 text-[22px] font-bold leading-tight md:text-[28px]">
                 {product.name}
               </h1>
+              <CodigoProduto
+                className="mt-1.5"
+                codigo={selectedVariant?.sku || product.sku}
+              />
 
               {product.rating && product.rating.count > 0 ? (
                 <a href="#avaliacoes" className="mt-2 flex items-center gap-1.5">

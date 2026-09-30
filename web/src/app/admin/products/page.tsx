@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { ProdutoDetalhe } from '@/components/ProdutoDetalhe';
 import { useEscapeKey, useUnsavedWarning } from '@/lib/modal-guards';
 import { PaginationBar } from '@/components/PaginationBar';
 import { api, thumbUrl, money } from '@/lib/api';
@@ -27,6 +28,7 @@ type ProductVariant = {
 type Product = {
   id: string;
   name: string;
+  slug?: string;
   price: string;
   compareAt?: string | null;
   installments?: number | null;
@@ -842,6 +844,28 @@ export default function AdminProductsPage() {
     };
   }, [createOpen, editForm]);
 
+  /** Ficha do produto (clique no card). Abre com o que a lista já tem e completa. */
+  const [detalhe, setDetalhe] = useState<Product | null>(null);
+  const [detalheCarregando, setDetalheCarregando] = useState(false);
+
+  async function abrirDetalhe(p: Product) {
+    setDetalhe(p);
+    const { token, storeSlug } = auth();
+    if (!token) return;
+    setDetalheCarregando(true);
+    try {
+      const completo = await api<Product>(`/admin/products/${p.id}`, {
+        token,
+        storeSlug,
+      });
+      setDetalhe((atual) => (atual?.id === p.id ? completo : atual));
+    } catch {
+      /* segue com os dados da lista */
+    } finally {
+      setDetalheCarregando(false);
+    }
+  }
+
   async function openEdit(productId: string) {
     const { token, storeSlug } = auth();
     if (!token) return;
@@ -1265,7 +1289,12 @@ export default function AdminProductsPage() {
                 key={p.id}
                 className={`card overflow-hidden !p-0 ${p.active ? '' : 'opacity-60'}`}
               >
-                <div className="relative aspect-square bg-[#eee]">
+                <button
+                  type="button"
+                  onClick={() => void abrirDetalhe(p)}
+                  className="relative block aspect-square w-full bg-[#eee]"
+                  aria-label={`Ver detalhes de ${p.name}`}
+                >
                   {img ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -1284,14 +1313,20 @@ export default function AdminProductsPage() {
                       {p.images.length} fotos
                     </span>
                   ) : null}
-                </div>
+                </button>
                 <div className="space-y-0.5 p-1.5">
                   <p className="truncate text-[9px] uppercase tracking-wide text-muted">
                     {p.category?.name || 'Sem categoria'}
                     {p.brand ? ` · ${p.brand}` : ''}
                   </p>
                   <h2 className="line-clamp-2 min-h-[2em] text-[11px] font-medium leading-snug">
-                    {p.name}
+                    <button
+                      type="button"
+                      className="text-left hover:underline"
+                      onClick={() => void abrirDetalhe(p)}
+                    >
+                      {p.name}
+                    </button>
                   </h2>
                   <div className="flex flex-wrap items-baseline gap-1">
                     {de && de > priceNum ? (
@@ -1627,18 +1662,18 @@ export default function AdminProductsPage() {
                           <FieldHint>Aparece junto ao nome na listagem.</FieldHint>
                         </div>
                         <div>
-                          <label className="label">
-                            Código / código de barras
-                          </label>
+                          <label className="label">Código do produto</label>
                           <input
                             className="field"
                             value={sku}
                             onChange={(e) => setSku(e.target.value)}
-                            placeholder="Ex.: 7891234567890"
+                            placeholder="Em branco = criamos um (ex.: VD7K3M9Q)"
                             autoComplete="off"
                           />
                           <FieldHint>
-                            Controle interno e impressão do pedido.
+                            Aparece na loja com botão de copiar. O cliente manda
+                            o código e você acha o produto pela busca. Pode usar
+                            o código de barras.
                           </FieldHint>
                         </div>
                         <div className="md:col-span-2">
@@ -2618,6 +2653,23 @@ export default function AdminProductsPage() {
         </div>
       ) : null}
       {confirmDialog}
+      {detalhe ? (
+        <ProdutoDetalhe
+          produto={detalhe}
+          carregando={detalheCarregando}
+          storeSlug={getUser()?.store?.slug ?? ''}
+          onFechar={() => setDetalhe(null)}
+          onEditar={() => {
+            const id = detalhe.id;
+            setDetalhe(null);
+            void openEdit(id);
+          }}
+          onAlternarAtivo={async () => {
+            await setProductActive(detalhe, !detalhe.active);
+            await abrirDetalhe(detalhe);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

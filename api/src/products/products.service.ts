@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { randomInt } from 'crypto';
 import { Prisma, StoreType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { slugify } from '../common/utils/slugify';
@@ -18,6 +19,20 @@ import {
 } from './dto/product.dto';
 import { PlanLimitsService } from '../plan-limits/plan-limits.service';
 
+/*
+ * Código do produto, como o da Shein: todo produto tem um, para o cliente
+ * falar "quero o VD7K3M9Q" e o lojista achar na hora pela busca. Sem letras
+ * que se confundem (0/O, 1/I/L) porque é lido em voz alta e digitado.
+ */
+const CODIGO_ALFABETO = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+export function gerarCodigoProduto() {
+  let c = 'VD';
+  for (let i = 0; i < 6; i++) {
+    c += CODIGO_ALFABETO[randomInt(CODIGO_ALFABETO.length)];
+  }
+  return c;
+}
+
 const productInclude = {
   images: { orderBy: { position: 'asc' as const } },
   category: true,
@@ -31,6 +46,45 @@ export class ProductsService {
     private readonly prisma: PrismaService,
     private readonly planLimits: PlanLimitsService,
   ) {}
+
+  /**
+   * Código final do produto: o digitado pelo lojista (sem repetir outro da
+   * loja) ou um gerado. `excetoId` é o próprio produto, na edição.
+   */
+  private async resolverCodigo(
+    storeId: string,
+    digitado: string | undefined,
+    excetoId?: string,
+  ): Promise<string> {
+    const codigo = digitado?.trim();
+    if (codigo) {
+      const outro = await this.prisma.product.findFirst({
+        where: {
+          storeId,
+          sku: { equals: codigo, mode: 'insensitive' },
+          ...(excetoId ? { id: { not: excetoId } } : {}),
+        },
+        select: { name: true },
+      });
+      if (outro) {
+        throw new BadRequestException(
+          `O código ${codigo} já é do produto “${outro.name}”. Use outro ou deixe em branco para gerar um.`,
+        );
+      }
+      return codigo;
+    }
+    for (let tentativa = 0; tentativa < 5; tentativa++) {
+      const novo = gerarCodigoProduto();
+      const existe = await this.prisma.product.findFirst({
+        where: { storeId, sku: novo },
+        select: { id: true },
+      });
+      if (!existe) return novo;
+    }
+    throw new BadRequestException(
+      'Não foi possível gerar o código. Tente de novo.',
+    );
+  }
 
   async ensureDefaultCategories(storeId: string, storeType?: StoreType) {
     const count = await this.prisma.category.count({ where: { storeId } });
@@ -185,13 +239,15 @@ export class ProductsService {
       ? variants!.reduce((sum, v) => sum + (v.stock ?? 0), 0)
       : (dto.stock ?? 0);
 
+    const sku = await this.resolverCodigo(storeId, dto.sku);
+
     return this.prisma.product.create({
       data: {
         storeId,
         name: dto.name,
         slug,
         description: dto.description,
-        sku: dto.sku,
+        sku,
         brand: dto.brand,
         categoryId: dto.categoryId,
         price: new Prisma.Decimal(dto.price),
@@ -282,6 +338,17 @@ export class ProductsService {
               { name: { contains: query.q, mode: 'insensitive' } },
               { brand: { contains: query.q, mode: 'insensitive' } },
               { sku: { contains: query.q, mode: 'insensitive' } },
+              // Código ou código de barras de uma variação (cor/tamanho)
+              {
+                variants: {
+                  some: {
+                    OR: [
+                      { sku: { contains: query.q, mode: 'insensitive' } },
+                      { barcode: { contains: query.q, mode: 'insensitive' } },
+                    ],
+                  },
+                },
+              },
             ],
           }
         : {}),
@@ -528,6 +595,11 @@ export class ProductsService {
 
   async updateProduct(storeId: string, id: string, dto: UpdateProductDto) {
     const current = await this.ensureProduct(storeId, id);
+    // undefined = não mexe; vazio = gera um novo (produto nunca fica sem código)
+    const sku =
+      dto.sku === undefined
+        ? undefined
+        : await this.resolverCodigo(storeId, dto.sku, id);
     if (dto.categoryId) {
       await this.ensureCategory(storeId, dto.categoryId);
     }
@@ -565,7 +637,7 @@ export class ProductsService {
         data: {
           name: dto.name,
           description: dto.description,
-          sku: dto.sku,
+          sku,
           brand: dto.brand,
           categoryId: dto.categoryId,
           price:

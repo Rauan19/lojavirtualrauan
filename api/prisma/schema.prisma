@@ -392,6 +392,8 @@ model Product {
   @@unique([storeId, slug])
   @@index([storeId])
   @@index([storeId, active])
+  /** Busca pelo código do produto (sku). */
+  @@index([storeId, sku])
 }
 
 model Review {
