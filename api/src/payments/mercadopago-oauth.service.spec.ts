@@ -62,7 +62,7 @@ describe('MercadoPagoOauthService', () => {
     const { url } = await svc.authorizeUrl('loja-1');
     const u = new URL(url);
 
-    expect(u.origin).toBe('https://auth.mercadopago.com');
+    expect(u.origin).toBe('https://auth.mercadopago.com.br');
     expect(u.searchParams.get('client_id')).toBe('app-123');
     expect(u.searchParams.get('platform_id')).toBe('mp');
     expect(u.searchParams.get('response_type')).toBe('code');

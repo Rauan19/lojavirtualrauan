@@ -12,8 +12,12 @@ import { SecretsService } from '../common/secrets/secrets.service';
 import { SweepRunner } from '../common/utils/sweep-runner';
 import { PrismaService } from '../prisma/prisma.service';
 
-// Endereço da documentação oficial (Obter Access Token › OAuth)
-const AUTH_URL = 'https://auth.mercadopago.com/authorization';
+/*
+ * .com.br e não o .com do exemplo da documentação: o .com abre primeiro
+ * "Seleccione el país" (em espanhol) antes do login; o .com.br vai direto
+ * para o login brasileiro. Mesmos parâmetros, testado no navegador.
+ */
+const AUTH_URL = 'https://auth.mercadopago.com.br/authorization';
 const TOKEN_URL = 'https://api.mercadopago.com/oauth/token';
 
 /**
