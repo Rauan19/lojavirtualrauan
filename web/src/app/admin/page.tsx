@@ -243,13 +243,13 @@ export default function AdminDashboardPage() {
             </p>
           ) : null}
 
-          <section className="card !p-3">
+          <section className="card min-w-0 !p-3">
             <h2 className="mb-1 text-sm font-bold">Faturamento no período</h2>
             <RevenueAreaChart data={series} />
           </section>
 
-          <div className="grid gap-2 lg:grid-cols-2">
-            <section className="card !p-3">
+          <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+            <section className="card min-w-0 !p-3">
               <h2 className="mb-1 text-sm font-bold">
                 {usingSpecificDate || period === 'day'
                   ? 'Pedidos por hora'
@@ -258,14 +258,14 @@ export default function AdminDashboardPage() {
               <OrdersBarChart data={series} />
             </section>
 
-            <section className="card !p-3">
+            <section className="card min-w-0 !p-3">
               <h2 className="mb-1 text-sm font-bold">Por status</h2>
               <StatusBarChart data={byStatus} />
             </section>
           </div>
 
-          <div className="grid gap-2 lg:grid-cols-2">
-            <section className="card !p-3">
+          <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+            <section className="card min-w-0 !p-3">
               <h2 className="mb-2 text-sm font-bold">Mais vendidos</h2>
               <ul className="divide-y divide-line">
                 {data.topProducts.length === 0 ? (
@@ -286,7 +286,7 @@ export default function AdminDashboardPage() {
               </ul>
             </section>
 
-            <section className="card !p-3">
+            <section className="card min-w-0 !p-3">
               <h2 className="mb-2 text-sm font-bold">Pedidos recentes</h2>
               <ul className="divide-y divide-line">
                 {data.recentOrders.length === 0 ? (

@@ -44,7 +44,7 @@ export function PaginationBar({
         Página {page} de {totalPages}
         {typeof total === 'number' ? ` · ${total} ${label}` : ''}
       </p>
-      <div className="flex items-center gap-1">
+      <div className="flex flex-wrap items-center gap-1">
         <button
           type="button"
           className="btn btn-ghost px-2.5 py-1.5 text-xs disabled:opacity-40"
