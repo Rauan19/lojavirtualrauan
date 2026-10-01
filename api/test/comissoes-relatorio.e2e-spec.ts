@@ -2,7 +2,6 @@ import { INestApplication } from '@nestjs/common';
 import { PlatformFeeEntryType, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import request from 'supertest';
-import { TERMS_VERSION } from '../src/common/legal';
 import { PrismaService } from '../src/prisma/prisma.service';
 import {
   createTestApp,
@@ -14,7 +13,7 @@ import {
 
 /*
  * Fases 4 a 6 do split: relatório do Super Admin (com CSV para a NFS-e),
- * resumo do lojista, novo aceite dos termos e liberação loja a loja.
+ * resumo do lojista e liberação loja a loja.
  */
 describe('Comissões: relatório, termos e liberação (e2e)', () => {
   let app: INestApplication;
@@ -204,39 +203,5 @@ describe('Comissões: relatório, termos e liberação (e2e)', () => {
       .set('Authorization', `Bearer ${superToken}`)
       .expect(200);
     expect(res.body.divergencias).toHaveLength(0);
-  });
-
-  it('termos novos: painel pede aceite e grava versão, data e IP', async () => {
-    await prisma.store.update({
-      where: { id: seed.store.id },
-      data: { termsVersion: '2026-09-29' },
-    });
-    let me = await http()
-      .get('/api/stores/me')
-      .set('Authorization', `Bearer ${lojistaToken}`)
-      .set('x-store-slug', seed.store.slug)
-      .expect(200);
-    expect(me.body.termsPending).toBe(true);
-
-    await http()
-      .post('/api/stores/me/terms')
-      .set('Authorization', `Bearer ${lojistaToken}`)
-      .set('x-store-slug', seed.store.slug)
-      .set('x-forwarded-for', '203.0.113.9')
-      .expect(201);
-
-    const loja = await prisma.store.findUniqueOrThrow({
-      where: { id: seed.store.id },
-    });
-    expect(loja.termsVersion).toBe(TERMS_VERSION);
-    expect(loja.termsAcceptedIp).toBe('203.0.113.9');
-    expect(loja.termsAcceptedAt).not.toBeNull();
-
-    me = await http()
-      .get('/api/stores/me')
-      .set('Authorization', `Bearer ${lojistaToken}`)
-      .set('x-store-slug', seed.store.slug)
-      .expect(200);
-    expect(me.body.termsPending).toBe(false);
   });
 });

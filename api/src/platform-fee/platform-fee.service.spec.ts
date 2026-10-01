@@ -114,18 +114,6 @@ describe('PlatformFeeService', () => {
     expect(await svc.paraPedido('loja', pedido())).toBeNull();
   });
 
-  it('sem aceitar os termos com a taxa, não cobra (durante a migração)', async () => {
-    const { svc } = montar({
-      env: { PLATFORM_FEE_OAUTH_DEADLINE: '2999-01-01' },
-      loja: {
-        platformFeeEnabled: null,
-        mpRefreshToken: 'x',
-        termsVersion: '2026-09-29',
-      },
-    });
-    expect(await svc.paraPedido('loja', pedido())).toBeNull();
-  });
-
   it('sem Mercado Pago conectado, depois do prazo recusa o pagamento', async () => {
     const { svc } = montar({
       env: { PLATFORM_FEE_OAUTH_DEADLINE: '2020-01-01' },

@@ -15,8 +15,8 @@ roteiro para testar no sandbox do Mercado Pago e ligar aos poucos.
    estornos proporcionais, chargeback.
 4. Retido ≠ calculado → pedido marcado como divergente (Super Admin →
    Comissões) e alerta no Sentry.
-5. A comissão só é cobrada de loja com **Mercado Pago conectado pelo botão** e
-   **termos novos aceitos**. Faltando um dos dois: até o prazo
+5. A comissão só é cobrada de loja com **Mercado Pago conectado pelo botão**
+   (os termos com a taxa são aceitos no cadastro). Sem a conexão: até o prazo
    (`PLATFORM_FEE_OAUTH_DEADLINE`) vende sem comissão; depois, o pagamento é
    recusado.
 
@@ -26,7 +26,7 @@ Precisa de: app do MP com credenciais **de teste**, um usuário de teste
 **vendedor** e um **comprador** (Suas integrações → Contas de teste).
 
 - [ ] `.env` local: `MP_OAUTH_TEST="true"`, `PLATFORM_FEE_ENABLED="true"`.
-- [ ] Loja de teste num plano com taxa (ex.: Começo, 2%), termos aceitos.
+- [ ] Loja de teste num plano com taxa (ex.: Começo, 2%).
 - [ ] Conectar o vendedor de teste pelo botão "Conectar com Mercado Pago".
 - [ ] **Pix** de R$ 100 em produtos + frete → no MP, `application_fee` = R$ 2,00
       (frete fora). Painel do lojista → pedido mostra "Taxa Vendira −R$ 2,00".
@@ -49,8 +49,7 @@ Precisa de: app do MP com credenciais **de teste**, um usuário de teste
 1. Deploy com `npx prisma migrate deploy` (Node 22+).
 2. `.env` da VPS: `MP_OAUTH_TEST="false"`, `PLATFORM_FEE_ENABLED="false"`,
    `PLATFORM_FEE_OAUTH_DEADLINE` = hoje + 30 dias (ex.: `2026-11-30`).
-3. Avisar as lojas por e-mail (30 dias, como dizem os termos). No painel elas já
-   veem o aviso dos termos novos e a faixa "Conecte seu Mercado Pago até …".
+3. No painel as lojas veem a faixa "Conecte seu Mercado Pago até …".
 4. **Liberar aos poucos** — Super Admin → Comissões → coluna "Cobrança":
    - marcar 1 ou 2 lojas conhecidas como **Ligada**;
    - acompanhar alguns dias: valores no MP × relatório, divergências zeradas;

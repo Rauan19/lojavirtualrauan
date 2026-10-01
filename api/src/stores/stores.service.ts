@@ -1131,18 +1131,6 @@ export class StoresService {
     return this.toAdminStore(updated);
   }
 
-  async acceptTerms(storeId: string, ip: string) {
-    await this.prisma.store.update({
-      where: { id: storeId },
-      data: {
-        termsVersion: TERMS_VERSION,
-        termsAcceptedAt: new Date(),
-        termsAcceptedIp: ip.slice(0, 64),
-      },
-    });
-    return { termsVersion: TERMS_VERSION, termsPending: false };
-  }
-
   async findOne(id: string) {
     let store = await this.prisma.store.findUnique({ where: { id } });
     if (!store) {
@@ -1173,7 +1161,6 @@ export class StoresService {
         planState === 'expired',
       monthlyFee: store.monthlyFee != null ? Number(store.monthlyFee) : null,
       termsVersion: store.termsVersion,
-      termsPending: store.termsVersion !== TERMS_VERSION,
       // Webhook desta loja (compra + reembolso do cliente via MP). Leva o
       // storeId para o handler resolver a loja em uma chamada só.
       mpWebhookUrl: buildMercadoPagoWebhookUrl(this.config, store.id),

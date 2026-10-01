@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PlanLimitsService } from '../plan-limits/plan-limits.service';
-import { aceitouTermosDaTaxa } from '../common/legal';
 import { PrismaService } from '../prisma/prisma.service';
 import { calcularComissao, paraCentavos, paraReais } from './calculo';
 
@@ -20,25 +19,19 @@ export type ComissaoDoPedido = {
  * 1. Chave geral PLATFORM_FEE_ENABLED ("true" liga) — a loja pode forçar
  *    ligada/desligada em Store.platformFeeEnabled.
  * 2. Taxa do plano da loja (PlanLimitsService.feeBps); 0 = sem comissão.
- * 3. Só dá para cobrar com o Mercado Pago conectado pelo OAuth da Vendira
- *    e com os termos da taxa aceitos. Até PLATFORM_FEE_OAUTH_DEADLINE a loja
- *    que falta um dos dois vende sem comissão (período de migração); depois
- *    disso o pagamento é recusado.
+ * 3. Só dá para cobrar com o Mercado Pago conectado pelo OAuth da Vendira.
+ *    Até PLATFORM_FEE_OAUTH_DEADLINE a loja sem conexão vende sem comissão
+ *    (período de migração); depois disso o pagamento é recusado.
  *
  * A comissão é fotografada no pedido na primeira tentativa de pagamento e
  * reaproveitada nas seguintes: mudar o plano não altera pedido em aberto.
  */
 /**
  * Loja apta a pagar comissão: Mercado Pago conectado pela Vendira (sem isso
- * não há split) e termos com a taxa aceitos (sem isso não há contrato).
+ * não há split). O aceite dos termos com a taxa acontece no cadastro.
  */
-function pronta(store: {
-  mpRefreshToken: string | null;
-  termsVersion: string | null;
-}) {
-  return (
-    Boolean(store.mpRefreshToken) && aceitouTermosDaTaxa(store.termsVersion)
-  );
+function pronta(store: { mpRefreshToken: string | null }) {
+  return Boolean(store.mpRefreshToken);
 }
 
 @Injectable()
@@ -85,7 +78,6 @@ export class PlatformFeeService {
       select: {
         platformFeeEnabled: true,
         mpRefreshToken: true,
-        termsVersion: true,
       },
     });
     if (!store) return null;

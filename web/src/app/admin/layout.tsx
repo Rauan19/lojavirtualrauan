@@ -7,7 +7,6 @@ import { api, AuthUser } from '@/lib/api';
 import { clearSession, getToken, getUser, saveSession } from '@/lib/auth';
 import { supportWhatsappHref } from '@/lib/contact';
 import { PlanRestrictionModal } from '@/components/PlanRestrictionModal';
-import { TermosAtualizados } from '@/components/TermosAtualizados';
 import { AvisoConexaoMp, useTaxaDaLoja } from '@/components/TaxaVendira';
 
 type BadgeKey = 'orders' | 'refunds';
@@ -22,8 +21,6 @@ type StoreAccess = {
   daysLeft?: number | null;
   name?: string;
   slug?: string;
-  /** Termos mudaram depois do último aceite da loja */
-  termsPending?: boolean;
 };
 
 const navGroups: NavGroup[] = [
@@ -203,16 +200,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       storeAccess?.planState === 'expired',
   );
   const showRestrictionModal = accessBlocked && !onPlansPage;
-  const showTermsModal =
-    Boolean(storeAccess?.termsPending) && !showRestrictionModal;
 
   useEffect(() => {
     document.body.style.overflow =
-      open || showRestrictionModal || showTermsModal ? 'hidden' : '';
+      open || showRestrictionModal ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
-  }, [open, showRestrictionModal, showTermsModal]);
+  }, [open, showRestrictionModal]);
 
   if (!user) {
     return (
@@ -380,11 +375,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
       <main
         className={`min-w-0 bg-[#f6f7f9] p-3 md:p-4 ${
-          showRestrictionModal || showTermsModal
-            ? 'pointer-events-none select-none blur-[2px]'
-            : ''
+          showRestrictionModal ? 'pointer-events-none select-none blur-[2px]' : ''
         }`}
-        aria-hidden={showRestrictionModal || showTermsModal || undefined}
+        aria-hidden={showRestrictionModal || undefined}
       >
         <AvisoConexaoMp taxa={taxa} />
         {!accessBlocked &&
@@ -414,12 +407,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         storeSlug={storeAccess?.slug || user.store?.slug}
         status={storeAccess?.status}
         planDueAt={storeAccess?.planDueAt}
-      />
-      <TermosAtualizados
-        open={showTermsModal}
-        onAceito={() =>
-          setStoreAccess((s) => (s ? { ...s, termsPending: false } : s))
-        }
       />
     </div>
   );
