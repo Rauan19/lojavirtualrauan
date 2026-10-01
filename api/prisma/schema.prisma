@@ -406,6 +406,8 @@ model Product {
   ncm          String? // NCM fiscal (8 dígitos)
   cfop         String? // default 5102/5101 etc.
   unit         String   @default("UN")
+  /// "Compre junto": até 3 produtos que o lojista sugere levar com este
+  buyTogetherIds String[] @default([])
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

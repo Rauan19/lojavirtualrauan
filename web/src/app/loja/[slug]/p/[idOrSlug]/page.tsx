@@ -17,6 +17,7 @@ import { addToCart } from '@/lib/cart';
 import { sellerWhatsappHref } from '@/lib/contact';
 import { pctTexto, precoNoPix } from '@/lib/pix';
 import { AviseMe } from '@/components/AviseMe';
+import { CompreJunto } from '@/components/CompreJunto';
 import { getRecentlyViewed, pushRecentlyViewed, type RecentProduct } from '@/lib/recently-viewed';
 
 type Store = {
@@ -632,7 +633,24 @@ function ProductInner({
                   productId={product.id}
                   variantId={selectedVariant?.id}
                 />
-              ) : null}
+              ) : (
+                <CompreJunto
+                  storeSlug={storeSlug}
+                  idOrSlug={product.id}
+                  principal={{
+                    name: product.name,
+                    price,
+                    image: images[0]?.url || null,
+                  }}
+                  onAdicionar={(extras) => {
+                    const item = buildCartItem();
+                    if (!item) return false;
+                    for (const extra of extras) addToCart(storeSlug, extra);
+                    cart.add(item);
+                    return true;
+                  }}
+                />
+              )}
 
               <div className="mt-2 flex flex-wrap gap-2">
                 {sellerWa ? (

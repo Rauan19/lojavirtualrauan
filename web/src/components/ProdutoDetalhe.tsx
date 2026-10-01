@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { CodigoProduto } from '@/components/CodigoProduto';
+import { CompreJuntoEditor } from '@/components/admin/CompreJuntoEditor';
 import { mediaUrl, money } from '@/lib/api';
 import { useEscapeKey } from '@/lib/modal-guards';
 
@@ -217,6 +218,8 @@ export function ProdutoDetalhe({
                 <p className="text-sm text-muted">Sem descrição. Produto com descrição vende mais.</p>
               )}
             </div>
+
+            <CompreJuntoEditor productId={produto.id} storeSlug={storeSlug} />
           </div>
         </div>
 
