@@ -32,17 +32,22 @@ export function CompreJuntoEditor({
   const [buscando, setBuscando] = useState(false);
   const [erro, setErro] = useState('');
   const [ocupado, setOcupado] = useState(false);
+  const [desconto, setDesconto] = useState(0);
 
   const opts = { token: getToken(), storeSlug };
 
   useEffect(() => {
     let vivo = true;
     setItens(null);
-    api<{ produtos: Item[] }>(`/admin/products/${productId}/compre-junto`, {
-      token: getToken(),
-      storeSlug,
-    })
-      .then((r) => vivo && setItens(r.produtos))
+    api<{ produtos: Item[]; descontoPct: number }>(
+      `/admin/products/${productId}/compre-junto`,
+      { token: getToken(), storeSlug },
+    )
+      .then((r) => {
+        if (!vivo) return;
+        setItens(r.produtos);
+        setDesconto(r.descontoPct ?? 0);
+      })
       .catch(() => vivo && setItens([]));
     return () => {
       vivo = false;
@@ -72,15 +77,16 @@ export function CompreJuntoEditor({
     };
   }, [busca, storeSlug]);
 
-  async function salvar(ids: string[]) {
+  async function salvar(ids: string[], pct = desconto) {
     setOcupado(true);
     setErro('');
     try {
-      const r = await api<{ produtos: Item[] }>(
+      const r = await api<{ produtos: Item[]; descontoPct: number }>(
         `/admin/products/${productId}/compre-junto`,
-        { ...opts, method: 'PUT', body: { ids } },
+        { ...opts, method: 'PUT', body: { ids, descontoPct: pct } },
       );
       setItens(r.produtos);
+      setDesconto(r.descontoPct ?? 0);
       setBusca('');
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível salvar');
@@ -90,14 +96,16 @@ export function CompreJuntoEditor({
   }
 
   const ids = (itens || []).map((i) => i.id);
-  const opcoes = achados.filter((a) => a.id !== productId && !ids.includes(a.id));
+  const opcoes = achados.filter(
+    (a) => a.id !== productId && !ids.includes(a.id),
+  );
 
   return (
     <div>
       <h3 className="mb-1 text-sm font-bold">Compre junto</h3>
       <p className="mb-2 text-xs text-muted">
-        Até {MAX} produtos que combinam com este. Aparecem na página do
-        produto com um botão para levar tudo de uma vez.
+        Até {MAX} produtos que combinam com este. Aparecem na página do produto
+        com um botão para levar tudo de uma vez.
       </p>
 
       {itens === null ? (
@@ -131,6 +139,24 @@ export function CompreJuntoEditor({
                 </li>
               ))}
             </ul>
+          ) : null}
+
+          {itens.length > 0 ? (
+            <label className="mb-2 flex flex-wrap items-center gap-2 text-sm">
+              <span>Desconto levando junto:</span>
+              <select
+                className="field w-auto py-1"
+                value={desconto}
+                disabled={ocupado}
+                onChange={(e) => void salvar(ids, Number(e.target.value))}
+              >
+                {[0, 5, 10, 15, 20, 25, 30].map((p) => (
+                  <option key={p} value={p}>
+                    {p === 0 ? 'sem desconto' : `${p}% nos sugeridos`}
+                  </option>
+                ))}
+              </select>
+            </label>
           ) : null}
 
           {itens.length < MAX ? (

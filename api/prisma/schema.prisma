@@ -408,6 +408,8 @@ model Product {
   unit         String   @default("UN")
   /// "Compre junto": até 3 produtos que o lojista sugere levar com este
   buyTogetherIds String[] @default([])
+  /// Desconto (%) nos sugeridos quando levados junto com este. 0 = sem desconto
+  buyTogetherDiscountPct Int @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

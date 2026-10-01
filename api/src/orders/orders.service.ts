@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { emTrava, TravasService } from '../fila/travas.service';
 import { AvisosService } from '../avisos/avisos.service';
+import { CompreJuntoService } from '../products/compre-junto.service';
 import { OrderStatus, PaymentStatus, Prisma } from '@prisma/client';
 import {
   REFUND_STATUS,
@@ -79,6 +80,7 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
     private readonly planLimits: PlanLimitsService,
     @Optional() private readonly travas?: TravasService,
     @Optional() private readonly avisos?: AvisosService,
+    @Optional() private readonly compreJunto?: CompreJuntoService,
   ) {}
 
   onModuleInit() {
@@ -279,7 +281,21 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
     const shippingMethod = shipping.method;
     const shippingServiceId = shipping.serviceId;
 
-    let discount = new Prisma.Decimal(0);
+    // "Compre junto": desconto nos sugeridos levados com o principal, com os
+    // preços que acabaram de sair do banco (nada vem do navegador)
+    const comboCents = this.compreJunto
+      ? await this.compreJunto.descontoCents(
+          storeId,
+          itemsData.map((i) => ({
+            productId: i.productId,
+            unitPrice: Number(i.unitPrice),
+            quantity: i.quantity,
+          })),
+        )
+      : 0;
+    const descontoCombo = new Prisma.Decimal(comboCents).div(100);
+
+    let discount = descontoCombo;
     let couponId: string | undefined;
     let couponCode: string | undefined;
 
@@ -287,7 +303,8 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
       const applied = await this.couponsService.applyToSubtotal(
         storeId,
         dto.couponCode,
-        Number(subtotal),
+        // Cupom vale sobre o que sobrou depois do combo (não soma em cima)
+        Number(subtotal.sub(descontoCombo)),
       );
       if (applied.coupon.maxPerCustomer != null) {
         const jaUsou = await this.couponsService.usageByCustomer(
@@ -300,7 +317,7 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
           );
         }
       }
-      discount = applied.discount;
+      discount = descontoCombo.add(applied.discount);
       couponId = applied.coupon.id;
       couponCode = applied.coupon.code;
       if (applied.freeShipping) {

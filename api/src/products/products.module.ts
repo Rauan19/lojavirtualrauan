@@ -13,6 +13,6 @@ import { CompreJuntoService } from './compre-junto.service';
     CompreJuntoController,
   ],
   providers: [ProductsService, ImportacaoService, CompreJuntoService],
-  exports: [ProductsService],
+  exports: [ProductsService, CompreJuntoService],
 })
 export class ProductsModule {}

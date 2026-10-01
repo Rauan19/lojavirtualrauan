@@ -181,6 +181,38 @@ function CheckoutInner({ slug }: { slug: string }) {
   const [couponCode, setCouponCode] = useState('');
   const [aceitou, setAceitou] = useState(false);
   const [coupon, setCoupon] = useState<CouponResult | null>(null);
+  /** Desconto do "Compre junto" (o servidor calcula com os preços dele) */
+  const [descontoCombo, setDescontoCombo] = useState(0);
+  const chaveDoCarrinho = cart.items
+    .map((i) => `${i.productId}:${i.variantId || ''}:${i.quantity}`)
+    .join('|');
+
+  useEffect(() => {
+    if (cart.items.length < 2) {
+      setDescontoCombo(0);
+      return;
+    }
+    let vivo = true;
+    api<{ desconto: number }>('/storefront/compre-junto/desconto', {
+      method: 'POST',
+      storeSlug: slug,
+      body: {
+        items: cart.items.map((i) => ({
+          productId: i.productId,
+          ...(i.variantId ? { variantId: i.variantId } : {}),
+          quantity: i.quantity,
+        })),
+      },
+    })
+      .then((r) => vivo && setDescontoCombo(r.desconto || 0))
+      .catch(() => vivo && setDescontoCombo(0));
+    // O cupom foi validado sobre outro valor: pede para aplicar de novo
+    setCoupon(null);
+    return () => {
+      vivo = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug, chaveDoCarrinho]);
 
   useEffect(() => {
     api<Store>(`/stores/public/${slug}`)
@@ -226,7 +258,10 @@ function CheckoutInner({ slug }: { slug: string }) {
 
   const discount = coupon && !coupon.freeShipping ? Number(coupon.discount) : 0;
   const shippingCost = coupon?.freeShipping ? 0 : (selectedShip?.price ?? 0);
-  const total = Math.max(0, cart.subtotal - discount + shippingCost);
+  const total = Math.max(
+    0,
+    cart.subtotal - descontoCombo - discount + shippingCost,
+  );
 
   useEffect(() => {
     if (!authToken || !brickSession || (!awaitingConfirm && !watchingPayment))
@@ -411,7 +446,8 @@ function CheckoutInner({ slug }: { slug: string }) {
         storeSlug: slug,
         body: {
           code: couponCode.trim(),
-          subtotal: cart.subtotal,
+          // Igual ao pedido: o cupom vale sobre o valor já com o combo
+          subtotal: Math.max(0, cart.subtotal - descontoCombo),
           shippingCost: selectedShip?.price ?? 0,
         },
       });
@@ -1302,6 +1338,12 @@ function CheckoutInner({ slug }: { slug: string }) {
               <span className="text-muted">Subtotal</span>
               <span>{money(cart.subtotal)}</span>
             </div>
+            {descontoCombo > 0 ? (
+              <div className="flex justify-between text-[var(--ok)]">
+                <span>Compre junto</span>
+                <span>−{money(descontoCombo)}</span>
+              </div>
+            ) : null}
             {discount > 0 ? (
               <div className="flex justify-between text-[var(--ok)]">
                 <span>Desconto</span>

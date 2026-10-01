@@ -3,10 +3,12 @@ import { Prisma } from '@prisma/client';
 import request from 'supertest';
 import { PrismaService } from '../src/prisma/prisma.service';
 import {
+  ADDRESS,
   createTestApp,
   resetDb,
   seedStore,
   signAdminToken,
+  signCustomerToken,
   type SeededStore,
 } from './helpers/test-app';
 
@@ -99,5 +101,113 @@ describe('Compre junto (e2e)', () => {
     await definir([outra.product.id]).expect(400);
     // produto de outra loja também não é editável por aqui
     await definir([], outra.product.id).expect(404);
+  });
+
+  describe('desconto levando junto', () => {
+    let tokenCliente = '';
+
+    async function preparar(pct: number) {
+      tokenCliente = await signCustomerToken(app, seed.customer);
+      const calca = await produto('Calca', {
+        price: new Prisma.Decimal(100),
+      });
+      await prisma.product.update({
+        where: { id: seed.product.id },
+        data: { price: new Prisma.Decimal(50) },
+      });
+      await request(app.getHttpServer())
+        .put(`/api/admin/products/${seed.product.id}/compre-junto`)
+        .set('x-store-slug', seed.store.slug)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ ids: [calca.id], descontoPct: pct })
+        .expect(200);
+      return calca;
+    }
+
+    const comprar = (
+      itens: { productId: string; quantity: number }[],
+      extra: Record<string, unknown> = {},
+    ) =>
+      request(app.getHttpServer())
+        .post('/api/checkout/orders')
+        .set('x-store-slug', seed.store.slug)
+        .set('Authorization', `Bearer ${tokenCliente}`)
+        .send({
+          items: itens,
+          shippingAddress: ADDRESS,
+          shippingMethod: 'Entrega padrão',
+          acceptTerms: true,
+          shippingOptionId: 'padrao',
+          ...extra,
+        });
+
+    it('o pedido desconta o sugerido levado junto, e a prévia bate', async () => {
+      const calca = await preparar(10);
+      const itens = [
+        { productId: seed.product.id, quantity: 1 },
+        { productId: calca.id, quantity: 2 },
+      ];
+      const previa = await request(app.getHttpServer())
+        .post('/api/storefront/compre-junto/desconto')
+        .set('x-store-slug', seed.store.slug)
+        .send({ items: itens })
+        .expect(201);
+      expect(previa.body.desconto).toBe(10);
+
+      const res = await comprar(itens).expect(201);
+      const pedido = await prisma.order.findUniqueOrThrow({
+        where: { id: res.body.id },
+      });
+      // 1 camisa libera desconto em 1 calça: 10% de 100
+      expect(Number(pedido.discount)).toBe(10);
+      expect(Number(pedido.subtotal)).toBe(250);
+    });
+
+    it('sem o principal não tem desconto', async () => {
+      const calca = await preparar(10);
+      const res = await comprar([{ productId: calca.id, quantity: 1 }]).expect(
+        201,
+      );
+      const pedido = await prisma.order.findUniqueOrThrow({
+        where: { id: res.body.id },
+      });
+      expect(Number(pedido.discount)).toBe(0);
+    });
+
+    it('cupom vale sobre o valor já com o combo', async () => {
+      const calca = await preparar(10);
+      await prisma.coupon.create({
+        data: {
+          storeId: seed.store.id,
+          code: 'DEZ',
+          type: 'PERCENT',
+          value: new Prisma.Decimal(10),
+          active: true,
+        },
+      });
+      const res = await comprar(
+        [
+          { productId: seed.product.id, quantity: 1 },
+          { productId: calca.id, quantity: 1 },
+        ],
+        { couponCode: 'DEZ' },
+      ).expect(201);
+      const pedido = await prisma.order.findUniqueOrThrow({
+        where: { id: res.body.id },
+      });
+      // combo 10 (de 150 → 140) + cupom 10% de 140 = 14
+      expect(Number(pedido.discount)).toBe(24);
+    });
+
+    it('desconto acima de 30% é recusado', async () => {
+      const calca = await produto('Calca');
+      await definir([calca.id]).expect(200);
+      await request(app.getHttpServer())
+        .put(`/api/admin/products/${seed.product.id}/compre-junto`)
+        .set('x-store-slug', seed.store.slug)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ ids: [calca.id], descontoPct: 50 })
+        .expect(400);
+    });
   });
 });

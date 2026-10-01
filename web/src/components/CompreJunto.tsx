@@ -39,15 +39,18 @@ export function CompreJunto({
 }) {
   const [itens, setItens] = useState<Sugestao[]>([]);
   const [marcados, setMarcados] = useState<Set<string>>(new Set());
+  const [pct, setPct] = useState(0);
 
   useEffect(() => {
     let vivo = true;
-    api<{ items: Sugestao[] }>(`/catalog/products/${idOrSlug}/compre-junto`, {
-      storeSlug,
-    })
+    api<{ items: Sugestao[]; descontoPct?: number }>(
+      `/catalog/products/${idOrSlug}/compre-junto`,
+      { storeSlug },
+    )
       .then((r) => {
         if (!vivo) return;
         setItens(r.items);
+        setPct(r.descontoPct ?? 0);
         setMarcados(
           new Set(r.items.filter((i) => !i.hasVariants).map((i) => i.id)),
         );
@@ -61,8 +64,14 @@ export function CompreJunto({
   if (itens.length === 0) return null;
 
   const escolhidos = itens.filter((i) => marcados.has(i.id) && !i.hasVariants);
+  // Mesma conta do servidor: centavos, arredondando para baixo
+  const comDesconto = (preco: number) =>
+    (Math.round(preco * 100) -
+      Math.floor((Math.round(preco * 100) * pct) / 100)) /
+    100;
   const total =
-    principal.price + escolhidos.reduce((s, i) => s + Number(i.price), 0);
+    principal.price +
+    escolhidos.reduce((s, i) => s + comDesconto(Number(i.price)), 0);
 
   function alternar(id: string) {
     setMarcados((m) => {
@@ -89,7 +98,14 @@ export function CompreJunto({
 
   return (
     <section className="mt-8 border border-line px-3 py-4 sm:px-4">
-      <h2 className="text-sm font-bold">Compre junto</h2>
+      <h2 className="text-sm font-bold">
+        Compre junto
+        {pct > 0 ? (
+          <span className="ml-2 rounded-full bg-[#f0fbf3] px-2 py-0.5 text-[11px] font-bold text-[#166534]">
+            {pct}% off levando junto
+          </span>
+        ) : null}
+      </h2>
       <ul className="mt-3 space-y-2">
         <li className="flex items-center gap-3">
           <span className="w-4 shrink-0" aria-hidden />
@@ -138,9 +154,18 @@ export function CompreJunto({
                 </Link>
               ) : null}
             </span>
-            <strong className="shrink-0 text-[13px]">
-              {money(Number(i.price))}
-            </strong>
+            <span className="shrink-0 text-right text-[13px]">
+              {pct > 0 && !i.hasVariants ? (
+                <>
+                  <s className="block text-[11px] text-muted">
+                    {money(Number(i.price))}
+                  </s>
+                  <strong>{money(comDesconto(Number(i.price)))}</strong>
+                </>
+              ) : (
+                <strong>{money(Number(i.price))}</strong>
+              )}
+            </span>
           </li>
         ))}
       </ul>

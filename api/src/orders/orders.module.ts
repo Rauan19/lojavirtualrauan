@@ -3,6 +3,7 @@ import { CouponsModule } from '../coupons/coupons.module';
 import { InvoicesModule } from '../invoices/invoices.module';
 import { PaymentsModule } from '../payments/payments.module';
 import { PrintingModule } from '../printing/printing.module';
+import { ProductsModule } from '../products/products.module';
 import { ShippingModule } from '../shipping/shipping.module';
 import { StorefrontModule } from '../storefront/storefront.module';
 import { OrdersController } from './orders.controller';
@@ -13,6 +14,7 @@ import { OrdersService } from './orders.service';
   imports: [
     CouponsModule,
     PrintingModule,
+    ProductsModule,
     InvoicesModule,
     ShippingModule,
     StorefrontModule,
