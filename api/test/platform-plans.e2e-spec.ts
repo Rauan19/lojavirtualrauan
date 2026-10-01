@@ -164,9 +164,18 @@ describe('Planos da plataforma (e2e)', () => {
         where: { id: created.body.id },
       });
       expect(row).toBeNull();
+      // fica registrado quem apagou e como era o plano
+      const historico = await prisma.platformPlanChange.findMany({
+        where: { planId: created.body.id },
+      });
+      expect(
+        historico.some(
+          (h) => (h.changes as Record<string, unknown>).apagado !== undefined,
+        ),
+      ).toBe(true);
     });
 
-    it('apagar plano não quebra loja que já usa ele', async () => {
+    it('não apaga plano que loja usa: manda desativar', async () => {
       const created = await request(app.getHttpServer())
         .post('/api/billing/platform/plans')
         .set('Authorization', `Bearer ${superToken}`)
@@ -189,17 +198,27 @@ describe('Planos da plataforma (e2e)', () => {
         })
         .expect(201);
 
-      await request(app.getHttpServer())
+      const res = await request(app.getHttpServer())
         .delete(`/api/billing/platform/plans/${created.body.id}`)
         .set('Authorization', `Bearer ${superToken}`)
-        .expect(200);
+        .expect(400);
+      expect(res.body.message).toMatch(/1 loja usa este plano. Desative/);
 
+      // o plano continua lá e a loja continua com taxa e limites dele
+      await prisma.platformPlan.findUniqueOrThrow({
+        where: { id: created.body.id },
+      });
       const store = await prisma.store.findUniqueOrThrow({
         where: { slug: signup.body.slug },
       });
-      // A loja continua existindo e apontando para o plano; sem o plano no
-      // catálogo, os limites caem no "sem limite" (PlanLimitsService).
       expect(store.planName).toBe(created.body.id);
+
+      // desativar continua permitido
+      await request(app.getHttpServer())
+        .patch(`/api/billing/platform/plans/${created.body.id}`)
+        .set('Authorization', `Bearer ${superToken}`)
+        .send({ active: false })
+        .expect(200);
     });
 
     it('recusa nome vazio', async () => {

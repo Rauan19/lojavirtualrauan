@@ -32,7 +32,7 @@ const SEM_LIMITE: Omit<PlanLimits, 'trial' | 'feeBps'> = {
  * "pro"; ou o nome antigo "Mensal"/"Pro"). Este mapa leva esses valores,
  * sem diferenciar maiúscula, para as linhas-semente.
  */
-const IDS_ANTIGOS: Record<string, string> = {
+export const IDS_ANTIGOS: Record<string, string> = {
   essencial: 'plan-seed-essencial',
   mensal: 'plan-seed-mensal',
   pro: 'plan-seed-pro',

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Modal } from '@/components/Modal';
 import { PaginationBar } from '@/components/PaginationBar';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
@@ -21,6 +22,38 @@ import {
 } from '../_lib';
 
 const PAGE_SIZE = 10;
+
+type PlanoOpcao = {
+  id: string;
+  name: string;
+  amount: number;
+  periodDays: number;
+  feeBps?: number;
+  active: boolean;
+  highlight?: boolean;
+};
+
+/**
+ * Lojas antigas guardaram o nome do plano em vez do id. Mesmo mapa da API
+ * (PlanLimitsService): é assim que a cobrança acha o plano dessas lojas.
+ */
+const IDS_ANTIGOS: Record<string, string> = {
+  essencial: 'plan-seed-essencial',
+  mensal: 'plan-seed-mensal',
+  pro: 'plan-seed-pro',
+  comeco: 'plan-seed-comeco',
+};
+
+function rotuloPlano(p: PlanoOpcao) {
+  const preco =
+    p.amount > 0
+      ? `${moneyBr(p.amount)}/${p.periodDays >= 360 ? 'ano' : 'mês'}`
+      : 'grátis';
+  const taxa = p.feeBps
+    ? ` · ${String(p.feeBps / 100).replace('.', ',')}% por venda`
+    : '';
+  return `${p.name}${p.periodDays >= 360 ? ' (anual)' : ''} · ${preco}${taxa}`;
+}
 
 type EditForm = {
   name: string;
@@ -56,6 +89,7 @@ export function SuperLojasInner() {
   const qParam = searchParams.get('q') || '';
 
   const [stores, setStores] = useState<StoreRow[]>([]);
+  const [planos, setPlanos] = useState<PlanoOpcao[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState(qParam);
@@ -94,8 +128,14 @@ export function SuperLojasInner() {
     if (!token) return;
     setLoading(true);
     try {
-      const list = await api<StoreRow[]>('/stores', { token });
+      const [list, plans] = await Promise.all([
+        api<StoreRow[]>('/stores', { token }),
+        api<PlanoOpcao[]>('/billing/platform/plans', { token }).catch(
+          () => [] as PlanoOpcao[],
+        ),
+      ]);
       setStores(list);
+      setPlanos(plans.map((p) => ({ ...p, amount: Number(p.amount) })));
       setError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar lojas');
@@ -197,12 +237,14 @@ export function SuperLojasInner() {
   }
 
   function openEdit(store: StoreRow) {
+    setError('');
     setEditId(store.id);
     setEditForm({
       name: store.name,
       slug: store.slug,
       status: store.status,
-      planName: store.planName || 'mensal',
+      // Nome antigo vira o id do plano: salvar já deixa a loja no formato novo
+      planName: acharPlano(store.planName)?.id || store.planName || '',
       planDueAt: toInputDate(store.planDueAt),
       monthlyFee:
         store.monthlyFee != null && store.monthlyFee !== ''
@@ -256,6 +298,72 @@ export function SuperLojasInner() {
     }
   }
 
+  /** Acha o plano da loja pelo id, pelo nome antigo ou pelo nome. */
+  function acharPlano(valor: string | null | undefined) {
+    if (!valor) return undefined;
+    const id = IDS_ANTIGOS[valor.toLowerCase()] ?? valor;
+    return (
+      planos.find((x) => x.id === id) ||
+      planos
+        .filter((x) => x.name.toLowerCase() === valor.toLowerCase())
+        .sort((a, b) => a.periodDays - b.periodDays)[0]
+    );
+  }
+
+  /** Nome do plano para exibir. */
+  function nomePlano(valor: string | null | undefined) {
+    if (!valor) return '—';
+    const p = acharPlano(valor);
+    return p
+      ? `${p.name}${p.periodDays >= 360 ? ' (anual)' : ''}`
+      : `${valor} (plano não encontrado)`;
+  }
+
+  /** Lista de planos; ao escolher, preenche a mensalidade com o preço do plano. */
+  function seletorPlano(
+    valor: string,
+    aoEscolher: (id: string, mensalidade: string) => void,
+    id: string,
+  ) {
+    const conhecido = planos.some((p) => p.id === valor);
+    return (
+      <select
+        id={id}
+        className="field"
+        value={valor}
+        onChange={(e) => {
+          const p = planos.find((x) => x.id === e.target.value);
+          aoEscolher(e.target.value, p ? String(p.amount) : '');
+        }}
+      >
+        {!conhecido && valor ? (
+          <option value={valor}>{nomePlano(valor)} (atual)</option>
+        ) : null}
+        {planos
+          .filter((p) => p.active || p.id === valor)
+          .map((p) => (
+            <option key={p.id} value={p.id}>
+              {rotuloPlano(p)}
+            </option>
+          ))}
+      </select>
+    );
+  }
+
+  function abrirNovaLoja() {
+    const padrao =
+      planos.find((p) => p.active && p.highlight) ||
+      planos.find((p) => p.active);
+    setCreateForm({
+      ...emptyCreateStore,
+      ...(padrao
+        ? { planName: padrao.id, monthlyFee: String(padrao.amount) }
+        : {}),
+    });
+    setError('');
+    setCreateOpen(true);
+  }
+
   return (
     <SuperSection
       title="Lojas"
@@ -295,7 +403,7 @@ export function SuperLojasInner() {
           </select>
         </div>
         <div>
-          <label className="label">Plano</label>
+          <label className="label">Vencimento</label>
           <select
             className="field"
             value={planFilter}
@@ -330,7 +438,7 @@ export function SuperLojasInner() {
         <button
           type="button"
           className="btn btn-accent ml-auto"
-          onClick={() => setCreateOpen(true)}
+          onClick={abrirNovaLoja}
         >
           + Nova loja
         </button>
@@ -364,7 +472,7 @@ export function SuperLojasInner() {
                     </span>
                   </div>
                   <p className="mt-1 text-sm text-muted">
-                    /loja/{s.slug} · plano {s.planName} ·{' '}
+                    /loja/{s.slug} · plano {nomePlano(s.planName)} ·{' '}
                     {feeNumber(s.monthlyFee) > 0
                       ? moneyBr(feeNumber(s.monthlyFee))
                       : 'sem mensalidade'}{' '}
@@ -416,18 +524,13 @@ export function SuperLojasInner() {
       />
 
       {createOpen ? (
-        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40 p-3 sm:items-center">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto border border-[#d9dde3] bg-white p-4 shadow-lg">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <h2 className="text-lg font-bold">Nova loja</h2>
-              <button
-                type="button"
-                className="btn btn-ghost text-xs"
-                onClick={() => setCreateOpen(false)}
-              >
-                Fechar
-              </button>
-            </div>
+        <Modal
+          title="Nova loja"
+          hint="Cria a loja com o administrador e já deixa no plano escolhido."
+          erro={error}
+          largura="lg"
+          onClose={() => setCreateOpen(false)}
+        >
             <form onSubmit={onCreate} className="grid gap-3 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <label className="label">Nome da loja</label>
@@ -467,14 +570,19 @@ export function SuperLojasInner() {
                 </select>
               </div>
               <div>
-                <label className="label">Plano</label>
-                <input
-                  className="field"
-                  value={createForm.planName}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, planName: e.target.value })
-                  }
-                />
+                <label className="label" htmlFor="nova-plano">
+                  Plano
+                </label>
+                {seletorPlano(
+                  createForm.planName,
+                  (id, mensalidade) =>
+                    setCreateForm({
+                      ...createForm,
+                      planName: id,
+                      monthlyFee: mensalidade,
+                    }),
+                  'nova-plano',
+                )}
               </div>
               <div>
                 <label className="label">Mensalidade (R$)</label>
@@ -701,11 +809,7 @@ export function SuperLojasInner() {
                 />
               </div>
               <div className="sm:col-span-2 flex justify-end gap-2 pt-1">
-                <button
-                  type="button"
-                  className="btn btn-ghost"
-                  onClick={() => setCreateOpen(false)}
-                >
+                <button type="button" className="btn btn-ghost" data-modal-cancel>
                   Cancelar
                 </button>
                 <button
@@ -717,23 +821,17 @@ export function SuperLojasInner() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </Modal>
       ) : null}
 
       {editId ? (
-        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/40 p-3 sm:items-center">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto border border-[#d9dde3] bg-white p-4 shadow-lg">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <h2 className="text-lg font-bold">Gerenciar loja</h2>
-              <button
-                type="button"
-                className="btn btn-ghost text-xs"
-                onClick={() => setEditId(null)}
-              >
-                Fechar
-              </button>
-            </div>
+        <Modal
+          title={`Gerenciar ${editForm.name || 'loja'}`}
+          hint="Plano, vencimento, situação e acesso do administrador da loja."
+          erro={error}
+          largura="lg"
+          onClose={() => setEditId(null)}
+        >
             <form onSubmit={onSaveEdit} className="grid gap-3 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <label className="label">Nome</label>
@@ -773,14 +871,19 @@ export function SuperLojasInner() {
                 </select>
               </div>
               <div>
-                <label className="label">Plano</label>
-                <input
-                  className="field"
-                  value={editForm.planName}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, planName: e.target.value })
-                  }
-                />
+                <label className="label" htmlFor="editar-plano">
+                  Plano
+                </label>
+                {seletorPlano(
+                  editForm.planName,
+                  (id, mensalidade) =>
+                    setEditForm({
+                      ...editForm,
+                      planName: id,
+                      monthlyFee: mensalidade,
+                    }),
+                  'editar-plano',
+                )}
               </div>
               <div>
                 <label className="label">Mensalidade (R$)</label>
@@ -860,11 +963,7 @@ export function SuperLojasInner() {
                 />
               </div>
               <div className="sm:col-span-2 flex justify-end gap-2 pt-1">
-                <button
-                  type="button"
-                  className="btn btn-ghost"
-                  onClick={() => setEditId(null)}
-                >
+                <button type="button" className="btn btn-ghost" data-modal-cancel>
                   Cancelar
                 </button>
                 <button
@@ -876,8 +975,7 @@ export function SuperLojasInner() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </Modal>
       ) : null}
     </SuperSection>
   );

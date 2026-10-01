@@ -76,8 +76,8 @@ export class BillingController {
   @Delete('platform/plans/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN)
-  removePlan(@Param('id') id: string) {
-    return this.platformPlansService.remove(id);
+  removePlan(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.platformPlansService.remove(id, user.id);
   }
 
   @Get('platform/general')

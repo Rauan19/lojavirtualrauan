@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { Modal } from '@/components/Modal';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 
@@ -36,6 +37,8 @@ const emptyForm = {
   feePercent: '',
   customDomainIncluded: true,
 };
+
+const pct = (bps: number) => `${String(bps / 100).replace('.', ',')}%`;
 
 function money(value: number) {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -192,7 +195,7 @@ export default function SuperPlanosPage() {
     const ok = await confirm({
       title: `Apagar o plano "${plan.name}"?`,
       message:
-        'Ele some da lista de planos. Lojas que já usam este plano continuam funcionando.',
+        'Só dá para apagar plano que nenhuma loja usa. Se tiver loja nele, use "Desativar": ele some da lista para quem for contratar e quem já usa continua.',
       confirmLabel: 'Apagar',
       danger: true,
     });
@@ -208,18 +211,153 @@ export default function SuperPlanosPage() {
     }
   }
 
+  async function confirmarAtivacao(plan: Plan) {
+    if (plan.active) {
+      const sim = await confirm({
+        title: `Desativar o plano "${plan.name}"?`,
+        message:
+          'Ele some da tela de planos para quem for contratar. Lojas que já usam continuam no plano normalmente.',
+        confirmLabel: 'Desativar',
+      });
+      if (!sim) return;
+    }
+    await toggleActive(plan);
+  }
+
+  function startCreateLimpo() {
+    setError('');
+    setOk('');
+    startCreate();
+  }
+
+  function startEditLimpo(plan: Plan) {
+    setError('');
+    setOk('');
+    startEdit(plan);
+  }
+
+  const mensais = plans.filter((p) => p.periodDays < 360);
+  const anuais = plans.filter((p) => p.periodDays >= 360);
+  const taxaForm = Number(form.feePercent.replace(',', '.')) || 0;
+
+  function cartao(plan: Plan) {
+    const anual = plan.periodDays >= 360;
+    const itens: { texto: string; ok: boolean }[] = [
+      {
+        texto: plan.feeBps
+          ? `${pct(plan.feeBps)} por venda`
+          : 'Sem taxa por venda',
+        ok: true,
+      },
+      {
+        texto: plan.maxProducts
+          ? `Até ${plan.maxProducts} produtos`
+          : 'Produtos ilimitados',
+        ok: true,
+      },
+      { texto: 'Nota fiscal', ok: plan.nfeIncluded !== false },
+      { texto: 'Domínio próprio', ok: plan.customDomainIncluded !== false },
+    ];
+    return (
+      <li
+        key={plan.id}
+        className={`flex flex-col border bg-white ${
+          plan.highlight ? 'border-ink' : 'border-line'
+        } ${plan.active ? '' : 'opacity-60'}`}
+      >
+        <div className="flex-1 p-4">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <h3 className="text-base font-bold">{plan.name}</h3>
+            {plan.highlight ? (
+              <span className="rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold text-white">
+                Destaque
+              </span>
+            ) : null}
+            {plan.badge ? (
+              <span className="rounded-full bg-[#eef0f4] px-2 py-0.5 text-[10px] font-bold text-muted">
+                {plan.badge}
+              </span>
+            ) : null}
+            {!plan.active ? (
+              <span className="rounded-full bg-[#f3e8e8] px-2 py-0.5 text-[10px] font-bold text-accent">
+                Desativado
+              </span>
+            ) : null}
+          </div>
+          <p className="mt-2 text-2xl font-bold tracking-tight">
+            {plan.amount > 0 ? money(plan.amount) : 'Grátis'}
+            {plan.amount > 0 ? (
+              <span className="text-sm font-normal text-muted">
+                {anual ? '/ano' : '/mês'}
+              </span>
+            ) : null}
+          </p>
+          {plan.description ? (
+            <p className="mt-1 text-xs text-muted">{plan.description}</p>
+          ) : null}
+          <ul className="mt-3 space-y-1 text-sm">
+            {itens.map((i) => (
+              <li
+                key={i.texto}
+                className={`flex items-center gap-2 ${i.ok ? '' : 'text-muted line-through'}`}
+              >
+                <span
+                  aria-hidden
+                  className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold ${
+                    i.ok ? 'bg-[#e3f4ea] text-[#1b7f45]' : 'bg-[#eef0f4] text-muted'
+                  }`}
+                >
+                  {i.ok ? '✓' : '–'}
+                </span>
+                {i.texto}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="flex items-center gap-1.5 border-t border-line px-3 py-2.5">
+          <button
+            type="button"
+            className="btn btn-ghost px-2.5 py-1.5 text-xs"
+            onClick={() => startEditLimpo(plan)}
+          >
+            Editar
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost px-2.5 py-1.5 text-xs"
+            onClick={() => void confirmarAtivacao(plan)}
+          >
+            {plan.active ? 'Desativar' : 'Ativar'}
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost ml-auto px-2.5 py-1.5 text-xs text-accent"
+            onClick={() => void removePlan(plan)}
+          >
+            Apagar
+          </button>
+        </div>
+      </li>
+    );
+  }
+
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-5xl space-y-6">
       {confirmDialog}
-      <div>
-        <h1 className="text-lg font-bold">Planos</h1>
-        <p className="text-sm text-muted">
-          O que aparece para o lojista escolher em Configurações → Planos e
-          quanto tempo dura o teste grátis no cadastro.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-lg font-bold">Planos</h1>
+          <p className="text-sm text-muted">
+            O que o lojista escolhe em Configurações → Planos. Preço, taxa e
+            limites mudam aqui, sem programação.
+          </p>
+        </div>
+        <button type="button" className="btn btn-accent" onClick={startCreateLimpo}>
+          + Novo plano
+        </button>
       </div>
 
-      {error ? (
+      {error && !showForm ? (
         <p className="border border-[#f3b3b3] bg-[#fef2f2] px-3 py-2 text-sm text-accent">
           {error}
         </p>
@@ -235,8 +373,11 @@ export default function SuperPlanosPage() {
         className="flex flex-wrap items-end gap-3 border border-line bg-white p-4"
       >
         <div>
-          <label className="label">Dias de teste grátis</label>
+          <label className="label" htmlFor="dias-teste">
+            Dias de teste grátis
+          </label>
           <input
+            id="dias-teste"
             className="field w-32"
             type="number"
             min={1}
@@ -245,237 +386,263 @@ export default function SuperPlanosPage() {
             required
           />
         </div>
-        <button className="btn btn-accent" disabled={trialSaving}>
+        <button className="btn btn-ghost" disabled={trialSaving}>
           {trialSaving ? 'Salvando...' : 'Salvar'}
         </button>
         <p className="w-full text-[11px] text-muted">
-          Vale só para lojas criadas a partir de agora. Não muda o prazo de
-          quem já está em teste.
+          Vale para lojas criadas a partir de agora. Não muda o prazo de quem já
+          está em teste.
         </p>
       </form>
 
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-muted">
-          Planos cadastrados
-        </h2>
-        <button type="button" className="btn btn-ghost" onClick={startCreate}>
-          + Novo plano
-        </button>
-      </div>
-
       {loading ? (
         <p className="text-sm text-muted">Carregando...</p>
+      ) : plans.length === 0 ? (
+        <p className="border border-dashed border-line bg-white px-4 py-8 text-center text-sm text-muted">
+          Nenhum plano cadastrado. Crie o primeiro em &quot;+ Novo plano&quot;.
+        </p>
       ) : (
-        <ul className="space-y-2">
-          {plans.map((plan) => (
-            <li
-              key={plan.id}
-              className={`border bg-white p-3 ${plan.active ? 'border-line' : 'border-line opacity-60'}`}
-            >
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold">{plan.name}</span>
-                    {plan.highlight ? (
-                      <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-white">
-                        Destaque
-                      </span>
-                    ) : null}
-                    {!plan.active ? (
-                      <span className="rounded-full bg-[#eee] px-2 py-0.5 text-[10px] font-bold text-muted">
-                        Desativado
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-0.5 text-sm text-muted">
-                    {money(plan.amount)} / {plan.periodDays} dias ·{' '}
-                    {plan.maxProducts
-                      ? `até ${plan.maxProducts} produtos`
-                      : 'produtos ilimitados'}{' '}
-                    · {plan.nfeIncluded === false ? 'sem NF-e' : 'com NF-e'}
-                    {' · '}
-                    {plan.feeBps
-                      ? `taxa ${String(plan.feeBps / 100).replace('.', ',')}% por venda`
-                      : 'sem taxa por venda'}
-                    {plan.customDomainIncluded === false ? ' · sem domínio próprio' : ''}
-                  </p>
-                  {plan.description ? (
-                    <p className="mt-1 text-xs text-muted">{plan.description}</p>
-                  ) : null}
-                </div>
-                <div className="flex shrink-0 gap-2">
-                  <button
-                    type="button"
-                    className="btn btn-ghost py-1.5 text-xs"
-                    onClick={() => startEdit(plan)}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-ghost py-1.5 text-xs"
-                    onClick={() => toggleActive(plan)}
-                  >
-                    {plan.active ? 'Desativar' : 'Ativar'}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-ghost py-1.5 text-xs text-accent"
-                    onClick={() => removePlan(plan)}
-                  >
-                    Apagar
-                  </button>
-                </div>
-              </div>
-            </li>
-          ))}
-          {plans.length === 0 ? (
-            <p className="text-sm text-muted">Nenhum plano cadastrado.</p>
+        <>
+          <section>
+            <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted">
+              Mensais ({mensais.length})
+            </h2>
+            <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {mensais.map(cartao)}
+            </ul>
+          </section>
+          {anuais.length > 0 ? (
+            <section>
+              <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted">
+                Anuais ({anuais.length})
+              </h2>
+              <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {anuais.map(cartao)}
+              </ul>
+            </section>
           ) : null}
-        </ul>
-      )}
-
-      {showForm ? (
-        <form
-          onSubmit={onSubmit}
-          className="space-y-3 border border-line bg-white p-4"
-        >
-          <h3 className="text-sm font-bold">
-            {editingId ? 'Editar plano' : 'Novo plano'}
-          </h3>
-          <div className="grid gap-3 md:grid-cols-2">
-            <div>
-              <label className="label">Nome</label>
-              <input
-                className="field"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <label className="label">Preço (R$ por período)</label>
-              <input
-                className="field"
-                type="number"
-                step="0.01"
-                min={0}
-                value={form.amount}
-                onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <label className="label">Período (dias)</label>
-              <input
-                className="field"
-                type="number"
-                min={1}
-                value={form.periodDays}
-                onChange={(e) => setForm({ ...form, periodDays: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="label">Selo (opcional)</label>
-              <input
-                className="field"
-                placeholder="Ex.: Mais escolhido"
-                value={form.badge}
-                onChange={(e) => setForm({ ...form, badge: e.target.value })}
-              />
-            </div>
-          </div>
-          <div>
-            <label className="label">Descrição</label>
-            <input
-              className="field"
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="label">Recursos (um por linha)</label>
-            <textarea
-              className="field"
-              rows={4}
-              value={form.features}
-              onChange={(e) => setForm({ ...form, features: e.target.value })}
-            />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="label" htmlFor="plan-max-products">
-                Limite de produtos
-              </label>
-              <input
-                id="plan-max-products"
-                className="field"
-                type="number"
-                min={0}
-                placeholder="Vazio = sem limite"
-                value={form.maxProducts}
-                onChange={(e) => setForm({ ...form, maxProducts: e.target.value })}
-              />
-            </div>
-            <label className="flex items-center gap-2 self-end pb-2 text-sm">
-              <input
-                type="checkbox"
-                checked={form.nfeIncluded}
-                onChange={(e) => setForm({ ...form, nfeIncluded: e.target.checked })}
-              />
-              Inclui nota fiscal (NF-e/NFC-e)
-            </label>
-            <div>
-              <label className="label" htmlFor="plan-fee">
-                Taxa por venda (%)
-              </label>
-              <input
-                id="plan-fee"
-                className="field"
-                inputMode="decimal"
-                placeholder="Ex.: 2 ou 0,5 (vazio = sem taxa)"
-                value={form.feePercent}
-                onChange={(e) => setForm({ ...form, feePercent: e.target.value })}
-              />
-            </div>
-            <label className="flex items-center gap-2 self-end pb-2 text-sm">
-              <input
-                type="checkbox"
-                checked={form.customDomainIncluded}
-                onChange={(e) =>
-                  setForm({ ...form, customDomainIncluded: e.target.checked })
-                }
-              />
-              Permite domínio próprio
-            </label>
-          </div>
           <p className="text-xs text-muted">
             Os limites valem de verdade: a loja não cadastra produto acima do
             limite nem emite nota se o plano não incluir. No teste grátis os
             recursos ficam liberados. Toda mudança de preço ou taxa fica
             registrada com quem mudou.
           </p>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={form.highlight}
-              onChange={(e) => setForm({ ...form, highlight: e.target.checked })}
-            />
-            Destacar este plano (aparece marcado como recomendado)
-          </label>
-          <div className="flex gap-2">
-            <button className="btn btn-accent" disabled={saving}>
-              {saving ? 'Salvando...' : editingId ? 'Salvar alterações' : 'Criar plano'}
-            </button>
-            <button
-              type="button"
-              className="btn btn-ghost"
-              onClick={() => setShowForm(false)}
-            >
-              Cancelar
-            </button>
-          </div>
-        </form>
+        </>
+      )}
+
+      {showForm ? (
+        <Modal
+          title={editingId ? `Editar plano ${form.name}` : 'Novo plano'}
+          hint={
+            editingId
+              ? 'Mudança de preço ou taxa vale para as próximas cobranças e vendas.'
+              : undefined
+          }
+          erro={error}
+          largura="lg"
+          onClose={() => setShowForm(false)}
+        >
+          <form onSubmit={onSubmit} className="space-y-5">
+            <fieldset className="space-y-3">
+              <legend className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">
+                Preço
+              </legend>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="sm:col-span-1">
+                  <label className="label" htmlFor="plano-nome">
+                    Nome
+                  </label>
+                  <input
+                    id="plano-nome"
+                    className="field"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="label" htmlFor="plano-preco">
+                    Preço (R$)
+                  </label>
+                  <input
+                    id="plano-preco"
+                    className="field"
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    placeholder="0 = grátis"
+                    value={form.amount}
+                    onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="label" htmlFor="plano-periodo">
+                    Cobrança
+                  </label>
+                  <select
+                    id="plano-periodo"
+                    className="field"
+                    value={form.periodDays}
+                    onChange={(e) =>
+                      setForm({ ...form, periodDays: e.target.value })
+                    }
+                  >
+                    <option value="30">Mensal (30 dias)</option>
+                    <option value="365">Anual (365 dias)</option>
+                    {form.periodDays !== '30' && form.periodDays !== '365' ? (
+                      <option value={form.periodDays}>
+                        {form.periodDays} dias
+                      </option>
+                    ) : null}
+                  </select>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset className="space-y-2">
+              <legend className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">
+                Taxa por venda
+              </legend>
+              <div className="flex flex-wrap items-end gap-3">
+                <div>
+                  <label className="label" htmlFor="plan-fee">
+                    Porcentagem (%)
+                  </label>
+                  <input
+                    id="plan-fee"
+                    className="field w-36"
+                    inputMode="decimal"
+                    placeholder="Ex.: 2 ou 0,5"
+                    value={form.feePercent}
+                    onChange={(e) =>
+                      setForm({ ...form, feePercent: e.target.value })
+                    }
+                  />
+                </div>
+                <p className="pb-2 text-sm text-muted">
+                  {taxaForm > 0
+                    ? `Numa venda de R$ 100 em produtos, a Vendira recebe ${money(taxaForm)}. O frete não entra.`
+                    : 'Vazio = sem taxa por venda.'}
+                </p>
+              </div>
+            </fieldset>
+
+            <fieldset className="space-y-3">
+              <legend className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">
+                Limites
+              </legend>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="label" htmlFor="plan-max-products">
+                    Limite de produtos
+                  </label>
+                  <input
+                    id="plan-max-products"
+                    className="field"
+                    type="number"
+                    min={0}
+                    placeholder="Vazio = sem limite"
+                    value={form.maxProducts}
+                    onChange={(e) =>
+                      setForm({ ...form, maxProducts: e.target.value })
+                    }
+                  />
+                </div>
+                <label className="flex items-center gap-2 self-end pb-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={form.nfeIncluded}
+                    onChange={(e) =>
+                      setForm({ ...form, nfeIncluded: e.target.checked })
+                    }
+                  />
+                  Nota fiscal (NF-e/NFC-e)
+                </label>
+                <label className="flex items-center gap-2 self-end pb-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={form.customDomainIncluded}
+                    onChange={(e) =>
+                      setForm({ ...form, customDomainIncluded: e.target.checked })
+                    }
+                  />
+                  Domínio próprio
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset className="space-y-3">
+              <legend className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">
+                Como aparece para o lojista
+              </legend>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="label" htmlFor="plano-descricao">
+                    Descrição curta
+                  </label>
+                  <input
+                    id="plano-descricao"
+                    className="field"
+                    value={form.description}
+                    onChange={(e) =>
+                      setForm({ ...form, description: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="label" htmlFor="plano-selo">
+                    Selo (opcional)
+                  </label>
+                  <input
+                    id="plano-selo"
+                    className="field"
+                    placeholder="Ex.: Mais escolhido"
+                    value={form.badge}
+                    onChange={(e) => setForm({ ...form, badge: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="label" htmlFor="plano-recursos">
+                  Recursos (um por linha)
+                </label>
+                <textarea
+                  id="plano-recursos"
+                  className="field"
+                  rows={4}
+                  value={form.features}
+                  onChange={(e) =>
+                    setForm({ ...form, features: e.target.value })
+                  }
+                />
+              </div>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={form.highlight}
+                  onChange={(e) =>
+                    setForm({ ...form, highlight: e.target.checked })
+                  }
+                />
+                Destacar este plano (aparece como recomendado)
+              </label>
+            </fieldset>
+
+            <div className="flex justify-end gap-2 border-t border-line pt-4">
+              <button type="button" className="btn btn-ghost" data-modal-cancel>
+                Cancelar
+              </button>
+              <button className="btn btn-accent" disabled={saving}>
+                {saving
+                  ? 'Salvando...'
+                  : editingId
+                    ? 'Salvar alterações'
+                    : 'Criar plano'}
+              </button>
+            </div>
+          </form>
+        </Modal>
       ) : null}
     </div>
   );

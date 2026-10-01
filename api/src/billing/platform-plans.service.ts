@@ -1,5 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { IDS_ANTIGOS } from '../plan-limits/plan-limits.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreatePlatformPlanDto,
@@ -159,14 +164,44 @@ export class PlatformPlansService {
     return { ...this.toDto(row), active: row.active };
   }
 
-  async remove(id: string) {
+  /**
+   * Apaga um plano que ninguém usa.
+   *
+   * A loja guarda o id do plano e é por ele que a taxa por venda e os limites
+   * são achados: apagar um plano em uso deixaria essas lojas sem taxa e sem
+   * limite, em silêncio. Plano em uso se desativa (some da lista de escolha,
+   * quem usa continua).
+   */
+  async remove(id: string, changedById?: string) {
     const existing = await this.prisma.platformPlan.findUnique({
       where: { id },
     });
     if (!existing) throw new NotFoundException('Plano não encontrado');
-    // Store.planName é só um texto salvo na hora — apagar o plano não quebra
-    // loja que já usa esse nome, só tira da lista de escolha.
+
+    const apelidos = Object.entries(IDS_ANTIGOS)
+      .filter(([, alvo]) => alvo === id)
+      .map(([antigo]) => antigo);
+    const emUso = await this.prisma.store.count({
+      where: {
+        OR: [
+          { planName: id },
+          { planName: { equals: existing.name, mode: 'insensitive' } },
+          ...apelidos.map((a) => ({
+            planName: { equals: a, mode: 'insensitive' as const },
+          })),
+        ],
+      },
+    });
+    if (emUso > 0) {
+      throw new BadRequestException(
+        `${emUso} loja${emUso === 1 ? ' usa' : 's usam'} este plano. Desative em vez de apagar: ele some da lista para quem for contratar e quem já usa continua normalmente.`,
+      );
+    }
+
     await this.prisma.platformPlan.delete({ where: { id } });
+    await this.registrarAlteracao(id, changedById, {
+      apagado: { ...existing, amount: Number(existing.amount) },
+    });
     return { ok: true };
   }
 }
