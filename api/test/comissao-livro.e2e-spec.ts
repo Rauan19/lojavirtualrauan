@@ -193,6 +193,27 @@ describe('Livro da comissão (e2e)', () => {
     expect((await livro(order.id))[0].amountCents).toBe(100);
   });
 
+  it('cliente da loja nunca recebe os dados da comissão', async () => {
+    const order = await pedidoComComissao();
+    const pid = pagamento(order.id, Number(order.total));
+    await notificar(pid);
+
+    const detalhe = await request(app.getHttpServer())
+      .get(`/api/storefront/orders/${order.id}`)
+      .set('x-store-slug', seed.store.slug)
+      .set('Authorization', `Bearer ${customerToken}`)
+      .expect(200);
+    const lista = await request(app.getHttpServer())
+      .get('/api/storefront/orders')
+      .set('x-store-slug', seed.store.slug)
+      .set('Authorization', `Bearer ${customerToken}`)
+      .expect(200);
+
+    for (const corpo of [detalhe.text, lista.text]) {
+      expect(corpo).not.toMatch(/platformFee/);
+    }
+  });
+
   it('pedido sem comissão não gera lançamento', async () => {
     const res = await request(app.getHttpServer())
       .post('/api/checkout/orders')

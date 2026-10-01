@@ -35,6 +35,18 @@ import {
 import { PlanLimitsService } from '../plan-limits/plan-limits.service';
 
 /** Pedido sem pagar some de "minhas compras" e não pode mais ser pago. */
+/**
+ * Campos do pedido que o cliente da loja nunca recebe: a comissão da
+ * plataforma é assunto entre a loja e a Vendira.
+ */
+const OCULTO_DO_CLIENTE = {
+  platformFeeBps: true,
+  platformFeeBaseCents: true,
+  platformFeeCents: true,
+  platformFeeChargedCents: true,
+  platformFeeMismatch: true,
+} as const;
+
 const UNPAID_ORDER_TTL_MS = 60 * 60 * 1000;
 const EXPIRE_SWEEP_MS = 5 * 60 * 1000;
 
@@ -406,6 +418,7 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
           items: { create: itemsData },
         },
         include: { items: true },
+        omit: OCULTO_DO_CLIENTE,
       });
     });
 
@@ -778,6 +791,7 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
         shippedAt: order.shippedAt || new Date(),
       },
       include: this.customerOrderInclude,
+      omit: OCULTO_DO_CLIENTE,
     });
   }
 
@@ -1141,6 +1155,7 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
       this.prisma.order.findMany({
         where,
         include: this.customerOrderInclude,
+        omit: OCULTO_DO_CLIENTE,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
@@ -1162,6 +1177,7 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
     const order = await this.prisma.order.findFirst({
       where: { id: orderId, storeId, customerId },
       include: this.customerOrderInclude,
+      omit: OCULTO_DO_CLIENTE,
     });
     if (!order) throw new NotFoundException('Pedido não encontrado');
     return order;
@@ -1217,6 +1233,7 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
         refundStatus: REFUND_STATUS.REQUESTED,
       },
       include: this.customerOrderInclude,
+      omit: OCULTO_DO_CLIENTE,
     });
 
     // Decreto 7.962/2013 art. 5º, §1º: confirmação imediata do recebimento da
