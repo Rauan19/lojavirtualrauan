@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { useConfirm } from '@/components/ConfirmDialog';
 import { ProdutoDetalhe } from '@/components/ProdutoDetalhe';
+import { ImportarPlanilha } from '@/components/ImportarPlanilha';
 import { useEscapeKey, useUnsavedWarning } from '@/lib/modal-guards';
 import { PaginationBar } from '@/components/PaginationBar';
 import { api, thumbUrl, money } from '@/lib/api';
@@ -429,6 +430,8 @@ export default function AdminProductsPage() {
       previews.forEach((p) => URL.revokeObjectURL(p.url));
     };
   }, [previews]);
+
+  const [importando, setImportando] = useState(false);
 
   async function load(nextPage = page) {
     const { token, storeSlug } = auth();
@@ -1210,10 +1213,26 @@ export default function AdminProductsPage() {
             {total > 0 ? ` · ${total} cadastrado${total === 1 ? '' : 's'}` : ''}
           </p>
         </div>
-        <button type="button" className="btn btn-accent shrink-0" onClick={openCreate}>
-          + Criar produto
-        </button>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => setImportando(true)}
+          >
+            Importar planilha
+          </button>
+          <button type="button" className="btn btn-accent" onClick={openCreate}>
+            + Criar produto
+          </button>
+        </div>
       </div>
+
+      {importando ? (
+        <ImportarPlanilha
+          onClose={() => setImportando(false)}
+          onImportado={() => void load(1)}
+        />
+      ) : null}
 
       <div className="flex flex-wrap gap-2">
         <input
