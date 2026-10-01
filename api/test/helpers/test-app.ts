@@ -21,6 +21,8 @@ export async function createTestApp(): Promise<TestContext> {
   }).compile();
 
   const app = moduleRef.createNestApplication();
+  // Igual a produção com Nginx na frente (TRUST_PROXY_HOPS=1)
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({

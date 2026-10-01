@@ -11,6 +11,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { buildMercadoPagoWebhookUrl } from './common/utils/mercadopago-webhook-url';
 import { analisarPublicUrl } from './common/utils/public-url-check';
 import { normalizeCustomDomain } from './common/utils/normalize-domain';
+import { proxiesConfiaveis } from './common/utils/request-ip';
 
 function parseCorsOrigins(raw: string | undefined): string[] {
   if (!raw || raw.trim() === '' || raw.trim() === '*') {
@@ -33,7 +34,10 @@ async function bootstrap() {
   const corsPrisma = new PrismaClient();
 
   const expressApp = app.getHttpAdapter().getInstance();
-  expressApp.set('trust proxy', 1);
+  expressApp.set(
+    'trust proxy',
+    proxiesConfiaveis(config.get<string>('TRUST_PROXY_HOPS')),
+  );
 
   app.use(
     helmet({

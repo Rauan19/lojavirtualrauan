@@ -53,15 +53,16 @@ describe('Registro de acesso (e2e)', () => {
     expect(logs[0].path).toContain('/stores/public/');
   });
 
-  it('pega o IP real quando está atrás de proxy', async () => {
+  it('pega o IP que o nosso proxy viu, não o que o cliente escreveu', async () => {
+    // O cliente manda um X-Forwarded-For forjado; o Nginx acrescenta o IP
+    // real no fim. Só o último (o do nosso proxy) vale.
     await request(app.getHttpServer())
       .get(`/api/stores/public/${seed.store.slug}`)
-      .set('X-Forwarded-For', '198.51.100.7, 10.0.0.1, 10.0.0.2')
+      .set('X-Forwarded-For', '198.51.100.7, 203.0.113.50')
       .expect(200);
 
     const log = await prisma.accessLog.findFirstOrThrow({});
-    // o primeiro da lista é o cliente; os outros são os proxies do caminho
-    expect(log.ip).toBe('198.51.100.7');
+    expect(log.ip).toBe('203.0.113.50');
   });
 
   it('não guarda a query string', async () => {
