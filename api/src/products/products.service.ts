@@ -25,6 +25,19 @@ import { PlanLimitsService } from '../plan-limits/plan-limits.service';
  * que se confundem (0/O, 1/I/L) porque é lido em voz alta e digitado.
  */
 const CODIGO_ALFABETO = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+const ACENTOS = 'áàâãäéèêëíìîïóòôõöúùûüçñ';
+const SEM_ACENTOS = 'aaaaaeeeeiiiiooooouuuucn';
+
+export function semAcentos(texto: string) {
+  // Separa a letra do acento (é → e + ´) e tira os acentos
+  return texto.normalize('NFD').replace(/\p{M}/gu, '');
+}
+
+/** % e _ digitados valem como texto, não como curinga do LIKE. */
+export function escaparLike(texto: string) {
+  return texto.replace(/[\\%_]/g, (ch) => `\\${ch}`);
+}
+
 export function gerarCodigoProduto() {
   let c = 'VD';
   for (let i = 0; i < 6; i++) {
@@ -314,6 +327,29 @@ export class ProductsService {
     return [categoryId, ...filhas.map((f) => f.id)];
   }
 
+  /**
+   * Produtos cujo nome ou marca contém o texto, ignorando acento e
+   * maiúscula. Cliente quase nunca digita acento no celular. Sem extensão
+   * no Postgres: translate() troca as letras acentuadas na própria consulta.
+   */
+  private async idsPorTextoSemAcento(storeId: string, texto: string) {
+    const termo = escaparLike(
+      semAcentos(texto.trim().toLowerCase()).slice(0, 80),
+    );
+    if (!termo) return [];
+    const padrao = `%${termo}%`;
+    const linhas = await this.prisma.$queryRaw<{ id: string }[]>`
+      SELECT id FROM "Product"
+      WHERE "storeId" = ${storeId}
+        AND (
+          translate(lower(name), ${ACENTOS}, ${SEM_ACENTOS}) LIKE ${padrao}
+          OR translate(lower(coalesce(brand, '')), ${ACENTOS}, ${SEM_ACENTOS}) LIKE ${padrao}
+        )
+      LIMIT 500
+    `;
+    return linhas.map((l) => l.id);
+  }
+
   async listProducts(
     storeId: string,
     query: ProductQueryDto,
@@ -325,6 +361,12 @@ export class ProductsService {
     const categoriaIds = query.categoryId
       ? await this.categoriaComFilhas(storeId, query.categoryId)
       : null;
+    // O Prisma passa o texto direto para o ILIKE: sem escapar, "_" achava
+    // todos os produtos e "%" também
+    const busca = query.q ? escaparLike(query.q) : '';
+    const semAcento = query.q?.trim()
+      ? await this.idsPorTextoSemAcento(storeId, query.q)
+      : [];
     const where: Prisma.ProductWhereInput = {
       storeId,
       ...(publicOnly ? { active: true } : {}),
@@ -335,16 +377,18 @@ export class ProductsService {
       ...(query.q
         ? {
             OR: [
-              { name: { contains: query.q, mode: 'insensitive' } },
-              { brand: { contains: query.q, mode: 'insensitive' } },
-              { sku: { contains: query.q, mode: 'insensitive' } },
+              { name: { contains: busca, mode: 'insensitive' } },
+              { brand: { contains: busca, mode: 'insensitive' } },
+              { sku: { contains: busca, mode: 'insensitive' } },
+              // "tenis" acha "Tênis" (e "cafe" acha "Café")
+              ...(semAcento.length ? [{ id: { in: semAcento } }] : []),
               // Código ou código de barras de uma variação (cor/tamanho)
               {
                 variants: {
                   some: {
                     OR: [
-                      { sku: { contains: query.q, mode: 'insensitive' } },
-                      { barcode: { contains: query.q, mode: 'insensitive' } },
+                      { sku: { contains: busca, mode: 'insensitive' } },
+                      { barcode: { contains: busca, mode: 'insensitive' } },
                     ],
                   },
                 },
