@@ -135,7 +135,10 @@ async function bootstrap() {
   const diagUrl = analisarPublicUrl(config.get<string>('PUBLIC_URL'));
   const webhook = buildMercadoPagoWebhookUrl(config);
   if (diagUrl.ok) {
-    console.log(`Webhook Mercado Pago: ${webhook}`);
+    // O segredo não vai para o log (PM2 guarda tudo em disco)
+    console.log(
+      `Webhook Mercado Pago: ${(webhook ?? '').replace(/(secret=)[^&]+/, '$1***')}`,
+    );
     if (diagUrl.tunel) {
       console.warn(
         `[webhook] PUBLIC_URL é um túnel de desenvolvimento (${diagUrl.url}). Quando ele cair, os pagamentos param de ser confirmados sozinhos e nada avisa. Em produção use um domínio fixo.`,
