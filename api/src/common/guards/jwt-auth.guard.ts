@@ -8,6 +8,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import type { AuthUser } from '../decorators/current-user.decorator';
+import { funcionarioPode } from '../../equipe/areas';
 
 export const PERMITIR_SEM_2FA = 'permitirSemSegundoFator';
 
@@ -33,6 +34,24 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   ): TUser {
     if (err || !user) {
       throw err || new UnauthorizedException('Não autenticado');
+    }
+    // Funcionário da loja: só as áreas que o dono liberou
+    const funcionario = (user as unknown as AuthUser).funcionario;
+    if (funcionario) {
+      const req = context
+        .switchToHttp()
+        .getRequest<{ method?: string; originalUrl?: string; url?: string }>();
+      if (
+        !funcionarioPode(
+          funcionario.permissoes,
+          req.method || 'GET',
+          req.originalUrl || req.url || '/',
+        )
+      ) {
+        throw new ForbiddenException(
+          'Seu acesso não inclui esta parte do painel. Fale com o dono da loja.',
+        );
+      }
     }
     if ((user as unknown as AuthUser).mfaSetupOnly) {
       const liberada = this.reflector.getAllAndOverride<boolean>(

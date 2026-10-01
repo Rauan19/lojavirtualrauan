@@ -8,6 +8,8 @@ import { api } from '@/lib/api';
 function RedefinirSenhaForm() {
   const search = useSearchParams();
   const token = useMemo(() => search.get('token') || '', [search]);
+  // Convite da equipe usa o mesmo link: a pessoa cria a primeira senha
+  const convite = search.get('convite') === '1';
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [done, setDone] = useState('');
@@ -40,8 +42,14 @@ function RedefinirSenhaForm() {
         <Link href="/login" className="text-xs font-medium text-muted hover:text-ink">
           ← Login
         </Link>
-        <h1 className="mt-3 text-xl font-bold">Nova senha</h1>
-        <p className="mt-1 text-sm text-muted">Painel admin / super admin.</p>
+        <h1 className="mt-3 text-xl font-bold">
+          {convite ? 'Criar sua senha' : 'Nova senha'}
+        </h1>
+        <p className="mt-1 text-sm text-muted">
+          {convite
+            ? 'Você foi chamado para a equipe da loja. Escolha a senha para entrar no painel.'
+            : 'Painel admin / super admin.'}
+        </p>
         {!token ? (
           <p className="mt-4 text-sm text-accent">Link inválido.</p>
         ) : (

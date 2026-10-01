@@ -7,6 +7,10 @@ export type AuthUser = {
   name: string;
   role: 'SUPER_ADMIN' | 'STORE_ADMIN' | 'CUSTOMER';
   storeId: string | null;
+  /** Painel da loja: false = funcionário convidado pelo dono. */
+  dono?: boolean;
+  /** Áreas liberadas ao funcionário (null para o dono). */
+  permissoes?: string[] | null;
   store?: {
     id: string;
     name: string;

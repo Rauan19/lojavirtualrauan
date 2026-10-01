@@ -9,6 +9,8 @@ export type PlatformPlan = {
   features?: string[];
   /** Máximo de produtos cadastrados. null/ausente = sem limite. */
   maxProducts?: number | null;
+  /** Pessoas no painel, contando o dono. null = sem limite. */
+  maxUsers?: number | null;
   /** NF-e/NFC-e liberada. Ausente = liberada. */
   nfeIncluded?: boolean;
   /** Comissão por venda em pontos-base (200 = 2%). Ausente = 0. */
@@ -31,6 +33,7 @@ export const DEFAULT_PLATFORM_PLANS: PlatformPlan[] = [
     periodDays: 30,
     badge: 'Grátis',
     maxProducts: 50,
+    maxUsers: 1,
     nfeIncluded: false,
     feeBps: 200,
     customDomainIncluded: false,
@@ -48,6 +51,7 @@ export const DEFAULT_PLATFORM_PLANS: PlatformPlan[] = [
     periodDays: 30,
     badge: 'Para começar',
     maxProducts: 300,
+    maxUsers: 2,
     nfeIncluded: false,
     feeBps: 100,
     customDomainIncluded: true,
@@ -68,6 +72,7 @@ export const DEFAULT_PLATFORM_PLANS: PlatformPlan[] = [
     badge: 'Mais escolhido',
     highlight: true,
     maxProducts: null,
+    maxUsers: 3,
     nfeIncluded: true,
     feeBps: 50,
     customDomainIncluded: true,
@@ -85,6 +90,7 @@ export const DEFAULT_PLATFORM_PLANS: PlatformPlan[] = [
     periodDays: 30,
     badge: 'Loja maior',
     maxProducts: null,
+    maxUsers: 10,
     nfeIncluded: true,
     feeBps: 50,
     customDomainIncluded: true,
@@ -102,6 +108,7 @@ export const DEFAULT_PLATFORM_PLANS: PlatformPlan[] = [
     periodDays: 365,
     badge: '2 meses grátis',
     maxProducts: 300,
+    maxUsers: 2,
     nfeIncluded: false,
     feeBps: 100,
     customDomainIncluded: true,
@@ -122,6 +129,7 @@ export const DEFAULT_PLATFORM_PLANS: PlatformPlan[] = [
     badge: '2 meses grátis',
     highlight: true,
     maxProducts: null,
+    maxUsers: 3,
     nfeIncluded: true,
     feeBps: 50,
     customDomainIncluded: true,
@@ -139,6 +147,7 @@ export const DEFAULT_PLATFORM_PLANS: PlatformPlan[] = [
     periodDays: 365,
     badge: '2 meses grátis',
     maxProducts: null,
+    maxUsers: 10,
     nfeIncluded: true,
     feeBps: 50,
     customDomainIncluded: true,

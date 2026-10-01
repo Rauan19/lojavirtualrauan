@@ -16,6 +16,7 @@ type Plan = {
   highlight?: boolean;
   features?: string[];
   maxProducts?: number | null;
+  maxUsers?: number | null;
   nfeIncluded?: boolean;
   feeBps?: number;
   customDomainIncluded?: boolean;
@@ -32,6 +33,7 @@ const emptyForm = {
   features: '',
   /** Vazio = sem limite. */
   maxProducts: '',
+  maxUsers: '',
   nfeIncluded: true,
   /** Em %, como o Super Admin digita (ex.: "2" ou "0,5"). */
   feePercent: '',
@@ -120,6 +122,7 @@ export default function SuperPlanosPage() {
       highlight: plan.highlight || false,
       features: (plan.features || []).join('\n'),
       maxProducts: plan.maxProducts ? String(plan.maxProducts) : '',
+      maxUsers: plan.maxUsers ? String(plan.maxUsers) : '',
       nfeIncluded: plan.nfeIncluded ?? true,
       feePercent: plan.feeBps ? String(plan.feeBps / 100).replace('.', ',') : '',
       customDomainIncluded: plan.customDomainIncluded ?? true,
@@ -148,6 +151,7 @@ export default function SuperPlanosPage() {
           .filter(Boolean),
         // 0 = sem limite (a API grava null)
         maxProducts: Number(form.maxProducts) || 0,
+        maxUsers: Number(form.maxUsers) || 0,
         nfeIncluded: form.nfeIncluded,
         // "2" → 200 pontos-base; vazio = sem taxa
         feeBps: Math.round(
@@ -253,6 +257,14 @@ export default function SuperPlanosPage() {
         texto: plan.maxProducts
           ? `Até ${plan.maxProducts} produtos`
           : 'Produtos ilimitados',
+        ok: true,
+      },
+      {
+        texto: !plan.maxUsers
+          ? 'Equipe sem limite'
+          : plan.maxUsers === 1
+            ? 'Só o dono no painel'
+            : `Até ${plan.maxUsers} pessoas no painel`,
         ok: true,
       },
       { texto: 'Nota fiscal', ok: plan.nfeIncluded !== false },
@@ -532,7 +544,7 @@ export default function SuperPlanosPage() {
               <legend className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">
                 Limites
               </legend>
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div>
                   <label className="label" htmlFor="plan-max-products">
                     Limite de produtos
@@ -548,6 +560,23 @@ export default function SuperPlanosPage() {
                       setForm({ ...form, maxProducts: e.target.value })
                     }
                   />
+                </div>
+                <div>
+                  <label className="label" htmlFor="plan-max-users">
+                    Pessoas na equipe
+                  </label>
+                  <input
+                    id="plan-max-users"
+                    className="field"
+                    type="number"
+                    min={0}
+                    placeholder="Vazio = sem limite"
+                    value={form.maxUsers}
+                    onChange={(e) =>
+                      setForm({ ...form, maxUsers: e.target.value })
+                    }
+                  />
+                  <p className="mt-1 text-[11px] text-muted">Contando o dono</p>
                 </div>
                 <label className="flex items-center gap-2 self-end pb-2 text-sm">
                   <input

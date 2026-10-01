@@ -17,6 +17,8 @@ export type AuthUser = {
    * só abre as telas de ativação (ver PermitirSemSegundoFator).
    */
   mfaSetupOnly?: boolean;
+  /** Painel da loja: funcionário convidado (não é o dono) e suas áreas */
+  funcionario?: { permissoes: string[] };
 };
 
 export const CurrentUser = createParamDecorator(

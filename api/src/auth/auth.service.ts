@@ -118,6 +118,8 @@ export class AuthService {
       role: Role;
       storeId: string | null;
       tokenVersion: number;
+      storeOwner?: boolean;
+      permissions?: string[];
       store: { id: string; name: string; slug: string; status: string } | null;
     },
     soAtivacao: boolean,
@@ -146,6 +148,7 @@ export class AuthService {
         name: user.name,
         role: user.role,
         storeId: user.storeId,
+        ...this.equipe(user),
         store: user.store
           ? {
               id: user.store.id,
@@ -263,6 +266,17 @@ export class AuthService {
     return { ok: true, message: 'Senha atualizada. Você já pode entrar.' };
   }
 
+  /** Dono vê tudo; funcionário, só as áreas que o dono liberou. */
+  private equipe(user: {
+    role: Role;
+    storeOwner?: boolean;
+    permissions?: string[];
+  }) {
+    if (user.role !== 'STORE_ADMIN') return {};
+    const dono = user.storeOwner !== false;
+    return { dono, permissoes: dono ? null : (user.permissions ?? []) };
+  }
+
   async me(userId: string, soAtivacao = false) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -284,6 +298,7 @@ export class AuthService {
       name: user.name,
       role: user.role,
       storeId: user.storeId,
+      ...this.equipe(user),
       // Nunca devolver a linha crua da loja aqui: tem token de gateway
       // (cifrado, mas mesmo assim não pertence a uma resposta de "quem sou
       // eu"), documento do lojista, endereço etc. Só o que a UI precisa.

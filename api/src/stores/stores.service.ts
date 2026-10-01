@@ -285,7 +285,7 @@ export class StoresService {
       include: {
         _count: { select: { products: true, orders: true, customers: true } },
         users: {
-          where: { role: Role.STORE_ADMIN },
+          where: { role: Role.STORE_ADMIN, storeOwner: true },
           select: { id: true, name: true, email: true, active: true },
           take: 1,
         },
@@ -303,7 +303,7 @@ export class StoresService {
       include: {
         _count: { select: { products: true, orders: true, customers: true } },
         users: {
-          where: { role: Role.STORE_ADMIN },
+          where: { role: Role.STORE_ADMIN, storeOwner: true },
           select: { id: true, name: true, email: true, active: true },
           take: 1,
         },
@@ -320,7 +320,7 @@ export class StoresService {
       where: { id: storeId },
       include: {
         users: {
-          where: { role: Role.STORE_ADMIN },
+          where: { role: Role.STORE_ADMIN, storeOwner: true },
           take: 1,
         },
       },

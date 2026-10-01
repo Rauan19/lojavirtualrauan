@@ -895,6 +895,10 @@ export default function AdminSettingsPage() {
   const [nfeCscToken, setNfeCscToken] = useState('');
   const [meHelpOpen, setMeHelpOpen] = useState(false);
   const [meBusy, setMeBusy] = useState(false);
+  const [souDono, setSouDono] = useState(true);
+  useEffect(() => {
+    setSouDono(getUser()?.dono !== false);
+  }, []);
   const [mpBusy, setMpBusy] = useState(false);
   const [freteModal, setFreteModal] = useState<
     'calculo' | 'origem' | 'conexao' | 'etiqueta' | null
@@ -2886,6 +2890,9 @@ export default function AdminSettingsPage() {
       ) : null}
       </SettingsPanel>
 
+      {/* Recebimentos e taxas: só o dono (a equipe não mexe em dinheiro) */}
+      {souDono ? (
+      <>
       <SettingsPanel
         title="Recebimentos (Mercado Pago)"
         summary="Onde você recebe o dinheiro das vendas"
@@ -3199,6 +3206,8 @@ export default function AdminSettingsPage() {
         </SettingsModal>
       ) : null}
       </SettingsPanel>
+      </>
+      ) : null}
 
       <SettingsPanel
         title="Perfil da loja / documento"

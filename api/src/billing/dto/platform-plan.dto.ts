@@ -49,6 +49,13 @@ export class CreatePlatformPlanDto {
   @Min(0)
   maxProducts?: number | null;
 
+  /** Pessoas no painel, contando o dono. 0 ou null = sem limite. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  maxUsers?: number | null;
+
   @IsOptional()
   @IsBoolean()
   nfeIncluded?: boolean;
@@ -115,6 +122,13 @@ export class UpdatePlatformPlanDto {
   @IsInt()
   @Min(0)
   maxProducts?: number | null;
+
+  /** Pessoas no painel, contando o dono. 0 ou null = sem limite. */
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  maxUsers?: number | null;
 
   @IsOptional()
   @IsBoolean()

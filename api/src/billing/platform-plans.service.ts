@@ -30,6 +30,7 @@ export class PlatformPlansService {
     highlight: boolean;
     features: Prisma.JsonValue;
     maxProducts: number | null;
+    maxUsers: number | null;
     nfeIncluded: boolean;
     feeBps: number;
     customDomainIncluded: boolean;
@@ -46,6 +47,7 @@ export class PlatformPlansService {
         ? (row.features as string[])
         : undefined,
       maxProducts: row.maxProducts,
+      maxUsers: row.maxUsers,
       nfeIncluded: row.nfeIncluded,
       feeBps: row.feeBps,
       customDomainIncluded: row.customDomainIncluded,
@@ -101,6 +103,7 @@ export class PlatformPlansService {
         highlight: dto.highlight ?? false,
         features: dto.features?.length ? dto.features : undefined,
         maxProducts: dto.maxProducts || null,
+        maxUsers: dto.maxUsers || null,
         nfeIncluded: dto.nfeIncluded ?? true,
         feeBps: dto.feeBps ?? 0,
         customDomainIncluded: dto.customDomainIncluded ?? true,
@@ -138,6 +141,9 @@ export class PlatformPlansService {
         // 0 ou null = sem limite
         ...(dto.maxProducts !== undefined
           ? { maxProducts: dto.maxProducts || null }
+          : {}),
+        ...(dto.maxUsers !== undefined
+          ? { maxUsers: dto.maxUsers || null }
           : {}),
         ...(dto.nfeIncluded !== undefined
           ? { nfeIncluded: dto.nfeIncluded }

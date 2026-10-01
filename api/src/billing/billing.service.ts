@@ -1344,7 +1344,7 @@ export class BillingService {
     if (fiscal) return fiscal;
 
     const admin = await this.prisma.user.findFirst({
-      where: { storeId, role: Role.STORE_ADMIN },
+      where: { storeId, role: Role.STORE_ADMIN, storeOwner: true },
       select: { email: true },
       orderBy: { createdAt: 'asc' },
     });

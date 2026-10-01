@@ -7,6 +7,8 @@ export type PlanLimits = {
   /** Nome do plano que definiu os limites (null = sem limite). */
   planName: string | null;
   maxProducts: number | null;
+  /** Pessoas no painel, contando o dono (null = sem limite). */
+  maxUsers: number | null;
   nfeIncluded: boolean;
   customDomainIncluded: boolean;
   /**
@@ -21,6 +23,7 @@ export type PlanLimits = {
 const SEM_LIMITE: Omit<PlanLimits, 'trial' | 'feeBps'> = {
   planName: null,
   maxProducts: null,
+  maxUsers: null,
   nfeIncluded: true,
   customDomainIncluded: true,
 };
@@ -76,6 +79,7 @@ export class PlanLimitsService {
     return {
       planName: plan.name,
       maxProducts: plan.maxProducts ?? null,
+      maxUsers: plan.maxUsers ?? null,
       nfeIncluded: plan.nfeIncluded ?? true,
       customDomainIncluded: plan.customDomainIncluded ?? true,
       feeBps,
@@ -91,6 +95,22 @@ export class PlanLimitsService {
     if (count >= limits.maxProducts) {
       throw new ForbiddenException(
         `O plano ${limits.planName} permite até ${limits.maxProducts} produtos. Para cadastrar mais, mude de plano em Configurações → Planos.`,
+      );
+    }
+  }
+
+  /** Lança 403 se a loja já tem todas as pessoas que o plano permite. */
+  async assertCanAddTeamMember(storeId: string) {
+    const limits = await this.forStore(storeId);
+    if (limits.maxUsers == null) return;
+    const count = await this.prisma.user.count({
+      where: { storeId, role: 'STORE_ADMIN', active: true },
+    });
+    if (count >= limits.maxUsers) {
+      throw new ForbiddenException(
+        limits.maxUsers <= 1
+          ? `O plano ${limits.planName} é só para o dono da loja. Para chamar sua equipe, mude de plano em Configurações → Planos.`
+          : `O plano ${limits.planName} permite até ${limits.maxUsers} pessoas no painel, contando você. Desative alguém ou mude de plano em Configurações → Planos.`,
       );
     }
   }
@@ -136,6 +156,7 @@ export class PlanLimitsService {
         name: true,
         periodDays: true,
         maxProducts: true,
+        maxUsers: true,
         nfeIncluded: true,
         feeBps: true,
         customDomainIncluded: true,

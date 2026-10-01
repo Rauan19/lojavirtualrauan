@@ -80,6 +80,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         storeId: true,
         active: true,
         tokenVersion: true,
+        storeOwner: true,
+        permissions: true,
       },
     });
     if (!user || !user.active || user.tokenVersion !== tokenVersion) {
@@ -92,6 +94,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       role: user.role,
       storeId: user.storeId,
       ...(payload.ms === 1 ? { mfaSetupOnly: true } : {}),
+      ...(user.role === Role.STORE_ADMIN && !user.storeOwner
+        ? { funcionario: { permissoes: user.permissions } }
+        : {}),
     };
   }
 }

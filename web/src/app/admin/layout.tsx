@@ -10,7 +10,16 @@ import { PlanRestrictionModal } from '@/components/PlanRestrictionModal';
 import { AvisoConexaoMp, useTaxaDaLoja } from '@/components/TaxaVendira';
 
 type BadgeKey = 'orders' | 'refunds';
-type NavItem = { href: string; label: string; badgeKey?: BadgeKey };
+/**
+ * Quem vê o item: sem area = toda a equipe; 'dono' = só o dono; senão, o
+ * funcionário precisa da área (o servidor confere de novo, rota por rota).
+ */
+type NavItem = {
+  href: string;
+  label: string;
+  badgeKey?: BadgeKey;
+  area?: string;
+};
 type NavGroup = { title: string; items: NavItem[] };
 
 type StoreAccess = {
@@ -31,34 +40,57 @@ const navGroups: NavGroup[] = [
   {
     title: 'Catálogo',
     items: [
-      { href: '/admin/products', label: 'Produtos' },
-      { href: '/admin/categories', label: 'Categorias' },
-      { href: '/admin/promotions', label: 'Promoções' },
-      { href: '/admin/reviews', label: 'Avaliações' },
+      { href: '/admin/products', label: 'Produtos', area: 'produtos' },
+      { href: '/admin/categories', label: 'Categorias', area: 'produtos' },
+      { href: '/admin/promotions', label: 'Promoções', area: 'produtos' },
+      { href: '/admin/reviews', label: 'Avaliações', area: 'produtos' },
     ],
   },
   {
     title: 'Vendas',
     items: [
-      { href: '/admin/orders', label: 'Pedidos', badgeKey: 'orders' },
-      { href: '/admin/refunds', label: 'Reembolsos', badgeKey: 'refunds' },
-      { href: '/admin/carrinhos-abandonados', label: 'Carrinhos abandonados' },
-      { href: '/admin/customers', label: 'Clientes' },
-      { href: '/admin/coupons', label: 'Cupons' },
+      {
+        href: '/admin/orders',
+        label: 'Pedidos',
+        badgeKey: 'orders',
+        area: 'pedidos',
+      },
+      {
+        href: '/admin/refunds',
+        label: 'Reembolsos',
+        badgeKey: 'refunds',
+        area: 'pedidos',
+      },
+      {
+        href: '/admin/carrinhos-abandonados',
+        label: 'Carrinhos abandonados',
+        area: 'marketing',
+      },
+      { href: '/admin/customers', label: 'Clientes', area: 'clientes' },
+      { href: '/admin/coupons', label: 'Cupons', area: 'marketing' },
     ],
   },
   {
     title: 'Marketing',
     items: [
-      { href: '/admin/catalogo', label: 'Google e Instagram' },
-      { href: '/admin/avise-me', label: 'Avise-me' },
+      {
+        href: '/admin/catalogo',
+        label: 'Google e Instagram',
+        area: 'marketing',
+      },
+      { href: '/admin/avise-me', label: 'Avise-me', area: 'marketing' },
     ],
   },
   {
     title: 'Configuração',
     items: [
-      { href: '/admin/settings', label: 'Loja e frete' },
-      { href: '/admin/settings/planos', label: 'Planos' },
+      {
+        href: '/admin/settings',
+        label: 'Loja e frete',
+        area: 'configuracoes',
+      },
+      { href: '/admin/settings/planos', label: 'Planos', area: 'dono' },
+      { href: '/admin/equipe', label: 'Equipe', area: 'dono' },
       { href: '/admin/settings/seguranca', label: 'Segurança' },
     ],
   },
@@ -67,6 +99,26 @@ const navGroups: NavGroup[] = [
     items: [{ href: '/admin/suporte', label: 'Suporte' }],
   },
 ];
+
+function podeVer(user: AuthUser, item: NavItem) {
+  if (!item.area || user.dono !== false) return true;
+  if (item.area === 'dono') return false;
+  return (user.permissoes ?? []).includes(item.area);
+}
+
+/** Item do menu da página aberta (o mais específico). */
+function itemDaPagina(pathname: string): NavItem | null {
+  let achado: NavItem | null = null;
+  for (const g of navGroups) {
+    for (const i of g.items) {
+      if (i.href === '/admin') continue;
+      if (pathname === i.href || pathname.startsWith(`${i.href}/`)) {
+        if (!achado || i.href.length > achado.href.length) achado = i;
+      }
+    }
+  }
+  return achado;
+}
 
 function isActive(pathname: string, href: string) {
   if (href === '/admin') return pathname === '/admin';
@@ -225,6 +277,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
+  const pagina = itemDaPagina(pathname);
+  const paginaFechada = pagina && !podeVer(user, pagina) ? pagina : null;
   const wa = supportWhatsappHref(user.store?.name, user.store?.slug);
 
   const nav = (
@@ -240,12 +294,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       </div>
 
       <nav className="flex-1 overflow-y-auto py-2">
-        {navGroups.map((group) => (
+        {navGroups.map((group) => {
+          const itens = group.items.filter((i) => podeVer(user, i));
+          if (itens.length === 0) return null;
+          return (
           <div key={group.title} className="mb-2">
             <p className="px-4 pb-1 pt-2 text-[10px] font-bold uppercase tracking-wider text-muted">
               {group.title}
             </p>
-            {group.items.map((link) => {
+            {itens.map((link) => {
               const active = isActive(pathname, link.href);
               const badge =
                 link.badgeKey === 'refunds'
@@ -282,7 +339,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               );
             })}
           </div>
-        ))}
+          );
+        })}
 
         {user.store?.slug ? (
           <div className="mt-1 border-t border-line pt-2">
@@ -389,6 +447,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       >
         <AvisoConexaoMp taxa={taxa} />
         {!accessBlocked &&
+        user.dono !== false &&
         storeAccess?.status === 'TRIAL' &&
         storeAccess.daysLeft != null &&
         !onPlansPage ? (
@@ -406,7 +465,20 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </Link>
           </div>
         ) : null}
-        {children}
+        {paginaFechada ? (
+          <div className="mx-auto mt-10 max-w-md border border-line bg-white px-5 py-6 text-center">
+            <h2 className="text-base font-bold">Esta parte é do dono da loja</h2>
+            <p className="mt-2 text-sm text-muted">
+              Seu acesso não inclui {paginaFechada.label}. Se precisar, peça
+              para o dono liberar em Equipe.
+            </p>
+            <Link href="/admin" className="btn btn-ghost mt-4 inline-flex">
+              Voltar ao painel
+            </Link>
+          </div>
+        ) : (
+          children
+        )}
       </main>
 
       <PlanRestrictionModal
