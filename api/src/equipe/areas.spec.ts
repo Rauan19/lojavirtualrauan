@@ -8,7 +8,6 @@ describe('áreas do painel por rota', () => {
 
   it('livre para toda a equipe', () => {
     expect(acessoDaRota('GET', '/api/auth/me')).toBe('livre');
-    expect(acessoDaRota('GET', '/api/admin/dashboard/summary')).toBe('livre');
     expect(acessoDaRota('GET', '/api/stores/me')).toBe('livre');
     expect(acessoDaRota('POST', '/api/admin/avisos/inscrever')).toBe('livre');
   });
@@ -52,6 +51,7 @@ describe('áreas do painel por rota', () => {
       '/api/stores/me/mercadopago',
       '/api/admin/payments/mercadopago/authorize',
       '/api/admin/equipe',
+      '/api/admin/dashboard/summary',
     ]) {
       expect(funcionarioPode(todas, 'GET', url)).toBe(false);
     }

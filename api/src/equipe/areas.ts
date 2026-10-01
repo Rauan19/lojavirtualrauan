@@ -24,7 +24,6 @@ export type Acesso = 'livre' | 'dono' | Area[];
 const REGRAS: [RegExp, Acesso, string?][] = [
   // Toda a equipe
   [/^\/auth(\/|$)/, 'livre'],
-  [/^\/admin\/dashboard(\/|$)/, 'livre'],
   [/^\/stores\/me$/, 'livre', 'GET'],
   [/^\/stores\/me\/store-type-config$/, 'livre', 'GET'],
   // Cada um liga os avisos no próprio celular (o envio filtra quem vê pedidos)
@@ -50,6 +49,8 @@ const REGRAS: [RegExp, Acesso, string?][] = [
   [/^\/stores\/me\/mercadopago(\/|$)/, 'dono'],
   [/^\/admin\/payments(\/|$)/, 'dono'],
   [/^\/admin\/equipe(\/|$)/, 'dono'],
+  // Faturamento e números de venda (a equipe vê só atalhos no início)
+  [/^\/admin\/dashboard(\/|$)/, 'dono'],
   [/^\/billing(\/|$)/, 'dono'],
   [/^\/platform-fee(\/|$)/, 'dono'],
 ];

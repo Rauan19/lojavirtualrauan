@@ -100,7 +100,8 @@ describe('Equipe da loja (e2e)', () => {
   it('funcionário só usa as áreas liberadas', async () => {
     const { accessToken: t } = await entrarComo(['pedidos']);
     await como(t, http().get('/api/admin/orders')).expect(200);
-    await como(t, http().get('/api/admin/dashboard/summary')).expect(200);
+    // faturamento é só do dono
+    await como(t, http().get('/api/admin/dashboard/summary')).expect(403);
     await como(t, http().get('/api/stores/me')).expect(200);
 
     const barrado = await como(t, http().get('/api/admin/products')).expect(

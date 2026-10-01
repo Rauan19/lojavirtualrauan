@@ -74,7 +74,7 @@ function formatRangeLabel(from?: string, to?: string, date?: string | null) {
   return a === b ? a : `${a} — ${b}`;
 }
 
-export default function AdminDashboardPage() {
+function PainelDoDono() {
   const [data, setData] = useState<Summary | null>(null);
   const [period, setPeriod] = useState<Period>('month');
   const [specificDate, setSpecificDate] = useState('');
@@ -311,4 +311,103 @@ export default function AdminDashboardPage() {
       ) : null}
     </div>
   );
+}
+
+/** Atalhos de cada área que o dono pode liberar para a equipe. */
+const ATALHOS: Record<string, { titulo: string; links: [string, string][] }> = {
+  pedidos: {
+    titulo: 'Pedidos',
+    links: [
+      ['/admin/orders', 'Ver pedidos'],
+      ['/admin/refunds', 'Reembolsos'],
+    ],
+  },
+  produtos: {
+    titulo: 'Produtos',
+    links: [
+      ['/admin/products', 'Ver produtos'],
+      ['/admin/categories', 'Categorias'],
+      ['/admin/promotions', 'Promoções'],
+      ['/admin/reviews', 'Avaliações'],
+    ],
+  },
+  clientes: { titulo: 'Clientes', links: [['/admin/customers', 'Ver clientes']] },
+  marketing: {
+    titulo: 'Marketing',
+    links: [
+      ['/admin/coupons', 'Cupons'],
+      ['/admin/carrinhos-abandonados', 'Carrinhos abandonados'],
+      ['/admin/catalogo', 'Google e Instagram'],
+      ['/admin/avise-me', 'Avise-me'],
+    ],
+  },
+  configuracoes: {
+    titulo: 'Loja',
+    links: [['/admin/settings', 'Aparência e frete']],
+  },
+};
+
+/**
+ * Início do painel para quem é da equipe: faturamento e números de venda
+ * ficam só com o dono; aqui vão os atalhos das áreas liberadas.
+ */
+function PainelDaEquipe({
+  nome,
+  permissoes,
+}: {
+  nome: string;
+  permissoes: string[];
+}) {
+  const areas = permissoes.filter((p) => ATALHOS[p]);
+  return (
+    <div className="admin-page max-w-3xl space-y-5">
+      <div>
+        <h1>Olá, {nome.split(/\s+/)[0]}!</h1>
+        <p className="mt-1 text-sm text-muted">
+          Estas são as partes do painel que você cuida.
+        </p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {areas.map((a) => (
+          <section key={a} className="border border-line bg-white px-4 py-3">
+            <h2 className="text-sm font-bold">{ATALHOS[a].titulo}</h2>
+            <ul className="mt-2 space-y-1">
+              {ATALHOS[a].links.map(([href, rotulo]) => (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className="text-sm font-medium underline-offset-2 hover:underline"
+                  >
+                    {rotulo}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+      <p className="text-xs text-muted">
+        Precisa de outra área? Peça para o dono da loja liberar em Equipe.
+      </p>
+    </div>
+  );
+}
+
+export default function AdminDashboardPage() {
+  const [equipe, setEquipe] = useState<{
+    nome: string;
+    permissoes: string[];
+  } | null>(null);
+  const [pronto, setPronto] = useState(false);
+
+  useEffect(() => {
+    const u = getUser();
+    if (u && u.dono === false) {
+      setEquipe({ nome: u.name, permissoes: u.permissoes ?? [] });
+    }
+    setPronto(true);
+  }, []);
+
+  if (!pronto) return null;
+  return equipe ? <PainelDaEquipe {...equipe} /> : <PainelDoDono />;
 }
