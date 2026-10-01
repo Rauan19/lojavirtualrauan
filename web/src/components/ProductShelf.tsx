@@ -163,10 +163,11 @@ export function ProductShelf({
                     {img ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
+                        loading="lazy"
+                        decoding="async"
                         src={img}
                         alt={p.name}
                         className="product-card-img h-full w-full object-cover"
-                        loading="lazy"
                       />
                     ) : null}
                     {off ? (

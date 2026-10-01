@@ -192,7 +192,7 @@ function Miniatura({ src, alt }: { src?: string; alt: string }) {
     <span className="block h-14 w-14 shrink-0 overflow-hidden bg-[#f3f3f3]">
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt={alt} className="h-full w-full object-cover" />
+        <img loading="lazy" decoding="async" src={src} alt={alt} className="h-full w-full object-cover" />
       ) : null}
     </span>
   );

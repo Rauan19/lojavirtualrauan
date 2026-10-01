@@ -133,7 +133,7 @@ export default function PedidoDetalhePage() {
   }
 
   if (!order && !error) {
-    return <p className="p-4 text-sm text-muted md:p-0">Carregando pedido...</p>;
+    return <p className="p-4 text-sm text-muted md:p-0">Carregando pedido…</p>;
   }
 
   const canRequestRefund =
@@ -266,6 +266,8 @@ export default function PedidoDetalhePage() {
                   {img ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
+                      loading="lazy"
+                      decoding="async"
                       src={img}
                       alt={item.productName}
                       className="h-14 w-14 shrink-0 rounded object-cover"
@@ -371,7 +373,7 @@ export default function PedidoDetalhePage() {
                 className="w-full rounded border border-orange-600 bg-orange-500 px-3 py-2.5 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-60"
                 disabled={busy}
               >
-                {busy ? 'Enviando...' : 'Pedir reembolso'}
+                {busy ? 'Enviando…' : 'Pedir reembolso'}
               </button>
             </form>
           ) : null}

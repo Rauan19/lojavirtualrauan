@@ -103,7 +103,7 @@ export function CartDrawer({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto overscroll-contain">
           {items.length === 0 ? (
             <div className="flex flex-col items-center gap-3 px-4 py-16 text-center">
               <EmptyBagIcon />
@@ -119,7 +119,7 @@ export function CartDrawer({
                     <div className="h-20 w-16 shrink-0 overflow-hidden bg-[#f3f3f3]">
                       {img ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={img} alt="" className="h-full w-full object-cover" />
+                        <img loading="lazy" decoding="async" src={img} alt="" className="h-full w-full object-cover" />
                       ) : null}
                     </div>
                     <div className="min-w-0 flex-1">

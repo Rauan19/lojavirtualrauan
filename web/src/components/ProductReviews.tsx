@@ -91,7 +91,7 @@ export function ProductReviews({ storeSlug, productId, idOrSlug }: Props) {
             />
             {formError ? <p className="text-xs text-accent">{formError}</p> : null}
             <button type="submit" className="btn btn-accent px-3 py-1.5 text-xs" disabled={submitting}>
-              {submitting ? 'Enviando...' : 'Publicar avaliação'}
+              {submitting ? 'Enviando…' : 'Publicar avaliação'}
             </button>
           </form>
         )

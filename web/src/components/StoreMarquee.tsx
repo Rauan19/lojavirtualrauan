@@ -171,7 +171,7 @@ export function StoreMarquee({ images, storeName, intervalMs = 5000 }: Props) {
                 aria-label={`Ir para o banner ${i + 1}`}
                 aria-current={i === index}
                 onClick={() => go(i)}
-                className={`h-1.5 rounded-full transition-all ${
+                className={`h-1.5 rounded-full transition-[width,background-color] ${
                   i === index ? 'w-6 bg-white' : 'w-1.5 bg-white/55 hover:bg-white/80'
                 }`}
               />

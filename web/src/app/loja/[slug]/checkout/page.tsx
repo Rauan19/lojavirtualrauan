@@ -630,12 +630,12 @@ function CheckoutInner({ slug }: { slug: string }) {
   }
 
   if (!store || authLoading) {
-    return <p className="p-8 text-sm text-muted">Carregando checkout...</p>;
+    return <p className="p-8 text-sm text-muted">Carregando checkout…</p>;
   }
 
   if (!customer) {
     return (
-      <p className="p-8 text-sm text-muted">Redirecionando para o login...</p>
+      <p className="p-8 text-sm text-muted">Redirecionando para o login…</p>
     );
   }
 
@@ -711,7 +711,11 @@ function CheckoutInner({ slug }: { slug: string }) {
 
       <div className="mx-auto grid max-w-3xl gap-4 px-4 md:grid-cols-[1.2fr_0.8fr]">
         <div className="card space-y-4 !p-4">
-          {error ? <p className="text-sm text-accent">{error}</p> : null}
+          {error ? (
+            <p role="alert" className="text-sm text-accent">
+              {error}
+            </p>
+          ) : null}
 
           {recuperado ? (
             <p className="mb-3 border border-[#bfe3c8] bg-[#f0fbf3] px-3 py-2 text-sm text-[#166534]">
@@ -780,9 +784,13 @@ function CheckoutInner({ slug }: { slug: string }) {
                     <div className="space-y-2 border border-line p-3">
                       <p className="text-sm font-bold">Novo endereço</p>
                       <div>
-                        <label className="label">CEP</label>
+                        <label className="label" htmlFor="endereco-zipCode">CEP</label>
                         <input
+                          id="endereco-zipCode"
+                          name="zipCode"
                           className="field"
+                          autoComplete="shipping postal-code"
+                          inputMode="numeric"
                           value={addrForm.zipCode}
                           onChange={(e) =>
                             setAddrForm({ ...addrForm, zipCode: e.target.value })
@@ -792,9 +800,12 @@ function CheckoutInner({ slug }: { slug: string }) {
                         />
                       </div>
                       <div>
-                        <label className="label">Rua</label>
+                        <label className="label" htmlFor="endereco-street">Rua</label>
                         <input
+                          id="endereco-street"
+                          name="street"
                           className="field"
+                          autoComplete="shipping address-line1"
                           value={addrForm.street}
                           onChange={(e) =>
                             setAddrForm({ ...addrForm, street: e.target.value })
@@ -804,8 +815,10 @@ function CheckoutInner({ slug }: { slug: string }) {
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="label">Número</label>
+                          <label className="label" htmlFor="endereco-number">Número</label>
                           <input
+                            id="endereco-number"
+                            name="number"
                             className="field"
                             value={addrForm.number}
                             onChange={(e) =>
@@ -815,9 +828,12 @@ function CheckoutInner({ slug }: { slug: string }) {
                           />
                         </div>
                         <div>
-                          <label className="label">Complemento</label>
+                          <label className="label" htmlFor="endereco-complement">Complemento</label>
                           <input
+                            id="endereco-complement"
+                            name="complement"
                             className="field"
+                            autoComplete="shipping address-line2"
                             value={addrForm.complement}
                             onChange={(e) =>
                               setAddrForm({
@@ -829,9 +845,12 @@ function CheckoutInner({ slug }: { slug: string }) {
                         </div>
                       </div>
                       <div>
-                        <label className="label">Bairro</label>
+                        <label className="label" htmlFor="endereco-neighborhood">Bairro</label>
                         <input
+                          id="endereco-neighborhood"
+                          name="neighborhood"
                           className="field"
+                          autoComplete="shipping address-level3"
                           value={addrForm.neighborhood}
                           onChange={(e) =>
                             setAddrForm({
@@ -844,9 +863,12 @@ function CheckoutInner({ slug }: { slug: string }) {
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="label">Cidade</label>
+                          <label className="label" htmlFor="endereco-city">Cidade</label>
                           <input
+                            id="endereco-city"
+                            name="city"
                             className="field"
+                            autoComplete="shipping address-level2"
                             value={addrForm.city}
                             onChange={(e) =>
                               setAddrForm({ ...addrForm, city: e.target.value })
@@ -855,9 +877,12 @@ function CheckoutInner({ slug }: { slug: string }) {
                           />
                         </div>
                         <div>
-                          <label className="label">UF</label>
+                          <label className="label" htmlFor="endereco-state">UF</label>
                           <input
+                            id="endereco-state"
+                            name="state"
                             className="field"
+                            autoComplete="shipping address-level1"
                             value={addrForm.state}
                             onChange={(e) =>
                               setAddrForm({
@@ -939,7 +964,7 @@ function CheckoutInner({ slug }: { slug: string }) {
                     </p>
                   ) : null}
                   {quoting ? (
-                    <p className="text-sm text-muted">Calculando frete...</p>
+                    <p className="text-sm text-muted">Calculando frete…</p>
                   ) : shipOptions.length > 0 ? (
                     <div className="space-y-2">
                       {shipOptions.map((opt) => (
@@ -1197,13 +1222,20 @@ function CheckoutInner({ slug }: { slug: string }) {
                   </button>
                   <h1 className="text-lg font-bold">Pagamento</h1>
                   <div>
-                    <label className="label">Cupom (opcional)</label>
+                    <label className="label" htmlFor="cupom">
+                      Cupom (opcional)
+                    </label>
                     <div className="flex gap-2">
                       <input
+                        id="cupom"
+                        name="cupom"
                         className="field"
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value)}
-                        placeholder="Código"
+                        placeholder="Ex.: BEMVINDO10"
+                        autoComplete="off"
+                        autoCapitalize="characters"
+                        spellCheck={false}
                       />
                       <button
                         type="button"
@@ -1298,7 +1330,7 @@ function CheckoutInner({ slug }: { slug: string }) {
                     className="btn btn-accent w-full"
                     disabled={busy || !aceitou || store.paymentsEnabled === false}
                   >
-                    {busy ? 'Abrindo Mercado Pago...' : `Pagar ${money(total)}`}
+                    {busy ? 'Abrindo Mercado Pago…' : `Pagar ${money(total)}`}
                   </button>
                 </form>
                 )
@@ -1317,7 +1349,7 @@ function CheckoutInner({ slug }: { slug: string }) {
                   <div className="h-14 w-11 shrink-0 overflow-hidden bg-[#eee]">
                     {img ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={img} alt="" className="h-full w-full object-cover" />
+                      <img loading="lazy" decoding="async" src={img} alt="" className="h-full w-full object-cover" />
                     ) : null}
                   </div>
                   <div className="min-w-0 flex-1">

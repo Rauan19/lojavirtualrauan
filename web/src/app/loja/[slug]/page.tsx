@@ -437,6 +437,8 @@ function StorefrontInner({ slug }: { slug: string }) {
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
+                        loading="lazy"
+                        decoding="async"
                         src={mediaUrl(c.imageUrl) || undefined}
                         alt={c.name}
                         className="h-full w-full object-cover"
@@ -547,7 +549,7 @@ function StorefrontInner({ slug }: { slug: string }) {
 
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-xs text-muted md:text-sm">
-                {loadingCatalog ? 'Carregando...' : `${total} produtos`}
+                {loadingCatalog ? 'Carregando…' : `${total} produtos`}
               </p>
 
               <div className="relative" ref={priceRef}>
@@ -710,6 +712,8 @@ function StorefrontInner({ slug }: { slug: string }) {
                       {img ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
+                          loading="lazy"
+                          decoding="async"
                           src={img}
                           alt={p.name}
                           className="product-card-img h-full w-full object-cover"

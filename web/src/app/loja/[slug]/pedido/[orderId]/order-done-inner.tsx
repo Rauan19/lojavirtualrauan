@@ -255,7 +255,7 @@ export function OrderDoneInner({
   ]);
 
   if (authLoading || (!customer && !guestAccess)) {
-    return <p className="p-8 text-sm text-muted">Carregando...</p>;
+    return <p className="p-8 text-sm text-muted">Carregando…</p>;
   }
 
   if (paid) {
@@ -323,7 +323,7 @@ export function OrderDoneInner({
 
       <div className="mt-4 border border-line bg-white p-5">
         {!order && !error ? (
-          <p className="text-sm text-muted">Carregando pedido...</p>
+          <p className="text-sm text-muted">Carregando pedido…</p>
         ) : null}
         {error ? <p className="text-sm text-accent">{error}</p> : null}
 
@@ -355,7 +355,7 @@ export function OrderDoneInner({
             ) : null}
 
             {loadingPay && !paySession ? (
-              <p className="text-sm text-muted">Abrindo Mercado Pago...</p>
+              <p className="text-sm text-muted">Abrindo Mercado Pago…</p>
             ) : null}
 
             {paySession?.mode === 'personalized' && paySession.publicKey ? (

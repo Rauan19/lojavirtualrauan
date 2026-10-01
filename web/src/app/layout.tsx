@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import {
   Barlow,
   DM_Sans,
@@ -54,6 +54,11 @@ const storeElegant = Playfair_Display({
 
 const description =
   'Crie sua loja virtual em minutos: catálogo, pedidos, pagamento por Pix e cartão, frete calculado e domínio próprio. Comece grátis, sem cartão de crédito.';
+
+/** Barra do navegador no celular na cor do fundo (sem bloquear o zoom). */
+export const viewport: Viewport = {
+  themeColor: '#ffffff',
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),

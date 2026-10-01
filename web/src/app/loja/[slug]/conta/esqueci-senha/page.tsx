@@ -61,7 +61,7 @@ export default function EsqueciSenhaPage() {
           />
         </div>
         <button type="submit" className="btn btn-accent w-full" disabled={busy}>
-          {busy ? 'Enviando...' : 'Enviar link'}
+          {busy ? 'Enviando…' : 'Enviar link'}
         </button>
         <p className="text-center text-sm text-muted">
           <Link

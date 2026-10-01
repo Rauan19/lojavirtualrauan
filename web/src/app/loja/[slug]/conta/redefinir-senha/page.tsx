@@ -70,7 +70,7 @@ export default function RedefinirSenhaClientePage() {
                 required
               />
               <button type="submit" className="btn btn-accent w-full" disabled={busy}>
-                {busy ? 'Salvando...' : 'Salvar senha'}
+                {busy ? 'Salvando…' : 'Salvar senha'}
               </button>
             </>
           )}

@@ -54,7 +54,7 @@ export default function ContaEntrarPage() {
     >
       <form onSubmit={onSubmit} className="space-y-4">
         {error ? (
-          <p className="border border-accent/25 bg-accent/5 px-3 py-2.5 text-sm leading-snug text-accent">
+          <p role="alert" className="border border-accent/25 bg-accent/5 px-3 py-2.5 text-sm leading-snug text-accent">
             {error}
           </p>
         ) : null}
@@ -97,7 +97,7 @@ export default function ContaEntrarPage() {
           className="btn btn-accent h-11 w-full text-[15px]"
           disabled={busy}
         >
-          {busy ? 'Entrando...' : 'Entrar'}
+          {busy ? 'Entrando…' : 'Entrar'}
         </button>
 
         <div className="flex items-center gap-3 pt-1">

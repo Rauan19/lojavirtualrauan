@@ -3,14 +3,28 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PrimeirosPassos } from '@/components/PrimeirosPassos';
-import {
-  OrdersBarChart,
-  RevenueAreaChart,
-  StatusBarChart,
-} from '@/components/admin/DashboardCharts';
+import dynamic from 'next/dynamic';
 import { api, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 import { orderStatusLabel } from '@/lib/order-status';
+
+// Gráficos (recharts) só baixam quando o dono abre o painel: a equipe e o
+// primeiro carregamento não pagam por eles
+const carregandoGrafico = () => (
+  <div className="h-48 animate-pulse bg-[#f3f4f6]" aria-hidden />
+);
+const RevenueAreaChart = dynamic(
+  () => import('@/components/admin/DashboardCharts').then((m) => m.RevenueAreaChart),
+  { ssr: false, loading: carregandoGrafico },
+);
+const OrdersBarChart = dynamic(
+  () => import('@/components/admin/DashboardCharts').then((m) => m.OrdersBarChart),
+  { ssr: false, loading: carregandoGrafico },
+);
+const StatusBarChart = dynamic(
+  () => import('@/components/admin/DashboardCharts').then((m) => m.StatusBarChart),
+  { ssr: false, loading: carregandoGrafico },
+);
 
 type Period = 'day' | 'week' | 'month' | 'year';
 

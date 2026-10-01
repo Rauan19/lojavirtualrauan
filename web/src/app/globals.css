@@ -55,6 +55,19 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /* Toque sem o atraso do duplo toque (zoom) e sem o flash azul do Android */
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  label,
+  summary {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+
   a {
     color: inherit;
     text-decoration: none;
@@ -319,6 +332,8 @@
   display: flex;
   flex-direction: column;
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  /* Rolar até o fim do menu não rola a página de trás */
+  overscroll-behavior: contain;
 }
 
 .drawer.open {
@@ -418,6 +433,16 @@
 @media (prefers-reduced-motion: reduce) {
   .lp-hero-devices .lp-stage {
     transform: none;
+  }
+
+  /* Quem pede menos movimento no celular: sem deslizes e animações longas */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

@@ -180,7 +180,7 @@ export default function MeusPedidosPage() {
         <p className="mt-3 text-sm text-[var(--ok)]">{message}</p>
       ) : null}
       {fetching ? (
-        <p className="mt-3 text-xs text-muted">Atualizando...</p>
+        <p className="mt-3 text-xs text-muted">Atualizando…</p>
       ) : null}
 
       <ul className="mt-5 space-y-3">
@@ -225,6 +225,8 @@ export default function MeusPedidosPage() {
                         {thumbs.slice(0, 3).map((t, i) => (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
+                            loading="lazy"
+                            decoding="async"
                             key={t.id}
                             src={t.url!}
                             alt={t.name}
@@ -371,7 +373,7 @@ export default function MeusPedidosPage() {
                           disabled={busyId === order.id}
                           onClick={() => void confirmDelivery(order.id)}
                         >
-                          {busyId === order.id ? '...' : 'Recebi o pedido'}
+                          {busyId === order.id ? '…' : 'Recebi o pedido'}
                         </button>
                       ) : null}
                       {canRequestRefund(order) ? (
@@ -441,6 +443,8 @@ export default function MeusPedidosPage() {
                             {img ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
+                                loading="lazy"
+                                decoding="async"
                                 src={img}
                                 alt=""
                                 className="h-10 w-10 rounded object-cover"

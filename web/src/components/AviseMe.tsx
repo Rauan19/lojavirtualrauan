@@ -47,7 +47,9 @@ export function AviseMe({
 
   if (enviado) {
     return (
-      <p className="mt-4 border border-[#bfe3c8] bg-[#f0fbf3] px-3 py-2.5 text-sm text-[#166534]">
+      <p
+        role="status"
+        className="mt-4 border border-[#bfe3c8] bg-[#f0fbf3] px-3 py-2.5 text-sm text-[#166534]">
         Pronto! Vamos te avisar em <strong>{email.trim()}</strong> assim que
         chegar.
       </p>
@@ -78,10 +80,14 @@ export function AviseMe({
           autoComplete="email"
         />
         <button className="btn btn-accent shrink-0" disabled={ocupado}>
-          {ocupado ? 'Enviando...' : 'Avisar-me'}
+          {ocupado ? 'Enviando…' : 'Avisar-me'}
         </button>
       </div>
-      {erro ? <p className="mt-1.5 text-xs text-accent">{erro}</p> : null}
+      {erro ? (
+        <p role="alert" className="mt-1.5 text-xs text-accent">
+          {erro}
+        </p>
+      ) : null}
     </form>
   );
 }

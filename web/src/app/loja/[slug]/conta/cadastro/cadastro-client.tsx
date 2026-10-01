@@ -79,7 +79,7 @@ export default function ContaCadastroPage() {
     >
       <form onSubmit={onSubmit} className="space-y-2.5">
         {error ? (
-          <p className="border border-accent/20 bg-accent/5 px-3 py-2 text-sm text-accent">
+          <p role="alert" className="border border-accent/20 bg-accent/5 px-3 py-2 text-sm text-accent">
             {error}
           </p>
         ) : null}
@@ -148,7 +148,7 @@ export default function ContaCadastroPage() {
           className="btn btn-accent mt-1 w-full"
           disabled={busy || mismatch}
         >
-          {busy ? 'Criando conta...' : 'Criar conta'}
+          {busy ? 'Criando conta…' : 'Criar conta'}
         </button>
 
         <p className="pt-0.5 text-center text-sm text-muted">

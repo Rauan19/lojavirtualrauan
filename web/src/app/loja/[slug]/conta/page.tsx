@@ -371,7 +371,7 @@ export default function ContaPage() {
               <label className="label">Apelido (opcional)</label>
               <input
                 className="field"
-                placeholder="Casa, Trabalho..."
+                placeholder="Casa, Trabalho…"
                 value={form.label}
                 onChange={(e) => setForm({ ...form, label: e.target.value })}
               />
@@ -474,7 +474,7 @@ export default function ContaPage() {
                 className="btn btn-accent"
                 disabled={busy || cepBusy || Boolean(cepError)}
               >
-                {busy ? 'Salvando...' : 'Salvar'}
+                {busy ? 'Salvando…' : 'Salvar'}
               </button>
               <button
                 type="button"

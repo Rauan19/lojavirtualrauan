@@ -496,6 +496,8 @@ export function StoreShell({
                               {img ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
+                                  loading="lazy"
+                                  decoding="async"
                                   src={img}
                                   alt={prod.name}
                                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
@@ -915,7 +917,7 @@ function SearchSuggestions({
             <div className="h-10 w-8 shrink-0 overflow-hidden bg-[#f3f3f3]">
               {img ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={img} alt="" className="h-full w-full object-cover" />
+                <img loading="lazy" decoding="async" src={img} alt="" className="h-full w-full object-cover" />
               ) : null}
             </div>
             <span className="min-w-0 flex-1 truncate text-sm">{p.name}</span>

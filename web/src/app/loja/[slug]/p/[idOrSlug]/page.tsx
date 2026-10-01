@@ -390,6 +390,7 @@ function ProductInner({
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
+                      fetchPriority="high"
                       src={currentUrl}
                       alt={product.name}
                       className="h-full w-full object-contain"
@@ -454,7 +455,7 @@ function ProductInner({
                       >
                         {src ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={src} alt="" className="h-full w-full object-cover" />
+                          <img loading="lazy" decoding="async" src={src} alt="" className="h-full w-full object-cover" />
                         ) : null}
                       </button>
                     );
@@ -828,7 +829,7 @@ function RelatedCard({
       <div className="store-card-media overflow-hidden bg-[#f3f3f3]">
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={img} alt={product.name} className="h-full w-full object-cover" />
+          <img loading="lazy" decoding="async" src={img} alt={product.name} className="h-full w-full object-cover" />
         ) : null}
       </div>
       <h3 className="mt-1.5 line-clamp-2 text-[12px] leading-snug">{product.name}</h3>

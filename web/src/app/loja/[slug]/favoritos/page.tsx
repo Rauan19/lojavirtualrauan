@@ -144,7 +144,7 @@ function FavoritosInner({ slug }: { slug: string }) {
                     <Link href={href} className="relative store-card-media overflow-hidden bg-[#f3f3f3]">
                       {img ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={img} alt={p.name} className="h-full w-full object-cover" />
+                        <img loading="lazy" decoding="async" src={img} alt={p.name} className="h-full w-full object-cover" />
                       ) : null}
                       <WishlistButton
                         storeSlug={slug}
