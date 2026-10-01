@@ -32,7 +32,7 @@ export const LEGAL = {
  * Versão dos textos. Mudou o texto de forma relevante? Troque a data aqui E em
  * api/src/common/legal.ts — é ela que fica gravada no aceite de cada loja.
  */
-export const TERMS_VERSION = '2026-09-29';
+export const TERMS_VERSION = '2026-09-30';
 export const PRIVACY_VERSION = '2026-09-29';
 
 /** "Vendira Tecnologia Ltda, CNPJ 00.000.000/0001-00" ou só a marca. */

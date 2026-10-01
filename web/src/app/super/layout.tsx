@@ -11,6 +11,7 @@ const nav = [
   { href: '/super', label: 'Dashboard', exact: true },
   { href: '/super/lojas', label: 'Lojas' },
   { href: '/super/planos', label: 'Planos' },
+  { href: '/super/comissoes', label: 'Comissões' },
   { href: '/super/mercadopago', label: 'Mercado Pago' },
 ] as const;
 

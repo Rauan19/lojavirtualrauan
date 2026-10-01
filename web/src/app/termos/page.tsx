@@ -26,8 +26,9 @@ export default function TermosPage() {
             <strong>Em resumo:</strong> a {LEGAL.marca} fornece o sistema para você montar e operar a
             sua loja online. <strong>Quem vende é você</strong>: produtos, preços, entrega, trocas,
             nota fiscal e atendimento ao cliente são responsabilidade da loja. O dinheiro das vendas
-            cai direto na sua conta do Mercado Pago. Você paga uma mensalidade, pode cancelar quando
-            quiser pelo painel e leva os seus dados com você.
+            cai direto na sua conta do Mercado Pago. Você paga a mensalidade do plano e uma taxa por
+            venda (descontada pelo Mercado Pago no pagamento), pode cancelar quando quiser pelo
+            painel e leva os seus dados com você.
           </p>
         </>
       }
@@ -63,6 +64,10 @@ export default function TermosPage() {
         <ul>
           <li>A loja começa em período de teste gratuito, com a duração informada no cadastro. Depois dele, passa a ser cobrada a mensalidade do plano escolhido.</li>
           <li>A cobrança é mensal, por cartão (recorrente) ou Pix, pelo Mercado Pago. Emitimos nota fiscal de serviço das mensalidades.</li>
+          <li>Além da mensalidade (ou no lugar dela, no plano grátis), cada plano tem uma <strong>taxa por venda</strong>, mostrada na tela de planos. Ela é calculada sobre o valor dos produtos menos os descontos — o frete não entra — e é descontada automaticamente pelo Mercado Pago no momento do pagamento, na mesma operação. Não há cobrança separada.</li>
+          <li>Para a taxa ser descontada, a loja conecta a própria conta do Mercado Pago pelo botão &quot;Conectar com Mercado Pago&quot; no painel. Você pode desconectar quando quiser; sem a conexão, a loja não recebe pagamentos online pela {LEGAL.marca}.</li>
+          <li>Se a venda for estornada, a taxa é devolvida na mesma proporção do estorno. Em contestação no cartão (chargeback), vale o que o Mercado Pago decidir sobre a venda. O valor de cada taxa aparece no pedido e o total do mês, em Configurações → Planos. Emitimos nota fiscal de serviço das taxas.</li>
+          <li>A taxa de cada plano pode mudar com o mesmo aviso de 30 dias dos preços; vendas já pagas mantêm a taxa da época.</li>
           <li>Os preços podem ser reajustados com aviso de pelo menos 30 dias por e-mail ou no painel. Se não concordar, você pode cancelar antes do reajuste valer.</li>
           <li>Na primeira contratação, você pode desistir em até 7 dias depois da primeira cobrança e receber de volta o valor pago.</li>
         </ul>

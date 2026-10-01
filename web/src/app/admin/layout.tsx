@@ -7,6 +7,8 @@ import { api, AuthUser } from '@/lib/api';
 import { clearSession, getToken, getUser, saveSession } from '@/lib/auth';
 import { supportWhatsappHref } from '@/lib/contact';
 import { PlanRestrictionModal } from '@/components/PlanRestrictionModal';
+import { TermosAtualizados } from '@/components/TermosAtualizados';
+import { AvisoConexaoMp, useTaxaDaLoja } from '@/components/TaxaVendira';
 
 type BadgeKey = 'orders' | 'refunds';
 type NavItem = { href: string; label: string; badgeKey?: BadgeKey };
@@ -20,6 +22,8 @@ type StoreAccess = {
   daysLeft?: number | null;
   name?: string;
   slug?: string;
+  /** Termos mudaram depois do último aceite da loja */
+  termsPending?: boolean;
 };
 
 const navGroups: NavGroup[] = [
@@ -104,6 +108,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [pendingRefunds, setPendingRefunds] = useState(0);
   const [pendingOrders, setPendingOrders] = useState(0);
   const [storeAccess, setStoreAccess] = useState<StoreAccess | null>(null);
+  const taxa = useTaxaDaLoja();
 
   useEffect(() => {
     // Mesma lógica do /super: nunca confiar só no localStorage. Token
@@ -197,14 +202,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       storeAccess?.planState === 'expired',
   );
   const showRestrictionModal = accessBlocked && !onPlansPage;
+  const showTermsModal =
+    Boolean(storeAccess?.termsPending) && !showRestrictionModal;
 
   useEffect(() => {
     document.body.style.overflow =
-      open || showRestrictionModal ? 'hidden' : '';
+      open || showRestrictionModal || showTermsModal ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
-  }, [open, showRestrictionModal]);
+  }, [open, showRestrictionModal, showTermsModal]);
 
   if (!user) {
     return (
@@ -372,10 +379,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
       <main
         className={`min-w-0 bg-[#f6f7f9] p-3 md:p-4 ${
-          showRestrictionModal ? 'pointer-events-none select-none blur-[2px]' : ''
+          showRestrictionModal || showTermsModal
+            ? 'pointer-events-none select-none blur-[2px]'
+            : ''
         }`}
-        aria-hidden={showRestrictionModal || undefined}
+        aria-hidden={showRestrictionModal || showTermsModal || undefined}
       >
+        <AvisoConexaoMp taxa={taxa} />
         {!accessBlocked &&
         storeAccess?.status === 'TRIAL' &&
         storeAccess.daysLeft != null &&
@@ -403,6 +413,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         storeSlug={storeAccess?.slug || user.store?.slug}
         status={storeAccess?.status}
         planDueAt={storeAccess?.planDueAt}
+      />
+      <TermosAtualizados
+        open={showTermsModal}
+        onAceito={() =>
+          setStoreAccess((s) => (s ? { ...s, termsPending: false } : s))
+        }
       />
     </div>
   );

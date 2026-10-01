@@ -33,6 +33,7 @@ import { StoresService } from './stores.service';
 import { AuthService } from '../auth/auth.service';
 import { Throttle } from '@nestjs/throttler';
 import { ipDaRequisicao } from '../common/utils/request-ip';
+import { AllowPastDue } from '../common/decorators/allow-past-due.decorator';
 
 @Controller('stores')
 export class StoresController {
@@ -99,6 +100,15 @@ export class StoresController {
   @Roles(Role.STORE_ADMIN, Role.SUPER_ADMIN)
   me(@CurrentStore() store: TenantStore) {
     return this.storesService.findOne(store.id);
+  }
+
+  /** Aceite da versão atual dos termos (quando eles mudam). */
+  @Post('me/terms')
+  @UseGuards(JwtAuthGuard, RolesGuard, TenantGuard)
+  @Roles(Role.STORE_ADMIN)
+  @AllowPastDue()
+  acceptTerms(@CurrentStore() store: TenantStore, @Req() req: Request) {
+    return this.storesService.acceptTerms(store.id, ipDaRequisicao(req));
   }
 
   @Get('me/store-type-config')

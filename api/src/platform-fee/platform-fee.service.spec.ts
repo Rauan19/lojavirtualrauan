@@ -4,6 +4,7 @@ import { PlatformFeeService } from './platform-fee.service';
 type Loja = {
   platformFeeEnabled: boolean | null;
   mpRefreshToken: string | null;
+  termsVersion?: string | null;
 };
 
 function montar(opts: {
@@ -11,9 +12,9 @@ function montar(opts: {
   loja?: Loja;
   feeBps?: number;
 }) {
-  const loja: Loja = opts.loja ?? {
-    platformFeeEnabled: null,
-    mpRefreshToken: 'enc.v1.x',
+  const loja: Loja = {
+    termsVersion: '2026-09-30',
+    ...(opts.loja ?? { platformFeeEnabled: null, mpRefreshToken: 'enc.v1.x' }),
   };
   const updateMany = jest.fn().mockResolvedValue({ count: 1 });
   const prisma = {
@@ -109,6 +110,18 @@ describe('PlatformFeeService', () => {
     const { svc } = montar({
       env: { PLATFORM_FEE_OAUTH_DEADLINE: '2999-01-01' },
       loja: { platformFeeEnabled: null, mpRefreshToken: null },
+    });
+    expect(await svc.paraPedido('loja', pedido())).toBeNull();
+  });
+
+  it('sem aceitar os termos com a taxa, não cobra (durante a migração)', async () => {
+    const { svc } = montar({
+      env: { PLATFORM_FEE_OAUTH_DEADLINE: '2999-01-01' },
+      loja: {
+        platformFeeEnabled: null,
+        mpRefreshToken: 'x',
+        termsVersion: '2026-09-29',
+      },
     });
     expect(await svc.paraPedido('loja', pedido())).toBeNull();
   });

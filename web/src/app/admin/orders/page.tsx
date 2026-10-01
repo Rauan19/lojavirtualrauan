@@ -6,6 +6,8 @@ import { useEscapeKey } from '@/lib/modal-guards';
 import { PaginationBar } from '@/components/PaginationBar';
 import { api, thumbUrl, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
+import { BRAND } from '@/lib/brand';
+import { percentual } from '@/components/TaxaVendira';
 import {
   StatusBadge,
   orderStatusLabel,
@@ -38,6 +40,10 @@ type Order = {
   subtotal?: string | number;
   shippingCost?: string | number;
   discount?: string | number;
+  /** Comissão da plataforma: fotografada no pagamento e a retida pelo MP */
+  platformFeeBps?: number | null;
+  platformFeeCents?: number | null;
+  platformFeeChargedCents?: number | null;
   customerName: string;
   customerEmail: string;
   customerPhone?: string | null;
@@ -1205,6 +1211,27 @@ export default function AdminOrdersPage() {
                     <span>Total</span>
                     <span>{money(detail.total)}</span>
                   </div>
+                  {(detail.platformFeeChargedCents ?? detail.platformFeeCents ?? 0) > 0 ? (
+                    <div className="flex justify-between pt-1 text-xs text-muted">
+                      <span>
+                        Taxa {BRAND.name}
+                        {detail.platformFeeBps
+                          ? ` (${percentual(detail.platformFeeBps)}% dos produtos)`
+                          : ''}
+                        {detail.platformFeeChargedCents == null
+                          ? ' · prevista'
+                          : ' · descontada pelo Mercado Pago'}
+                      </span>
+                      <span>
+                        −
+                        {money(
+                          (detail.platformFeeChargedCents ??
+                            detail.platformFeeCents ??
+                            0) / 100,
+                        )}
+                      </span>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="mb-3">

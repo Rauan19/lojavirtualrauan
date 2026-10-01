@@ -6,6 +6,7 @@ import { useConfirm } from '@/components/ConfirmDialog';
 import { api, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 import { BRAND } from '@/lib/brand';
+import { ResumoTaxas } from '@/components/TaxaVendira';
 
 type Plan = {
   id: string;
@@ -721,6 +722,8 @@ export function AdminPlanosInner() {
           {error}
         </p>
       ) : null}
+
+      <ResumoTaxas />
 
       <section className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
         <div className="flex flex-wrap items-end justify-between gap-3 border-b border-black/[0.06] bg-[#fafafa] px-5 py-4">

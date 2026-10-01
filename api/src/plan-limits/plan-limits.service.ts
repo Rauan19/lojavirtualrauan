@@ -115,10 +115,21 @@ export class PlanLimitsService {
     }
   }
 
-  private async findPlan(planName: string | null) {
-    const key = planName?.trim();
-    if (!key) return null;
+  /**
+   * Taxa por venda de várias lojas com uma consulta só ao catálogo (para
+   * relatórios). Mesma regra do forStore: plano não encontrado = sem taxa.
+   */
+  async taxaPorPlano(): Promise<(planName: string | null) => number> {
+    const catalog = await this.carregarCatalogo();
+    return (planName) => this.acharNoCatalogo(catalog, planName)?.feeBps ?? 0;
+  }
 
+  private async findPlan(planName: string | null) {
+    if (!planName?.trim()) return null;
+    return this.acharNoCatalogo(await this.carregarCatalogo(), planName);
+  }
+
+  private async carregarCatalogo() {
     const rows = await this.prisma.platformPlan.findMany({
       select: {
         id: true,
@@ -130,8 +141,15 @@ export class PlanLimitsService {
         customDomainIncluded: true,
       },
     });
-    const catalog = rows.length > 0 ? rows : DEFAULT_PLATFORM_PLANS;
+    return rows.length > 0 ? rows : DEFAULT_PLATFORM_PLANS;
+  }
 
+  private acharNoCatalogo(
+    catalog: Awaited<ReturnType<PlanLimitsService['carregarCatalogo']>>,
+    planName: string | null,
+  ) {
+    const key = planName?.trim();
+    if (!key) return null;
     const id = IDS_ANTIGOS[key.toLowerCase()] ?? key;
     const byId = catalog.find((p) => p.id === id || p.id === key);
     if (byId) return byId;
