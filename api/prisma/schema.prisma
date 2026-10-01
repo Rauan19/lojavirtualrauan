@@ -159,6 +159,8 @@ model Store {
   checkoutMode     String      @default("personalized")
   /// Desconto para quem paga no Pix, em % sobre os produtos (0 = sem desconto)
   pixDiscountPercent Decimal   @default(0) @db.Decimal(5, 2)
+  /// Lembrete automático por e-mail para pedido que expirou sem pagamento
+  abandonedCartEmail Boolean   @default(true)
   freteModo        String      @default("manual")
   freteValorFixo   Decimal?    @db.Decimal(10, 2)
   freteGratisAcima Decimal?    @db.Decimal(10, 2)
@@ -571,6 +573,10 @@ model Order {
   pixDiscount       Decimal       @default(0) @db.Decimal(10, 2)
   /// true quando o pagamento confirmou pelo Pix e o desconto entrou no total
   pixDiscountApplied Boolean      @default(false)
+  /// Quando o pedido expirou sem pagamento (carrinho abandonado)
+  expiredUnpaidAt   DateTime?
+  /// Lembrete de carrinho abandonado já enviado (um só por pedido)
+  recoveryEmailSentAt DateTime?
   platformFeeBps    Int?
   platformFeeBaseCents Int?
   platformFeeCents  Int?
@@ -596,6 +602,8 @@ model Order {
   @@index([storeId, refundStatus])
   @@index([carrierShipmentId])
   @@index([trackingCode])
+
+  @@index([storeId, expiredUnpaidAt])
 }
 
 model Coupon {

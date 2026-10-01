@@ -6,6 +6,7 @@ import { PrintingModule } from '../printing/printing.module';
 import { ShippingModule } from '../shipping/shipping.module';
 import { StorefrontModule } from '../storefront/storefront.module';
 import { OrdersController } from './orders.controller';
+import { CarrinhoAbandonadoService } from './carrinho-abandonado.service';
 import { OrdersService } from './orders.service';
 
 @Module({
@@ -18,7 +19,7 @@ import { OrdersService } from './orders.service';
     forwardRef(() => PaymentsModule),
   ],
   controllers: [OrdersController],
-  providers: [OrdersService],
+  providers: [OrdersService, CarrinhoAbandonadoService],
   exports: [OrdersService],
 })
 export class OrdersModule {}

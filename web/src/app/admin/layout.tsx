@@ -42,6 +42,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: '/admin/orders', label: 'Pedidos', badgeKey: 'orders' },
       { href: '/admin/refunds', label: 'Reembolsos', badgeKey: 'refunds' },
+      { href: '/admin/carrinhos-abandonados', label: 'Carrinhos abandonados' },
       { href: '/admin/customers', label: 'Clientes' },
       { href: '/admin/coupons', label: 'Cupons' },
     ],

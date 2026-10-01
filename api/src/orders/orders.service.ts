@@ -109,6 +109,8 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
         data: {
           status: OrderStatus.CANCELLED,
           paymentStatus: PaymentStatus.CANCELLED,
+          // Vira carrinho abandonado: lembrete por e-mail e lista no painel
+          expiredUnpaidAt: new Date(),
         },
       });
 

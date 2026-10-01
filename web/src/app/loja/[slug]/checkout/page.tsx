@@ -15,6 +15,7 @@ import {
 } from '@/components/OfflinePaymentPanel';
 import { PaymentStatusScreen } from '@/components/PaymentStatusScreen';
 import { api, thumbUrl, money } from '@/lib/api';
+import { cartLineKey, type CartItem } from '@/lib/cart';
 import {
   formatDeliveryDaysHint,
   formatDeliveryEstimate,
@@ -94,6 +95,55 @@ function CheckoutInner({ slug }: { slug: string }) {
 
   const [store, setStore] = useState<Store | null>(null);
   const [error, setError] = useState('');
+  const [recuperado, setRecuperado] = useState('');
+
+  /*
+   * Link do e-mail de carrinho abandonado (?recuperar=...): devolve os itens
+   * do pedido que expirou para a sacola e tira o parâmetro da barra.
+   */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('recuperar');
+    if (!token) return;
+    let cancelado = false;
+    api<{
+      itens: (Omit<CartItem, 'quantity'> & { quantity: number })[];
+      faltando: number;
+    }>(`/storefront/recuperar-carrinho/${encodeURIComponent(token)}`, {
+      storeSlug: slug,
+    })
+      .then((r) => {
+        if (cancelado) return;
+        const naSacola = new Set(cart.items.map((i) => cartLineKey(i)));
+        for (const item of r.itens) {
+          if (!naSacola.has(cartLineKey(item))) cart.add(item);
+        }
+        setRecuperado(
+          r.itens.length === 0
+            ? 'Os produtos daquele pedido não estão mais disponíveis.'
+            : r.faltando > 0
+              ? 'Recuperamos sua sacola. Alguns itens não estão mais disponíveis.'
+              : 'Recuperamos sua sacola. É só finalizar.',
+        );
+      })
+      .catch(() => {
+        if (!cancelado) setRecuperado('Este link não vale mais.');
+      })
+      .finally(() => {
+        params.delete('recuperar');
+        const resto = params.toString();
+        window.history.replaceState(
+          null,
+          '',
+          `${window.location.pathname}${resto ? `?${resto}` : ''}`,
+        );
+      });
+    return () => {
+      cancelado = true;
+    };
+    // Só ao abrir a página pelo link
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
   const [busy, setBusy] = useState(false);
   const [step, setStep] = useState<Step>(1);
   const [brickSession, setBrickSession] = useState<BrickSession | null>(null);
@@ -627,6 +677,11 @@ function CheckoutInner({ slug }: { slug: string }) {
         <div className="card space-y-4 !p-4">
           {error ? <p className="text-sm text-accent">{error}</p> : null}
 
+          {recuperado ? (
+            <p className="mb-3 border border-[#bfe3c8] bg-[#f0fbf3] px-3 py-2 text-sm text-[#166534]">
+              {recuperado}
+            </p>
+          ) : null}
           {cart.items.length === 0 && !brickSession ? (
             <p className="text-sm text-muted">
               Sacola vazia.{' '}

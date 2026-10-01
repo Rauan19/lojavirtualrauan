@@ -170,3 +170,8 @@ export class OrderQueryDto {
   @IsNumber()
   limit?: number;
 }
+
+export class ConfigCarrinhoAbandonadoDto {
+  @IsBoolean()
+  emailAutomatico!: boolean;
+}

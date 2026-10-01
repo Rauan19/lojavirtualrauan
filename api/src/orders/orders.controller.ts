@@ -23,12 +23,14 @@ import { CustomerJwtGuard } from '../storefront/customer-jwt.guard';
 import { GuestOrderScopeGuard } from '../storefront/guest-order-scope.guard';
 import {
   BulkUpdateOrderStatusDto,
+  ConfigCarrinhoAbandonadoDto,
   CreateOrderDto,
   OrderQueryDto,
   RejectRefundDto,
   RequestRefundDto,
   UpdateOrderStatusDto,
 } from './dto/order.dto';
+import { CarrinhoAbandonadoService } from './carrinho-abandonado.service';
 import { OrdersService } from './orders.service';
 
 @Controller()
@@ -37,7 +39,35 @@ export class OrdersController {
     private readonly ordersService: OrdersService,
     private readonly paymentsService: PaymentsService,
     private readonly labelService: LabelService,
+    private readonly carrinhos: CarrinhoAbandonadoService,
   ) {}
+
+  /** Link do e-mail de carrinho abandonado: devolve os itens para a sacola. */
+  @Get('storefront/recuperar-carrinho/:token')
+  @UseGuards(TenantGuard)
+  recuperarCarrinho(
+    @CurrentStore() store: TenantStore,
+    @Param('token') token: string,
+  ) {
+    return this.carrinhos.itensParaRecuperar(store.id, token);
+  }
+
+  @Get('admin/carrinhos-abandonados')
+  @UseGuards(JwtAuthGuard, RolesGuard, TenantGuard)
+  @Roles(Role.STORE_ADMIN, Role.SUPER_ADMIN)
+  carrinhosAbandonados(@CurrentStore() store: TenantStore) {
+    return this.carrinhos.listar(store.id);
+  }
+
+  @Patch('admin/carrinhos-abandonados/config')
+  @UseGuards(JwtAuthGuard, RolesGuard, TenantGuard)
+  @Roles(Role.STORE_ADMIN, Role.SUPER_ADMIN)
+  configurarCarrinhos(
+    @CurrentStore() store: TenantStore,
+    @Body() dto: ConfigCarrinhoAbandonadoDto,
+  ) {
+    return this.carrinhos.configurar(store.id, dto.emailAutomatico);
+  }
 
   /** Checkout exige conta — sem login, nem chega aqui (TenantGuard + CustomerJwtGuard). */
   @Post('checkout/orders')
