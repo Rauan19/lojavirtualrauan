@@ -7,6 +7,7 @@ import { AuthShell } from '@/components/AuthShell';
 import { api, AuthUser } from '@/lib/api';
 import { getToken, getUser, saveSession } from '@/lib/auth';
 import { clearAllCustomerSessions } from '@/lib/customer-auth';
+import { AppAutenticador } from '@/components/AppAutenticador';
 
 type LoginResposta =
   | { accessToken: string; user: AuthUser; ativarDoisFatores?: true }
@@ -169,6 +170,7 @@ export default function LoginPage() {
               : 'Abra o app autenticador no celular e digite o código de 6 dígitos da Vendira.'}
           </p>
           <div className="mt-7 space-y-4">
+            {!usarRecuperacao ? <AppAutenticador compacto /> : null}
             <div>
               <label className="label" htmlFor="codigo-2fa">
                 {usarRecuperacao ? 'Código de recuperação' : 'Código do app'}

@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { api, AuthUser } from '@/lib/api';
 import { getToken, getUser, saveSession } from '@/lib/auth';
+import { AppAutenticador } from '@/components/AppAutenticador';
 
 type Status = {
   ativo: boolean;
@@ -184,6 +185,7 @@ export function DoisFatores({ onAtivado }: { onAtivado?: () => void }) {
   if (etapa.tipo === 'qr') {
     return (
       <form onSubmit={confirmar} className="space-y-5">
+        <AppAutenticador />
         <ol className="list-decimal space-y-1.5 pl-5 text-sm text-muted">
           <li>
             Instale um app autenticador no celular:{' '}
@@ -424,6 +426,7 @@ export function DoisFatores({ onAtivado }: { onAtivado?: () => void }) {
               ? 'Obrigatória para quem administra a plataforma. Ative para liberar o painel.'
               : 'Opcional. Com ela ligada, quem descobrir a sua senha ainda não entra no painel: é preciso também o código que aparece no seu celular.'}
           </p>
+          <AppAutenticador />
           {mensagemErro}
           <button
             type="button"
