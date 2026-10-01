@@ -15,6 +15,10 @@ type JwtPayload = {
   tv?: number;
   /** Token de convidado: restrito a este pedido. */
   oid?: string;
+  /** 'mfa' = passe da 2ª etapa do login; nunca vale como sessão. */
+  typ?: string;
+  /** 1 = sessão só para ativar a verificação em duas etapas. */
+  ms?: number;
 };
 
 @Injectable()
@@ -38,6 +42,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * continuava valendo por até 7 dias.
    */
   async validate(payload: JwtPayload): Promise<AuthUser> {
+    // O passe entre a senha e o código não é login: sem isso, quem soubesse
+    // só a senha entraria usando o passe direto
+    if (payload.typ === 'mfa') {
+      throw new UnauthorizedException('Sessão expirada. Entre de novo.');
+    }
     const tokenVersion = payload.tv ?? 0;
 
     if (payload.role === Role.CUSTOMER) {
@@ -82,6 +91,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       email: user.email,
       role: user.role,
       storeId: user.storeId,
+      ...(payload.ms === 1 ? { mfaSetupOnly: true } : {}),
     };
   }
 }

@@ -54,6 +54,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: '/admin/settings', label: 'Loja e frete' },
       { href: '/admin/settings/planos', label: 'Planos' },
+      { href: '/admin/settings/seguranca', label: 'Segurança' },
     ],
   },
   {

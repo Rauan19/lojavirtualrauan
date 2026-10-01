@@ -13,6 +13,7 @@ const nav = [
   { href: '/super/planos', label: 'Planos' },
   { href: '/super/comissoes', label: 'Comissões' },
   { href: '/super/mercadopago', label: 'Mercado Pago' },
+  { href: '/super/seguranca', label: 'Segurança' },
 ] as const;
 
 function isActive(pathname: string, href: string, exact?: boolean) {
@@ -25,6 +26,8 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname() || '';
   const [user, setUser] = useState<AuthUser | null>(null);
   const [open, setOpen] = useState(false);
+  /** Super Admin sem verificação em duas etapas: só a tela de ativação abre. */
+  const [precisaAtivar, setPrecisaAtivar] = useState(false);
 
   useEffect(() => {
     // localStorage não é fonte de verdade: token expirado, sessão revogada
@@ -39,13 +42,17 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
         return;
       }
       try {
-        const fresh = await api<AuthUser>('/auth/me', { token });
+        const fresh = await api<AuthUser & { ativarDoisFatores?: boolean }>(
+          '/auth/me',
+          { token },
+        );
         if (cancelled) return;
         if (fresh.role !== 'SUPER_ADMIN') {
           router.replace('/login');
           return;
         }
         saveSession(token, fresh);
+        setPrecisaAtivar(Boolean(fresh.ativarDoisFatores));
         setUser(fresh);
       } catch {
         if (cancelled) return;
@@ -62,6 +69,12 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (precisaAtivar && pathname !== '/super/seguranca') {
+      router.replace('/super/seguranca');
+    }
+  }, [precisaAtivar, pathname, router]);
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
@@ -90,7 +103,10 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
         <p className="px-4 pb-1 pt-2 text-[10px] font-bold uppercase tracking-wider text-muted">
           Menu
         </p>
-        {nav.map((item) => {
+        {(precisaAtivar
+          ? nav.filter((i) => i.href === '/super/seguranca')
+          : nav
+        ).map((item) => {
           const active = isActive(pathname, item.href, 'exact' in item);
           return (
             <Link

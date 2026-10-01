@@ -8,6 +8,10 @@ import { api, AuthUser } from '@/lib/api';
 import { getToken, getUser, saveSession } from '@/lib/auth';
 import { clearAllCustomerSessions } from '@/lib/customer-auth';
 
+type LoginResposta =
+  | { accessToken: string; user: AuthUser; ativarDoisFatores?: true }
+  | { segundaEtapa: true; desafio: string };
+
 function redirectForUser(user: AuthUser): string {
   if (user.role === 'SUPER_ADMIN') return '/super';
   if (user.role === 'STORE_ADMIN' && user.store?.slug) return '/admin';
@@ -46,6 +50,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  /** Passe da senha quando a conta tem verificação em duas etapas. */
+  const [desafio, setDesafio] = useState<string | null>(null);
+  const [codigo, setCodigo] = useState('');
+  const [usarRecuperacao, setUsarRecuperacao] = useState(false);
 
   useEffect(() => {
     const token = getToken();
@@ -65,21 +73,61 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await api<{ accessToken: string; user: AuthUser }>(
-        '/auth/login',
-        { method: 'POST', body: { email, password } },
-      );
-      clearAllCustomerSessions();
-      saveSession(data.accessToken, data.user);
-      const dest = redirectForUser(data.user);
-      if (!dest) {
-        throw new Error(
-          'Este login é só para admin da loja ou da plataforma.',
-        );
+      const data = await api<LoginResposta>('/auth/login', {
+        method: 'POST',
+        body: { email, password },
+      });
+      if ('segundaEtapa' in data) {
+        setDesafio(data.desafio);
+        setCodigo('');
+        return;
       }
-      router.replace(dest);
+      entrar(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Falha no login');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function entrar(data: {
+    accessToken: string;
+    user: AuthUser;
+    ativarDoisFatores?: true;
+  }) {
+    const dest = redirectForUser(data.user);
+    if (!dest) {
+      throw new Error('Este login é só para admin da loja ou da plataforma.');
+    }
+    clearAllCustomerSessions();
+    saveSession(data.accessToken, data.user);
+    // Super Admin sem verificação em duas etapas: primeiro ativa
+    router.replace(data.ativarDoisFatores ? '/super/seguranca' : dest);
+  }
+
+  async function onSubmitCodigo(e: FormEvent) {
+    e.preventDefault();
+    if (!desafio) return;
+    setLoading(true);
+    setError('');
+    try {
+      const data = await api<{
+        accessToken: string;
+        user: AuthUser;
+        codigosRecuperacaoRestantes?: number;
+      }>('/auth/2fa/login', {
+        method: 'POST',
+        body: { desafio, codigo },
+      });
+      entrar(data);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Código incorreto';
+      // Passe vencido: volta para a senha
+      if (/tempo para digitar|Entre com a senha/i.test(msg)) {
+        setDesafio(null);
+        setPassword('');
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -110,6 +158,85 @@ export default function LoginPage() {
         </>
       }
     >
+      {desafio ? (
+        <form onSubmit={onSubmitCodigo}>
+          <h2 className="font-[family-name:var(--font-brand)] text-[1.7rem] font-800 leading-tight tracking-tight text-[#171a1f]">
+            Verificação em duas etapas
+          </h2>
+          <p className="mt-1.5 text-[15px] text-[#4a5560]">
+            {usarRecuperacao
+              ? 'Digite um dos códigos de recuperação que você guardou ao ativar.'
+              : 'Abra o app autenticador no celular e digite o código de 6 dígitos da Vendira.'}
+          </p>
+          <div className="mt-7 space-y-4">
+            <div>
+              <label className="label" htmlFor="codigo-2fa">
+                {usarRecuperacao ? 'Código de recuperação' : 'Código do app'}
+              </label>
+              <input
+                id="codigo-2fa"
+                className="field h-12 text-center font-mono text-xl tracking-[0.3em]"
+                value={codigo}
+                onChange={(e) =>
+                  setCodigo(
+                    usarRecuperacao
+                      ? e.target.value.toUpperCase().slice(0, 11)
+                      : e.target.value.replace(/\D/g, '').slice(0, 6),
+                  )
+                }
+                inputMode={usarRecuperacao ? 'text' : 'numeric'}
+                autoComplete="one-time-code"
+                placeholder={usarRecuperacao ? 'XXXXX-XXXXX' : '000000'}
+                autoFocus
+                required
+              />
+            </div>
+
+            {error ? (
+              <p className="border border-accent/25 bg-accent/5 px-3 py-2 text-[13px] leading-snug text-accent">
+                {error}
+              </p>
+            ) : null}
+
+            <button
+              className="btn btn-accent btn-block py-3.5 text-[15px]"
+              disabled={
+                loading ||
+                (usarRecuperacao ? codigo.length < 10 : codigo.length !== 6)
+              }
+            >
+              {loading ? 'Conferindo...' : 'Confirmar'}
+            </button>
+
+            <div className="flex flex-wrap justify-between gap-2 text-[13px]">
+              <button
+                type="button"
+                className="font-medium text-[#4a5560] underline-offset-2 hover:text-accent hover:underline"
+                onClick={() => {
+                  setUsarRecuperacao((v) => !v);
+                  setCodigo('');
+                  setError('');
+                }}
+              >
+                {usarRecuperacao
+                  ? 'Usar o código do app'
+                  : 'Perdi o celular: usar código de recuperação'}
+              </button>
+              <button
+                type="button"
+                className="font-medium text-[#4a5560] underline-offset-2 hover:text-accent hover:underline"
+                onClick={() => {
+                  setDesafio(null);
+                  setCodigo('');
+                  setError('');
+                }}
+              >
+                Voltar
+              </button>
+            </div>
+          </div>
+        </form>
+      ) : (
       <form onSubmit={onSubmit}>
         <h2 className="font-[family-name:var(--font-brand)] text-[1.7rem] font-800 leading-tight tracking-tight text-[#171a1f]">
           Entrar
@@ -176,6 +303,7 @@ export default function LoginPage() {
           </button>
         </div>
       </form>
+      )}
     </AuthShell>
   );
 }

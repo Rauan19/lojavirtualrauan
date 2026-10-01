@@ -12,6 +12,11 @@ export type AuthUser = {
    * de compras dessa pessoa.
    */
   orderId?: string;
+  /**
+   * Super Admin que ainda não ativou a verificação em duas etapas: a sessão
+   * só abre as telas de ativação (ver PermitirSemSegundoFator).
+   */
+  mfaSetupOnly?: boolean;
 };
 
 export const CurrentUser = createParamDecorator(

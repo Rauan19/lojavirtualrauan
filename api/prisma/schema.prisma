@@ -254,6 +254,20 @@ model User {
   active       Boolean  @default(true)
   /** Invalida tokens JWT antigos ao trocar senha / desativar conta. */
   tokenVersion Int      @default(0)
+
+  /// Verificação em duas etapas (TOTP). Chaves cifradas como os tokens das lojas.
+  totpSecret          String?
+  /// Chave gerada na ativação, até o primeiro código confirmar
+  totpPendingSecret   String?
+  totpEnabledAt       DateTime?
+  /// Último passo de 30s aceito: o mesmo código não vale duas vezes
+  totpLastStep        Int?
+  /// Hash SHA-256 dos códigos de recuperação ainda não usados
+  totpRecoveryHashes  String[] @default([])
+  /// Erros seguidos no código; ao chegar no limite, bloqueia por um tempo
+  totpFailures        Int      @default(0)
+  totpLockedUntil     DateTime?
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

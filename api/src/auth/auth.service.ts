@@ -7,7 +7,9 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { createHash, randomBytes } from 'crypto';
+import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { DoisFatoresService } from './dois-fatores.service';
 import { MailService } from '../mail/mail.service';
 import { comparePasswordConstantTime } from '../common/utils/password-timing';
 import { buildPasswordResetEmail } from '../mail/password-reset-email';
@@ -24,6 +26,7 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
     private readonly mail: MailService,
+    private readonly doisFatores: DoisFatoresService,
   ) {}
 
   async login(dto: LoginDto) {
@@ -47,20 +50,96 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
+    // Senha certa com 2FA ativo: ainda não é login, só um passe de 5 minutos
+    // que serve apenas para mandar o código do app
+    if (user.totpEnabledAt) {
+      return {
+        segundaEtapa: true as const,
+        desafio: await this.jwt.signAsync(
+          { sub: user.id, tv: user.tokenVersion, typ: 'mfa' },
+          {
+            secret: this.config.getOrThrow<string>('JWT_SECRET'),
+            expiresIn: '5m',
+          },
+        ),
+      };
+    }
+
+    // Conta obrigada a ter 2FA e ainda sem: sessão curta que só abre a ativação
+    const soAtivacao = this.doisFatores.exigido(user.role);
+    return this.sessao(user, soAtivacao);
+  }
+
+  /** Segunda etapa do login: o passe da senha + o código do app (ou de recuperação). */
+  async loginSegundaEtapa(desafio: string, codigo: string) {
+    let payload: { sub?: string; tv?: number; typ?: string };
+    try {
+      payload = await this.jwt.verifyAsync(desafio, {
+        secret: this.config.getOrThrow<string>('JWT_SECRET'),
+      });
+    } catch {
+      throw new UnauthorizedException(
+        'O tempo para digitar o código acabou. Entre com a senha de novo.',
+      );
+    }
+    if (payload.typ !== 'mfa' || !payload.sub) {
+      throw new UnauthorizedException('Entre com a senha de novo.');
+    }
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      include: { store: true },
+    });
+    if (!user || !user.active || user.tokenVersion !== (payload.tv ?? 0)) {
+      throw new UnauthorizedException('Entre com a senha de novo.');
+    }
+    const r = await this.doisFatores.conferirNoLogin(user.id, codigo);
+    return {
+      ...(await this.sessao(user, false)),
+      ...(r.usouRecuperacao
+        ? { codigosRecuperacaoRestantes: r.restantes }
+        : {}),
+    };
+  }
+
+  /** Sessão nova (depois de ativar o 2FA a versão do token muda). */
+  async sessaoDoUsuario(userId: string) {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      include: { store: true },
+    });
+    return this.sessao(user, false);
+  }
+
+  private async sessao(
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      role: Role;
+      storeId: string | null;
+      tokenVersion: number;
+      store: { id: string; name: string; slug: string; status: string } | null;
+    },
+    soAtivacao: boolean,
+  ) {
     const payload = {
       sub: user.id,
       email: user.email,
       role: user.role,
       storeId: user.storeId,
       tv: user.tokenVersion,
+      ...(soAtivacao ? { ms: 1 } : {}),
     };
 
     return {
       accessToken: await this.jwt.signAsync(payload, {
         secret: this.config.getOrThrow<string>('JWT_SECRET'),
-        expiresIn: (this.config.get<string>('JWT_EXPIRES_IN') ||
-          '7d') as `${number}d`,
+        expiresIn: soAtivacao
+          ? '30m'
+          : ((this.config.get<string>('JWT_EXPIRES_IN') ||
+              '7d') as `${number}d`),
       }),
+      ...(soAtivacao ? { ativarDoisFatores: true as const } : {}),
       user: {
         id: user.id,
         email: user.email,
@@ -184,7 +263,7 @@ export class AuthService {
     return { ok: true, message: 'Senha atualizada. Você já pode entrar.' };
   }
 
-  async me(userId: string) {
+  async me(userId: string, soAtivacao = false) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { store: true },
@@ -195,6 +274,11 @@ export class AuthService {
     }
 
     return {
+      doisFatores: {
+        ativo: Boolean(user.totpEnabledAt),
+        obrigatorio: this.doisFatores.exigido(user.role),
+      },
+      ...(soAtivacao ? { ativarDoisFatores: true } : {}),
       id: user.id,
       email: user.email,
       name: user.name,
