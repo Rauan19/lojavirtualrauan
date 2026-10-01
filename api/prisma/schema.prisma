@@ -912,3 +912,21 @@ model StockAlert {
   @@unique([productId, variantId, email])
   @@index([notifiedAt, storeId])
 }
+
+/// Celular/computador do lojista inscrito para receber "Você vendeu!" (Web Push)
+model PushSubscription {
+  id         String   @id @default(cuid())
+  userId     String
+  storeId    String
+  /// URL do serviço de push do navegador (única por aparelho/navegador)
+  endpoint   String   @unique
+  p256dh     String
+  auth       String
+  /// "Chrome no Android", para o lojista reconhecer o aparelho
+  device     String?
+  createdAt  DateTime @default(now())
+  lastSentAt DateTime?
+
+  @@index([storeId])
+  @@index([userId])
+}

@@ -27,6 +27,8 @@ const REGRAS: [RegExp, Acesso, string?][] = [
   [/^\/admin\/dashboard(\/|$)/, 'livre'],
   [/^\/stores\/me$/, 'livre', 'GET'],
   [/^\/stores\/me\/store-type-config$/, 'livre', 'GET'],
+  // Cada um liga os avisos no próprio celular (o envio filtra quem vê pedidos)
+  [/^\/admin\/avisos(\/|$)/, 'livre'],
 
   // Por área
   [/^\/admin\/(orders|refunds)(\/|$)/, ['pedidos']],

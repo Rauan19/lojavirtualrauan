@@ -10,6 +10,7 @@ import { FilaModule } from './fila/fila.module';
 import { CatalogoModule } from './catalogo/catalogo.module';
 import { AviseMeModule } from './avise-me/avise-me.module';
 import { EquipeModule } from './equipe/equipe.module';
+import { AvisosModule } from './avisos/avisos.module';
 import { SecretsModule } from './common/secrets/secrets.module';
 import { AuthModule } from './auth/auth.module';
 import { BillingModule } from './billing/billing.module';
@@ -53,6 +54,7 @@ import { AccessLogInterceptor } from './common/interceptors/access-log.intercept
     CatalogoModule,
     AviseMeModule,
     EquipeModule,
+    AvisosModule,
     OrderAccessModule,
     PrismaModule,
     MailModule,

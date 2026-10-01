@@ -91,6 +91,7 @@ const navGroups: NavGroup[] = [
       },
       { href: '/admin/settings/planos', label: 'Planos', area: 'dono' },
       { href: '/admin/equipe', label: 'Equipe', area: 'dono' },
+      { href: '/admin/avisos', label: 'Avisos no celular' },
       { href: '/admin/settings/seguranca', label: 'Segurança' },
     ],
   },
@@ -167,6 +168,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [pendingOrders, setPendingOrders] = useState(0);
   const [storeAccess, setStoreAccess] = useState<StoreAccess | null>(null);
   const taxa = useTaxaDaLoja();
+
+  // Painel instalável na tela inicial (só aqui: a vitrine é da loja, não da Vendira)
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = '/painel.webmanifest';
+    document.head.appendChild(link);
+    return () => link.remove();
+  }, []);
 
   useEffect(() => {
     // Mesma lógica do /super: nunca confiar só no localStorage. Token

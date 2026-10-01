@@ -10,6 +10,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { emTrava, TravasService } from '../fila/travas.service';
+import { AvisosService } from '../avisos/avisos.service';
 import { OrderStatus, PaymentStatus, Prisma } from '@prisma/client';
 import {
   REFUND_STATUS,
@@ -77,6 +78,7 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
     private readonly labelService: LabelService,
     private readonly planLimits: PlanLimitsService,
     @Optional() private readonly travas?: TravasService,
+    @Optional() private readonly avisos?: AvisosService,
   ) {}
 
   onModuleInit() {
@@ -883,6 +885,7 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
 
     if (firstApproval) {
       void this.orderMail.notifyOrder(orderId, 'paid');
+      void this.avisos?.vendaAprovada(storeId, orderId);
       void this.tryAutoNetworkPrint(storeId, orderId);
       void this.tryAutoIssueInvoice(storeId, orderId);
       void this.labelService.tryAutoGenerate(storeId, orderId);

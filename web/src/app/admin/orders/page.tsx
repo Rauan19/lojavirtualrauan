@@ -637,6 +637,13 @@ export default function AdminOrdersPage() {
     }
   }
 
+  // Toque no aviso "Você vendeu!" abre direto o pedido (?pedido=<id>)
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('pedido');
+    if (id) void openDetail(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (!printer.printerAutoPrint) return;
     const timer = setInterval(() => {

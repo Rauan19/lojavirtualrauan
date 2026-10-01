@@ -10,6 +10,7 @@ describe('áreas do painel por rota', () => {
     expect(acessoDaRota('GET', '/api/auth/me')).toBe('livre');
     expect(acessoDaRota('GET', '/api/admin/dashboard/summary')).toBe('livre');
     expect(acessoDaRota('GET', '/api/stores/me')).toBe('livre');
+    expect(acessoDaRota('POST', '/api/admin/avisos/inscrever')).toBe('livre');
   });
 
   it('alterar a loja não é livre (só ler)', () => {
