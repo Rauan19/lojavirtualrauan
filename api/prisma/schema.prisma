@@ -239,6 +239,7 @@ model Store {
   invoices          Invoice[]
   platformInvoices  PlatformInvoice[]
   platformFeeEntries PlatformFeeEntry[]
+  stockAlerts        StockAlert[]
   /**
    * Comissão por venda nesta loja: null segue o geral (PLATFORM_FEE_ENABLED),
    * true/false força. Serve para ligar aos poucos e desligar na hora.
@@ -412,6 +413,7 @@ model Product {
   promotions Promotion[]
   reviews    Review[]
   favorites  Favorite[]
+  stockAlerts StockAlert[]
 
   @@unique([storeId, slug])
   @@index([storeId])
@@ -883,4 +885,22 @@ model PlatformPlanChange {
   createdAt   DateTime @default(now())
 
   @@index([planId, createdAt])
+}
+
+/// "Avise-me quando chegar": quem quer saber quando o produto volta ao estoque
+model StockAlert {
+  id         String    @id @default(cuid())
+  storeId    String
+  productId  String
+  /// "" = produto sem variação (vazio, não nulo, para o índice único valer)
+  variantId  String    @default("")
+  email      String
+  createdAt  DateTime  @default(now())
+  notifiedAt DateTime?
+
+  store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, variantId, email])
+  @@index([notifiedAt, storeId])
 }

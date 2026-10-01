@@ -16,6 +16,7 @@ import { api, mediaUrl, money } from '@/lib/api';
 import { addToCart } from '@/lib/cart';
 import { sellerWhatsappHref } from '@/lib/contact';
 import { pctTexto, precoNoPix } from '@/lib/pix';
+import { AviseMe } from '@/components/AviseMe';
 import { getRecentlyViewed, pushRecentlyViewed, type RecentProduct } from '@/lib/recently-viewed';
 
 type Store = {
@@ -272,6 +273,10 @@ function ProductInner({
   const canAdd = hasVariants
     ? Boolean(selectedVariant && selectedVariant.stock > 0)
     : product.stock > 0;
+  /** Produto (ou a opção escolhida) sem estoque: mostra o "Avise-me" */
+  const esgotado = hasVariants
+    ? Boolean(selectedVariant && selectedVariant.stock <= 0)
+    : product.stock <= 0;
 
   const sellerWa = store.sellerPhone
     ? sellerWhatsappHref(
@@ -619,6 +624,15 @@ function ProductInner({
                   Comprar agora
                 </button>
               </div>
+
+              {esgotado ? (
+                <AviseMe
+                  key={selectedVariant?.id || 'produto'}
+                  storeSlug={storeSlug}
+                  productId={product.id}
+                  variantId={selectedVariant?.id}
+                />
+              ) : null}
 
               <div className="mt-2 flex flex-wrap gap-2">
                 {sellerWa ? (
