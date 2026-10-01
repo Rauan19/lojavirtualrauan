@@ -20,7 +20,13 @@ import { ipDaRequisicao } from '../utils/request-ip';
  * da aplicação" no sentido da lei e só inflariam a tabela.
  */
 
-const IGNORAR = [/^\/api\/health/, /^\/uploads\//, /^\/api\/public\/plans/];
+const IGNORAR = [
+  /^\/api\/health/,
+  /^\/uploads\//,
+  /^\/api\/public\/plans/,
+  // robôs do Google e do Meta lendo o catálogo de produtos
+  /^\/api\/public\/catalogo\//,
+];
 
 type ReqComUsuario = Request & {
   /** Preenchido pelos guards de JWT — ver AuthUser. */

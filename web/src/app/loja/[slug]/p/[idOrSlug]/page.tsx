@@ -118,7 +118,15 @@ function ProductInner({
         setStore(s);
         setProduct(p);
         setIndex(0);
-        setSelected({});
+        // Link do Google/Instagram aponta para uma variação (?variante=id):
+        // a página abre com ela escolhida, no preço que o anúncio mostrou
+        const varianteId = new URLSearchParams(window.location.search).get(
+          'variante',
+        );
+        const doLink = varianteId
+          ? (p.variants || []).find((v) => v.id === varianteId)
+          : undefined;
+        setSelected(doLink ? { ...(doLink.options || {}) } : {});
         setVariantHint('');
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Produto não encontrado'));

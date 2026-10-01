@@ -7,6 +7,7 @@ import { join } from 'path';
 import { OrderAccessModule } from './common/order-access/order-access.module';
 import { PlanLimitsModule } from './plan-limits/plan-limits.module';
 import { FilaModule } from './fila/fila.module';
+import { CatalogoModule } from './catalogo/catalogo.module';
 import { SecretsModule } from './common/secrets/secrets.module';
 import { AuthModule } from './auth/auth.module';
 import { BillingModule } from './billing/billing.module';
@@ -47,6 +48,7 @@ import { AccessLogInterceptor } from './common/interceptors/access-log.intercept
     SecretsModule,
     PlanLimitsModule,
     FilaModule,
+    CatalogoModule,
     OrderAccessModule,
     PrismaModule,
     MailModule,

@@ -48,6 +48,10 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    title: 'Marketing',
+    items: [{ href: '/admin/catalogo', label: 'Google e Instagram' }],
+  },
+  {
     title: 'Configuração',
     items: [
       { href: '/admin/settings', label: 'Loja e frete' },
