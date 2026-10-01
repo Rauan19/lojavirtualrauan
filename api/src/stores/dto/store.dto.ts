@@ -10,6 +10,8 @@ import {
   IsString,
   Length,
   Matches,
+  Max,
+  Min,
   MinLength,
   ValidateIf,
 } from 'class-validator';
@@ -325,6 +327,13 @@ export class UpdateMercadoPagoDto {
   @IsOptional()
   @IsString()
   checkoutMode?: string;
+
+  /** Desconto para pagamento no Pix, em % (0 = sem desconto) */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(50)
+  pixDiscountPercent?: number;
 }
 
 export class UpdateShippingConfigDto {

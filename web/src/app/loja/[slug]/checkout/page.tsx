@@ -52,6 +52,9 @@ type Step = 1 | 2 | 3 | 4;
 type BrickSession = {
   orderId: string;
   amount: number;
+  /** Preço no Pix com o desconto da loja (vem do servidor) */
+  pixAmount?: number;
+  pixDiscountPercent?: number;
   publicKey: string;
   payerEmail?: string;
   payerName?: string;
@@ -94,6 +97,21 @@ function CheckoutInner({ slug }: { slug: string }) {
   const [busy, setBusy] = useState(false);
   const [step, setStep] = useState<Step>(1);
   const [brickSession, setBrickSession] = useState<BrickSession | null>(null);
+  /** Com desconto no Pix, o cliente escolhe o meio antes do formulário */
+  const [metodo, setMetodo] = useState<'pix' | 'cartao' | null>(null);
+  useEffect(() => {
+    setMetodo(null);
+  }, [brickSession?.orderId]);
+  const temDescontoPix = Boolean(
+    brickSession &&
+      (brickSession.pixDiscountPercent ?? 0) > 0 &&
+      (brickSession.pixAmount ?? brickSession.amount) < brickSession.amount,
+  );
+  const valorEscolhido = brickSession
+    ? metodo === 'pix' && temDescontoPix
+      ? (brickSession.pixAmount ?? brickSession.amount)
+      : brickSession.amount
+    : 0;
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
   const [awaitingConfirm, setAwaitingConfirm] = useState(false);
   const [watchingPayment, setWatchingPayment] = useState(false);
@@ -447,6 +465,8 @@ function CheckoutInner({ slug }: { slug: string }) {
         sandboxInitPoint?: string;
         publicKey?: string | null;
         amount?: number;
+        pixAmount?: number;
+        pixDiscountPercent?: number;
         orderId?: string;
         payerEmail?: string;
         payerName?: string;
@@ -484,6 +504,9 @@ function CheckoutInner({ slug }: { slug: string }) {
         setBrickSession({
           orderId,
           amount: Number(pay.amount ?? total),
+          pixAmount:
+            pay.pixAmount != null ? Number(pay.pixAmount) : undefined,
+          pixDiscountPercent: Number(pay.pixDiscountPercent ?? 0),
           publicKey: pay.publicKey,
           payerEmail: pay.payerEmail || customer.email,
           payerName: pay.payerName || customer.name,
@@ -538,7 +561,7 @@ function CheckoutInner({ slug }: { slug: string }) {
           mode="success"
           storeSlug={slug}
           orderId={brickSession.orderId}
-          total={brickSession.amount}
+          total={valorEscolhido}
           storeName={store.name}
         />
       </main>
@@ -886,26 +909,89 @@ function CheckoutInner({ slug }: { slug: string }) {
                       mode="waiting"
                       storeSlug={slug}
                       orderId={brickSession.orderId}
-                      total={brickSession.amount}
+                      total={valorEscolhido}
                     />
                   ) : (
                   <div className="space-y-3">
                     <h1 className="text-lg font-bold">Pagamento</h1>
-                    <p className="text-xs text-muted">
-                      Total {money(brickSession.amount)} · cartão ou Pix
-                    </p>
+                    {temDescontoPix && !metodo && !offlinePay ? (
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted">
+                          Como você quer pagar?
+                        </p>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <button
+                            type="button"
+                            onClick={() => setMetodo('pix')}
+                            className="border-2 border-[#1b7f45] bg-[#f0faf4] p-4 text-left transition hover:bg-[#e3f4ea]"
+                          >
+                            <span className="text-[11px] font-bold uppercase tracking-wide text-[#1b7f45]">
+                              Pix ·{' '}
+                              {String(brickSession.pixDiscountPercent).replace('.', ',')}% OFF
+                            </span>
+                            <strong className="mt-1 block text-xl text-ink">
+                              {money(brickSession.pixAmount ?? brickSession.amount)}
+                            </strong>
+                            <span className="text-xs text-muted">
+                              Aprovação na hora · economize{' '}
+                              {money(
+                                brickSession.amount -
+                                  (brickSession.pixAmount ?? brickSession.amount),
+                              )}
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMetodo('cartao')}
+                            className="border-2 border-line bg-white p-4 text-left transition hover:border-ink"
+                          >
+                            <span className="text-[11px] font-bold uppercase tracking-wide text-muted">
+                              Cartão
+                            </span>
+                            <strong className="mt-1 block text-xl text-ink">
+                              {money(brickSession.amount)}
+                            </strong>
+                            <span className="text-xs text-muted">
+                              Crédito em até 12x ou débito
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="flex flex-wrap items-center gap-2 text-xs text-muted">
+                        <span>
+                          Total {money(valorEscolhido)} ·{' '}
+                          {metodo === 'pix'
+                            ? 'Pix'
+                            : metodo === 'cartao'
+                              ? 'cartão'
+                              : 'cartão ou Pix'}
+                        </span>
+                        {temDescontoPix && metodo && !offlinePay ? (
+                          <button
+                            type="button"
+                            className="font-semibold text-ink underline underline-offset-2"
+                            onClick={() => setMetodo(null)}
+                          >
+                            Trocar
+                          </button>
+                        ) : null}
+                      </p>
+                    )}
 
                     {offlinePay ? (
                       <OfflinePaymentPanel
                         info={offlinePay}
-                        amount={brickSession.amount}
+                        amount={valorEscolhido}
                       />
                     ) : null}
 
-                    {!offlinePay ? (
+                    {!offlinePay && !(temDescontoPix && !metodo) ? (
                     <MpPaymentBrick
+                      key={metodo || 'todos'}
+                      metodo={temDescontoPix ? (metodo ?? undefined) : undefined}
                       publicKey={brickSession.publicKey}
-                      amount={brickSession.amount}
+                      amount={valorEscolhido}
                       payerEmail={brickSession.payerEmail}
                       payerName={brickSession.payerName}
                       payerAddress={brickSession.payerAddress}

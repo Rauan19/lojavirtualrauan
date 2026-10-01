@@ -34,6 +34,8 @@ type Store = {
   mpAccessTokenHint?: string | null;
   mpPublicKeyHint?: string | null;
   checkoutMode?: string;
+  /** Desconto no Pix em % (a API manda como texto decimal) */
+  pixDiscountPercent?: string | number | null;
   mpWebhookUrl?: string | null;
   freteModo: string;
   freteValorFixo?: string | null;
@@ -1380,6 +1382,9 @@ export default function AdminSettingsPage() {
             : {}),
           ...(mpPublicKey.trim() ? { mpPublicKey: mpPublicKey.trim() } : {}),
           checkoutMode: store.checkoutMode || 'personalized',
+          pixDiscountPercent:
+            Number(String(store.pixDiscountPercent ?? '0').replace(',', '.')) ||
+            0,
         },
       });
       setStore({
@@ -2950,7 +2955,11 @@ export default function AdminSettingsPage() {
           value={
             store.checkoutMode === 'pro'
               ? 'Checkout Pro · cliente vai para o site do Mercado Pago'
-              : 'Brick na loja · cliente paga sem sair da vitrine'
+              : `Brick na loja · cliente paga sem sair da vitrine${
+                  Number(store.pixDiscountPercent || 0) > 0
+                    ? ` · ${String(Number(store.pixDiscountPercent)).replace('.', ',')}% de desconto no Pix`
+                    : ''
+                }`
           }
           onEdit={() => setPagamentoModal('modelo')}
         />
@@ -2983,6 +2992,7 @@ export default function AdminSettingsPage() {
           >
             <div className="grid min-h-0 flex-1 gap-x-4 gap-y-4 overflow-y-auto px-4 py-4">
               {pagamentoModal === 'modelo' ? (
+                <>
                 <div className="grid gap-2 sm:grid-cols-2">
                   <label
                     className={`cursor-pointer border px-3 py-3 text-sm ${
@@ -3027,6 +3037,31 @@ export default function AdminSettingsPage() {
                     </p>
                   </label>
                 </div>
+
+                <div className="border-t border-line pt-4">
+                  <label className="label" htmlFor="pix-desconto">
+                    Desconto no Pix (%)
+                  </label>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <input
+                      id="pix-desconto"
+                      className="field w-28"
+                      inputMode="decimal"
+                      placeholder="Ex.: 5"
+                      disabled={store.checkoutMode === 'pro'}
+                      value={String(store.pixDiscountPercent ?? '').replace(/\.00$/, '')}
+                      onChange={(e) =>
+                        setStore({ ...store, pixDiscountPercent: e.target.value })
+                      }
+                    />
+                    <p className="min-w-0 flex-1 text-[12px] leading-relaxed text-muted">
+                      {store.checkoutMode === 'pro'
+                        ? 'Disponível só com o pagamento na loja (Brick): na página do Mercado Pago o preço é um só.'
+                        : 'Vale sobre os produtos (o frete não entra). A vitrine mostra "R$ X no Pix" e o cliente escolhe Pix ou cartão antes de pagar. Vazio ou 0 = sem desconto.'}
+                    </p>
+                  </div>
+                </div>
+                </>
               ) : null}
 
               {pagamentoModal === 'credenciais' ? (

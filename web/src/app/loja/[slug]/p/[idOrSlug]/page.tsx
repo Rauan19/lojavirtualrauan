@@ -15,6 +15,7 @@ import { WishlistButton } from '@/components/WishlistButton';
 import { api, mediaUrl, money } from '@/lib/api';
 import { addToCart } from '@/lib/cart';
 import { sellerWhatsappHref } from '@/lib/contact';
+import { pctTexto, precoNoPix } from '@/lib/pix';
 import { getRecentlyViewed, pushRecentlyViewed, type RecentProduct } from '@/lib/recently-viewed';
 
 type Store = {
@@ -23,6 +24,8 @@ type Store = {
   logoUrl?: string | null;
   primaryColor: string;
   accentColor: string;
+  /** Desconto no Pix (0 = sem) */
+  pixDiscountPercent?: number;
   sellerPhone?: string | null;
   storeFont?: string | null;
   storeCardRatio?: string | null;
@@ -483,6 +486,18 @@ function ProductInner({
                   </span>
                 ) : null}
               </div>
+
+              {store?.pixDiscountPercent ? (
+                <p className="mt-2 flex flex-wrap items-baseline gap-x-1.5 text-[15px]">
+                  <strong className="text-[#1b7f45]">
+                    {money(precoNoPix(price, store.pixDiscountPercent))}
+                  </strong>
+                  <span className="text-[#1b7f45]">no Pix</span>
+                  <span className="text-xs text-muted">
+                    ({pctTexto(store.pixDiscountPercent)}% de desconto)
+                  </span>
+                </p>
+              ) : null}
 
               <InstallmentsBlock
                 className="mt-2"

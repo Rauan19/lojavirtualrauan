@@ -23,6 +23,8 @@ type BrickProps = {
     formData: Record<string, unknown>,
   ) => Promise<Record<string, unknown> | void>;
   onError?: (message: string) => void;
+  /** Só um meio (a loja dá desconto no Pix e o cliente já escolheu). */
+  metodo?: 'pix' | 'cartao';
 };
 
 type MpBricks = {
@@ -235,6 +237,7 @@ export function MpPaymentBrick({
   payerAddress,
   onSubmit,
   onError,
+  metodo,
 }: BrickProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
@@ -308,13 +311,23 @@ export function MpPaymentBrick({
           ...(Object.keys(payerInit).length ? { payer: payerInit } : {}),
         },
         customization: {
-          paymentMethods: {
-            creditCard: 'all',
-            debitCard: 'all',
-            bankTransfer: 'all',
-            maxInstallments: 12,
-            minInstallments: 1,
-          },
+          paymentMethods:
+            metodo === 'pix'
+              ? { bankTransfer: 'all' }
+              : metodo === 'cartao'
+                ? {
+                    creditCard: 'all',
+                    debitCard: 'all',
+                    maxInstallments: 12,
+                    minInstallments: 1,
+                  }
+                : {
+                    creditCard: 'all',
+                    debitCard: 'all',
+                    bankTransfer: 'all',
+                    maxInstallments: 12,
+                    minInstallments: 1,
+                  },
           visual: {
             style: {
               theme: 'default',
@@ -438,7 +451,7 @@ export function MpPaymentBrick({
       }
       if (hostRef.current) hostRef.current.innerHTML = '';
     };
-  }, [publicKey, amount, payerEmail, payerName, addressKey, retryKey]);
+  }, [publicKey, amount, payerEmail, payerName, addressKey, retryKey, metodo]);
 
   return (
     <div className="space-y-2">

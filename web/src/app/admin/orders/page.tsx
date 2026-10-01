@@ -40,6 +40,9 @@ type Order = {
   subtotal?: string | number;
   shippingCost?: string | number;
   discount?: string | number;
+  /** Desconto do Pix (já somado em `discount` quando o Pix foi pago) */
+  pixDiscount?: string | number;
+  pixDiscountApplied?: boolean;
   /** Comissão da plataforma: fotografada no pagamento e a retida pelo MP */
   platformFeeBps?: number | null;
   platformFeeCents?: number | null;
@@ -1193,7 +1196,12 @@ export default function AdminOrdersPage() {
                   ) : null}
                   {Number(detail.discount) > 0 ? (
                     <div className="flex justify-between text-[var(--ok)]">
-                      <span>Desconto</span>
+                      <span>
+                        Desconto
+                        {detail.pixDiscountApplied && Number(detail.pixDiscount) > 0
+                          ? ` (inclui ${money(detail.pixDiscount!)} do Pix)`
+                          : ''}
+                      </span>
                       <span>−{money(detail.discount!)}</span>
                     </div>
                   ) : null}

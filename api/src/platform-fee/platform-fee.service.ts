@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PaymentStatus } from '@prisma/client';
 import { PlanLimitsService } from '../plan-limits/plan-limits.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { calcularComissao, paraCentavos, paraReais } from './calculo';
@@ -59,7 +60,12 @@ export class PlatformFeeService {
 
   /**
    * Comissão deste pedido, ou null quando não se aplica. Grava a fotografia
-   * no pedido na primeira chamada.
+   * no pedido.
+   *
+   * O % fica o da primeira tentativa (mudar o plano não mexe em pedido em
+   * aberto), mas o valor acompanha a forma de pagamento: no Pix com desconto
+   * a base é menor (`descontoExtraCents`); se o cliente voltar para o cartão,
+   * a base volta. A fotografia guarda sempre a última tentativa.
    */
   async paraPedido(
     storeId: string,
@@ -72,6 +78,7 @@ export class PlatformFeeService {
       platformFeeBaseCents: number | null;
       platformFeeCents: number | null;
     },
+    opcoes: { descontoExtraCents?: number } = {},
   ): Promise<ComissaoDoPedido | null> {
     const store = await this.prisma.store.findUnique({
       where: { id: storeId },
@@ -85,38 +92,43 @@ export class PlatformFeeService {
     const ligada = store.platformFeeEnabled ?? this.ligadaNoGeral();
     if (!ligada) return null;
 
-    // Já fotografada (nova tentativa de pagamento do mesmo pedido)
-    if (order.platformFeeCents != null && order.platformFeeBps != null) {
-      if (order.platformFeeCents <= 0) return null;
-      if (!pronta(store)) return this.semConexao(storeId, order.id);
-      return {
-        bps: order.platformFeeBps,
-        baseCents: order.platformFeeBaseCents ?? 0,
-        feeCents: order.platformFeeCents,
-        feeReais: paraReais(order.platformFeeCents),
-      };
+    let bps: number;
+    if (order.platformFeeBps != null) {
+      bps = order.platformFeeBps;
+    } else {
+      bps = (await this.planLimits.forStore(storeId)).feeBps;
     }
-
-    const { feeBps } = await this.planLimits.forStore(storeId);
-    if (feeBps <= 0) return null;
+    if (bps <= 0) return null;
     if (!pronta(store)) return this.semConexao(storeId, order.id);
 
+    const extra = Math.max(0, Math.floor(opcoes.descontoExtraCents ?? 0));
     const c = calcularComissao({
       subtotalCents: paraCentavos(order.subtotal),
-      discountCents: paraCentavos(order.discount),
-      totalCents: paraCentavos(order.total),
-      bps: feeBps,
+      discountCents: paraCentavos(order.discount) + extra,
+      totalCents: paraCentavos(order.total) - extra,
+      bps,
     });
 
-    // Grava só se ainda não havia fotografia (corrida entre duas tentativas)
-    await this.prisma.order.updateMany({
-      where: { id: order.id, platformFeeCents: null },
-      data: {
-        platformFeeBps: c.bps,
-        platformFeeBaseCents: c.baseCents,
-        platformFeeCents: c.feeCents,
-      },
-    });
+    const mudou =
+      order.platformFeeBps !== c.bps ||
+      order.platformFeeBaseCents !== c.baseCents ||
+      order.platformFeeCents !== c.feeCents;
+    if (mudou) {
+      // Pedido já pago não muda mais (a conciliação usa o que o MP reteve)
+      await this.prisma.order.updateMany({
+        where: {
+          id: order.id,
+          paymentStatus: {
+            notIn: [PaymentStatus.APPROVED, PaymentStatus.REFUNDED],
+          },
+        },
+        data: {
+          platformFeeBps: c.bps,
+          platformFeeBaseCents: c.baseCents,
+          platformFeeCents: c.feeCents,
+        },
+      });
+    }
     if (c.feeCents <= 0) return null;
     return { ...c, feeReais: paraReais(c.feeCents) };
   }

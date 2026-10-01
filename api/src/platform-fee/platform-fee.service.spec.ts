@@ -57,7 +57,10 @@ describe('PlatformFeeService', () => {
       feeReais: 1.8,
     });
     expect(updateMany).toHaveBeenCalledWith({
-      where: { id: 'ped-1', platformFeeCents: null },
+      where: {
+        id: 'ped-1',
+        paymentStatus: { notIn: ['APPROVED', 'REFUNDED'] },
+      },
       data: {
         platformFeeBps: 200,
         platformFeeBaseCents: 9000,
@@ -89,6 +92,16 @@ describe('PlatformFeeService', () => {
   it('plano sem taxa: não cobra', async () => {
     const { svc } = montar({ feeBps: 0 });
     expect(await svc.paraPedido('loja', pedido())).toBeNull();
+  });
+
+  it('Pix com desconto: a comissão sai sobre o valor com desconto', async () => {
+    const { svc, updateMany } = montar({});
+    // produtos R$ 90, desconto Pix R$ 4,50 → base R$ 85,50 → 2% = R$ 1,71
+    const c = await svc.paraPedido('loja', pedido(), {
+      descontoExtraCents: 450,
+    });
+    expect(c?.feeCents).toBe(171);
+    expect(updateMany).toHaveBeenCalled();
   });
 
   it('segunda tentativa de pagamento reaproveita a fotografia, mesmo se o plano mudou', async () => {

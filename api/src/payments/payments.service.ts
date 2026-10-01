@@ -7,7 +7,7 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PaymentStatus, OrderStatus } from '@prisma/client';
+import { PaymentStatus, OrderStatus, Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { OrdersService } from '../orders/orders.service';
 import {
@@ -18,6 +18,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SecretsService } from '../common/secrets/secrets.service';
 import { buildMercadoPagoWebhookUrl } from '../common/utils/mercadopago-webhook-url';
 import { MercadoPagoOauthService } from './mercadopago-oauth.service';
+import { descontoPixCentavos, ehPix } from '../orders/desconto-pix';
+import { paraCentavos } from '../platform-fee/calculo';
 import { ConciliacaoComissaoService } from './conciliacao-comissao.service';
 import {
   PlatformFeeService,
@@ -27,6 +29,7 @@ import {
 type MpPayment = {
   id: number;
   status: string;
+  payment_method_id?: string;
   external_reference?: string;
   transaction_amount_refunded?: number;
   transaction_amount?: number;
@@ -391,6 +394,17 @@ export class PaymentsService {
         mode: 'personalized' as const,
         orderId: order.id,
         amount,
+        // Preço no Pix já com o desconto da loja (a tela só mostra; quem
+        // cobra é o pay-brick, que recalcula)
+        pixAmount:
+          (paraCentavos(order.total) -
+            descontoPixCentavos({
+              subtotalCents: paraCentavos(order.subtotal),
+              descontoCents: paraCentavos(order.discount),
+              percentual: Number(store.pixDiscountPercent ?? 0),
+            })) /
+          100,
+        pixDiscountPercent: Number(store.pixDiscountPercent ?? 0),
         publicKey: store.mpPublicKey,
         payerEmail: order.customerEmail,
         payerName: order.customerName,
@@ -497,8 +511,25 @@ export class PaymentsService {
       customerUserId,
     );
     const formData = (payload.formData as Record<string, unknown>) || payload;
+
+    // Desconto no Pix: calculado aqui, nunca vindo do navegador. Fica gravado
+    // no pedido (o webhook aceita o valor com desconto se o Pix for pago).
+    const descontoPix = ehPix(formData.payment_method_id)
+      ? descontoPixCentavos({
+          subtotalCents: paraCentavos(order.subtotal),
+          descontoCents: paraCentavos(order.discount),
+          percentual: Number(store.pixDiscountPercent ?? 0),
+        })
+      : 0;
+    if (descontoPix > 0) {
+      await this.prisma.order.update({
+        where: { id: order.id },
+        data: { pixDiscount: new Prisma.Decimal(descontoPix).div(100) },
+      });
+    }
+
     // Sempre o total do pedido no banco (2 casas) — não confiar no Brick.
-    const amount = Math.round(Number(order.total) * 100) / 100;
+    const amount = (paraCentavos(order.total) - descontoPix) / 100;
 
     if (!Number.isFinite(amount) || amount <= 0) {
       throw new BadRequestException('Valor do pedido inválido para pagamento');
@@ -551,7 +582,9 @@ export class PaymentsService {
     }
 
     // Comissão da plataforma (split): o Mercado Pago separa sozinho
-    const comissao = await this.platformFee.paraPedido(storeId, order);
+    const comissao = await this.platformFee.paraPedido(storeId, order, {
+      descontoExtraCents: descontoPix,
+    });
     if (comissao) {
       paymentBody.application_fee = comissao.feeReais;
       paymentBody.metadata = {
@@ -898,11 +931,36 @@ export class PaymentsService {
       }
 
       /*
+       * Pix pago com o desconto oferecido: o desconto entra no pedido (total e
+       * desconto), para a nota fiscal, o reembolso e a tela mostrarem o valor
+       * que o cliente pagou de verdade. Uma vez só.
+       */
+      let orderTotal = Number(order.total);
+      const pixOferecido = Number(order.pixDiscount ?? 0);
+      if (
+        payment.status === 'approved' &&
+        ehPix(payment.payment_method_id) &&
+        pixOferecido > 0 &&
+        !order.pixDiscountApplied &&
+        totalAmt < orderTotal - 0.01 &&
+        totalAmt >= orderTotal - pixOferecido - 0.01
+      ) {
+        await this.prisma.order.updateMany({
+          where: { id: order.id, pixDiscountApplied: false },
+          data: {
+            pixDiscountApplied: true,
+            discount: { increment: order.pixDiscount },
+            total: { decrement: order.pixDiscount },
+          },
+        });
+        orderTotal -= pixOferecido;
+      }
+
+      /*
        * O valor sai sempre do banco quando a cobrança é criada, então isto não
        * deveria disparar. Fica como trava: se um pagamento aprovado com esta
        * external_reference vier menor que o pedido, não libera a mercadoria.
        */
-      const orderTotal = Number(order.total);
       const underpaid =
         payment.status === 'approved' &&
         Number.isFinite(orderTotal) &&

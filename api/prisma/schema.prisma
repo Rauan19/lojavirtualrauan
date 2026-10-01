@@ -157,6 +157,8 @@ model Store {
   /** false = conectou uma conta de teste (sandbox). */
   mpLiveMode       Boolean?
   checkoutMode     String      @default("personalized")
+  /// Desconto para quem paga no Pix, em % sobre os produtos (0 = sem desconto)
+  pixDiscountPercent Decimal   @default(0) @db.Decimal(5, 2)
   freteModo        String      @default("manual")
   freteValorFixo   Decimal?    @db.Decimal(10, 2)
   freteGratisAcima Decimal?    @db.Decimal(10, 2)
@@ -565,6 +567,10 @@ model Order {
    * sem erro de arredondamento). Base = produtos − desconto, sem frete.
    * Nulo = pedido sem comissão (antes do split ou plano sem taxa).
    */
+  /// Desconto Pix oferecido neste pedido (calculado na tentativa de Pix)
+  pixDiscount       Decimal       @default(0) @db.Decimal(10, 2)
+  /// true quando o pagamento confirmou pelo Pix e o desconto entrou no total
+  pixDiscountApplied Boolean      @default(false)
   platformFeeBps    Int?
   platformFeeBaseCents Int?
   platformFeeCents  Int?

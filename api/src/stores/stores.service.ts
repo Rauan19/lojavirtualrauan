@@ -459,6 +459,7 @@ export class StoresService {
         mpPublicKey: true,
         mpAccessToken: true,
         checkoutMode: true,
+        pixDiscountPercent: true,
         marqueeEnabled: true,
         marqueeImages: true,
         freteModo: true,
@@ -543,6 +544,10 @@ export class StoresService {
       nfeEnvironment: store.nfeEnvironment,
       mpPublicKey: store.mpPublicKey,
       checkoutMode: mode,
+      // Desconto no Pix só existe no checkout da própria loja (Brick): na
+      // página do Mercado Pago o preço é um só para todos os meios
+      pixDiscountPercent:
+        mode === 'personalized' ? Number(store.pixDiscountPercent ?? 0) : 0,
       marqueeEnabled: store.marqueeEnabled,
       marqueeImages: store.marqueeImages,
       freteModo: store.freteModo,
@@ -823,6 +828,9 @@ export class StoresService {
         );
       }
       data.checkoutMode = mode;
+    }
+    if (dto.pixDiscountPercent !== undefined) {
+      data.pixDiscountPercent = new Prisma.Decimal(dto.pixDiscountPercent);
     }
 
     const current = await this.prisma.store.findUnique({
