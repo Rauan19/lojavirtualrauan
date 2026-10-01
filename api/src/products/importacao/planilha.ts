@@ -92,7 +92,7 @@ export function decodificar(buf: Buffer): string {
   } catch {
     texto = new TextDecoder('windows-1252').decode(buf);
   }
-  return texto.replace(/^﻿/, '');
+  return texto.replace(/^\uFEFF/, '');
 }
 
 /** Separador mais frequente na 1ª linha: ";", "," ou tabulação. */
