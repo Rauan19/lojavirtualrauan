@@ -69,7 +69,7 @@ export function HeroComecar() {
             </strong>
           </>
         ) : (
-          'Comece sem pagar nada · sem cartão de crédito'
+          'Comece sem pagar nada'
         )}
       </p>
     </form>
