@@ -370,7 +370,7 @@ export function SuperLojasInner() {
       summary="Cadastro, planos e acesso dos lojistas"
     >
       {error ? (
-        <p className="border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#b42318]">
+        <p role="alert" className="border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#b42318]">
           {error}
         </p>
       ) : null}
@@ -463,11 +463,11 @@ export function SuperLojasInner() {
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-bold">{s.name}</p>
                     <span
-                      className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${badge.className}`}
+                      className={`rounded px-1.5 py-0.5 text-[11px] font-bold uppercase ${badge.className}`}
                     >
                       {badge.text}
                     </span>
-                    <span className="rounded bg-[#f0f1f3] px-1.5 py-0.5 text-[10px] font-bold uppercase text-[#5c6570]">
+                    <span className="rounded bg-[#f0f1f3] px-1.5 py-0.5 text-[11px] font-bold uppercase text-[#5c6570]">
                       {statusLabel[s.status] || s.status}
                     </span>
                   </div>
@@ -686,7 +686,7 @@ export function SuperLojasInner() {
                   required
                 />
                 {cepLoading ? (
-                  <p className="mt-0.5 text-[11px] text-muted">Buscando...</p>
+                  <p className="mt-0.5 text-[11px] text-muted">Buscando…</p>
                 ) : null}
               </div>
               <div>

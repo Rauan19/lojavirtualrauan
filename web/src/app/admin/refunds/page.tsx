@@ -199,7 +199,7 @@ export default function AdminRefundsPage() {
         </label>
       </div>
 
-      {error ? <p className="text-sm text-accent">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
       {message ? <p className="text-sm text-[var(--ok)]">{message}</p> : null}
 
       <ul className="space-y-3">

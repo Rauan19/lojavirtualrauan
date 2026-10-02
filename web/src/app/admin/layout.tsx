@@ -151,7 +151,7 @@ function NavBadge({
         : 'bg-amber-500 text-white';
   return (
     <span
-      className={`ml-auto inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none ${colors}`}
+      className={`ml-auto inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-bold leading-none ${colors}`}
       aria-label={ariaLabel}
     >
       {label}
@@ -294,7 +294,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const nav = (
     <>
       <div className="border-b border-line px-4 py-3">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
           Painel da loja
         </p>
         <h1 className="mt-0.5 truncate text-sm font-bold">
@@ -309,7 +309,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           if (itens.length === 0) return null;
           return (
           <div key={group.title} className="mb-2">
-            <p className="px-4 pb-1 pt-2 text-[10px] font-bold uppercase tracking-wider text-muted">
+            <p className="px-4 pb-1 pt-2 text-[11px] font-bold uppercase tracking-wider text-muted">
               {group.title}
             </p>
             {itens.map((link) => {
@@ -354,7 +354,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
         {user.store?.slug ? (
           <div className="mt-1 border-t border-line pt-2">
-            <p className="px-4 pb-1 pt-1 text-[10px] font-bold uppercase tracking-wider text-muted">
+            <p className="px-4 pb-1 pt-1 text-[11px] font-bold uppercase tracking-wider text-muted">
               Atalhos
             </p>
             <Link
@@ -404,7 +404,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               aria-label={`${pendingOrders} pedidos novos`}
             >
               Pedidos
-              <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] text-white">
+              <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-amber-500 px-1.5 py-0.5 text-[11px] text-white">
                 {pendingOrders > 99 ? '99+' : pendingOrders}
               </span>
             </Link>
@@ -416,7 +416,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               aria-label={`${pendingRefunds} reembolsos pendentes`}
             >
               Reembolsos
-              <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-rose-600 px-1.5 py-0.5 text-[10px] text-white">
+              <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-rose-600 px-1.5 py-0.5 text-[11px] text-white">
                 {pendingRefunds > 99 ? '99+' : pendingRefunds}
               </span>
             </Link>

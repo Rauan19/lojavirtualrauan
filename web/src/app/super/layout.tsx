@@ -94,13 +94,13 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
   const side = (
     <>
       <div className="border-b border-[#d9dde3] px-4 py-3">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
           Super admin
         </p>
         <p className="mt-0.5 truncate text-sm font-bold">{user.email}</p>
       </div>
       <nav className="flex-1 overflow-y-auto py-2">
-        <p className="px-4 pb-1 pt-2 text-[10px] font-bold uppercase tracking-wider text-muted">
+        <p className="px-4 pb-1 pt-2 text-[11px] font-bold uppercase tracking-wider text-muted">
           Menu
         </p>
         {(precisaAtivar

@@ -718,7 +718,7 @@ export function AdminPlanosInner() {
       ) : null}
 
       {error ? (
-        <p className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-sm text-rose-800">
+        <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-sm text-rose-800">
           {error}
         </p>
       ) : null}
@@ -938,7 +938,7 @@ export function AdminPlanosInner() {
                 {plan.badge ? (
                   <span
                     className={[
-                      'absolute -top-2.5 left-4 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+                      'absolute -top-2.5 left-4 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide',
                       plan.highlight
                         ? 'bg-ink text-white'
                         : 'bg-zinc-100 text-zinc-700',
@@ -1031,7 +1031,7 @@ export function AdminPlanosInner() {
               {currentPlanId === selected.id
                 ? 'Você já está neste plano'
                 : usandoGratis
-                  ? 'Trocando...'
+                  ? 'Trocando…'
                   : 'Usar o plano grátis'}
             </button>
           </div>

@@ -208,7 +208,7 @@ export default function AdminCustomersPage() {
       <div className="flex flex-wrap gap-2">
         <input
           className="field max-w-xs"
-          placeholder="Buscar por nome, e-mail ou telefone..."
+          placeholder="Buscar por nome, e-mail ou telefone…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
@@ -225,10 +225,10 @@ export default function AdminCustomersPage() {
         </select>
       </div>
 
-      {error ? <p className="text-sm text-accent">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
 
       {loading ? (
-        <p className="text-sm text-muted">Carregando...</p>
+        <p className="text-sm text-muted">Carregando…</p>
       ) : items.length === 0 ? (
         <div className="card py-10 text-center">
           <p className="text-sm font-medium">
@@ -304,7 +304,7 @@ export default function AdminCustomersPage() {
       />
 
       {detailLoading ? (
-        <p className="text-sm text-muted">Abrindo cliente...</p>
+        <p className="text-sm text-muted">Abrindo cliente…</p>
       ) : null}
 
       {detail ? (
@@ -361,7 +361,7 @@ export default function AdminCustomersPage() {
                     {detail.addresses.map((a) => (
                       <li key={a.id} className="border border-line px-3 py-2 text-sm">
                         {a.isDefault ? (
-                          <span className="mb-0.5 block text-[10px] font-bold uppercase text-[var(--ok)]">
+                          <span className="mb-0.5 block text-[11px] font-bold uppercase text-[var(--ok)]">
                             Padrão
                           </span>
                         ) : null}

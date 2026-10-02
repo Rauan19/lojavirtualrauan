@@ -9,7 +9,7 @@ export default function AdminPlanosPage() {
       fallback={
         <div className="admin-page max-w-3xl">
           <h1>Planos</h1>
-          <p className="text-sm text-muted">Carregando...</p>
+          <p className="text-sm text-muted">Carregando…</p>
         </div>
       }
     >

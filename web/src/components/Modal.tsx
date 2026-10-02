@@ -99,7 +99,7 @@ export function Modal({
           </button>
         </div>
         {erro ? (
-          <p className="mx-4 mt-3 border border-[#f3b3b3] bg-[#fef2f2] px-3 py-2 text-sm text-accent">
+          <p role="alert" className="mx-4 mt-3 border border-[#f3b3b3] bg-[#fef2f2] px-3 py-2 text-sm text-accent">
             {erro}
           </p>
         ) : null}

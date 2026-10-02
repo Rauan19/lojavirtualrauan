@@ -178,7 +178,7 @@ export function DoisFatores({ onAtivado }: { onAtivado?: () => void }) {
   ) : null;
 
   if (!status) {
-    return <p className="text-sm text-muted">{erro || 'Carregando...'}</p>;
+    return <p className="text-sm text-muted">{erro || 'Carregando…'}</p>;
   }
 
   // ---------- QR code ----------
@@ -226,7 +226,7 @@ export function DoisFatores({ onAtivado }: { onAtivado?: () => void }) {
             className="btn btn-accent"
             disabled={ocupado || codigo.length !== 6}
           >
-            {ocupado ? 'Conferindo...' : 'Ativar'}
+            {ocupado ? 'Conferindo…' : 'Ativar'}
           </button>
           <button
             type="button"
@@ -321,7 +321,7 @@ export function DoisFatores({ onAtivado }: { onAtivado?: () => void }) {
         {mensagemErro}
         <div className="flex flex-wrap gap-2">
           <button className="btn btn-ghost text-accent" disabled={ocupado}>
-            {ocupado ? 'Desligando...' : 'Desligar verificação'}
+            {ocupado ? 'Desligando…' : 'Desligar verificação'}
           </button>
           <button
             type="button"
@@ -353,7 +353,7 @@ export function DoisFatores({ onAtivado }: { onAtivado?: () => void }) {
             className="btn btn-accent"
             disabled={ocupado || codigo.length !== 6}
           >
-            {ocupado ? 'Gerando...' : 'Gerar novos códigos'}
+            {ocupado ? 'Gerando…' : 'Gerar novos códigos'}
           </button>
           <button
             type="button"
@@ -434,7 +434,7 @@ export function DoisFatores({ onAtivado }: { onAtivado?: () => void }) {
             disabled={ocupado}
             onClick={() => void iniciar()}
           >
-            {ocupado ? 'Gerando QR code...' : 'Ativar verificação em duas etapas'}
+            {ocupado ? 'Gerando QR code…' : 'Ativar verificação em duas etapas'}
           </button>
         </>
       )}

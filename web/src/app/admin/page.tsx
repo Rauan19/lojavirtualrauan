@@ -230,7 +230,7 @@ function PainelDoDono() {
       ) : null}
 
       {loading && !data ? (
-        <p className="text-muted">Carregando...</p>
+        <p className="text-muted">Carregando…</p>
       ) : data ? (
         <>
           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">

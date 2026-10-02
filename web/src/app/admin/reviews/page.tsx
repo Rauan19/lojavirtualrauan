@@ -97,10 +97,10 @@ export default function AdminReviewsPage() {
         </p>
       </div>
 
-      {error ? <p className="text-sm text-accent">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
 
       {loading ? (
-        <p className="text-sm text-muted">Carregando...</p>
+        <p className="text-sm text-muted">Carregando…</p>
       ) : reviews.length === 0 ? (
         <div className="card p-6 text-center text-sm text-muted">
           Nenhuma avaliação ainda.
@@ -115,12 +115,12 @@ export default function AdminReviewsPage() {
                     <StarRating value={r.rating} size={13} />
                     <span className="text-sm font-semibold">{r.customer.name}</span>
                     {r.verifiedPurchase ? (
-                      <span className="border border-[var(--ok)]/30 bg-[var(--ok)]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[var(--ok)]">
+                      <span className="border border-[var(--ok)]/30 bg-[var(--ok)]/10 px-1.5 py-0.5 text-[11px] font-semibold text-[var(--ok)]">
                         Compra verificada
                       </span>
                     ) : null}
                     {r.hidden ? (
-                      <span className="border border-line px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted">
+                      <span className="border border-line px-1.5 py-0.5 text-[11px] font-semibold uppercase text-muted">
                         Oculta
                       </span>
                     ) : null}

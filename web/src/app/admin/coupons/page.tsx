@@ -142,7 +142,7 @@ export default function AdminCouponsPage() {
       </div>
 
       {message ? <p className="text-sm text-[var(--ok)]">{message}</p> : null}
-      {error ? <p className="text-sm text-accent">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
 
       <form onSubmit={onCreate} className="card form-grid md:grid-cols-2">
         <h2 className="text-sm font-bold md:col-span-2">Novo cupom</h2>
@@ -267,7 +267,7 @@ export default function AdminCouponsPage() {
           Mostrar num banner na vitrine da loja
         </label>
         <button className="btn btn-accent md:col-span-2" disabled={busy}>
-          {busy ? 'Criando...' : 'Criar cupom'}
+          {busy ? 'Criando…' : 'Criar cupom'}
         </button>
       </form>
 

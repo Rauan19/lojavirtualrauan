@@ -112,7 +112,7 @@ export default function CarrinhosAbandonadosPage() {
       </div>
 
       {erro ? (
-        <p className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent">
+        <p role="alert" className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent">
           {erro}
         </p>
       ) : null}
@@ -230,7 +230,7 @@ export default function CarrinhosAbandonadosPage() {
           )}
         </>
       ) : !erro ? (
-        <p className="text-sm text-muted">Carregando...</p>
+        <p className="text-sm text-muted">Carregando…</p>
       ) : null}
     </div>
   );

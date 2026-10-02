@@ -235,7 +235,7 @@ export default function SuperDashboardPage() {
       </header>
 
       {error ? (
-        <p className="border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#b42318]">
+        <p role="alert" className="border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#b42318]">
           {error}
         </p>
       ) : null}
@@ -362,7 +362,7 @@ export default function SuperDashboardPage() {
                     title={`${point.label}: ${moneyBr(point.mrr)} · ${point.stores} lojas`}
                   >
                     <span
-                      className={`text-[10px] font-semibold tabular-nums ${
+                      className={`text-[11px] font-semibold tabular-nums ${
                         isLast ? 'text-ink' : 'text-muted'
                       }`}
                     >
@@ -376,10 +376,10 @@ export default function SuperDashboardPage() {
                         style={{ height: `${h}%` }}
                       />
                     </div>
-                    <span className="text-[10px] uppercase tracking-wide text-muted">
+                    <span className="text-[11px] uppercase tracking-wide text-muted">
                       {point.label}
                     </span>
-                    <span className="text-[10px] tabular-nums text-muted/80">
+                    <span className="text-[11px] tabular-nums text-muted/80">
                       {point.stores} lj
                     </span>
                   </div>
@@ -508,7 +508,7 @@ export default function SuperDashboardPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <span
-                        className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${badge.className}`}
+                        className={`rounded px-1.5 py-0.5 text-[11px] font-bold uppercase ${badge.className}`}
                       >
                         {badge.text}
                       </span>
@@ -557,7 +557,7 @@ export default function SuperDashboardPage() {
                     <p className="text-sm font-bold tabular-nums">
                       {s._count.orders}
                     </p>
-                    <p className="text-[10px] uppercase text-muted">pedidos</p>
+                    <p className="text-[11px] uppercase text-muted">pedidos</p>
                   </div>
                 </li>
               ))}
@@ -600,7 +600,7 @@ export default function SuperDashboardPage() {
                     </p>
                   </div>
                   <span
-                    className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${statusTone(s.status)}`}
+                    className={`rounded px-1.5 py-0.5 text-[11px] font-bold uppercase ${statusTone(s.status)}`}
                   >
                     {statusLabel[s.status] || s.status}
                   </span>

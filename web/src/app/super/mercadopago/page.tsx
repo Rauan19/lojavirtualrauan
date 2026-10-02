@@ -154,7 +154,7 @@ export default function SuperMercadoPagoPage() {
       summary="Credenciais da plataforma — recebe a mensalidade de todas as lojas"
     >
       {error ? (
-        <p className="border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#b42318]">
+        <p role="alert" className="border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#b42318]">
           {error}
         </p>
       ) : null}

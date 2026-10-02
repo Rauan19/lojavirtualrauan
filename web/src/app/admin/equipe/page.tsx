@@ -158,7 +158,7 @@ export default function EquipePage() {
       ) : null}
 
       {erro ? (
-        <p className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent">
+        <p role="alert" className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent">
           {erro}
         </p>
       ) : null}
@@ -234,7 +234,7 @@ export default function EquipePage() {
           ))}
         </ul>
       ) : !erro ? (
-        <p className="text-sm text-muted">Carregando...</p>
+        <p className="text-sm text-muted">Carregando…</p>
       ) : null}
 
       {edicao && dados ? (
@@ -383,7 +383,7 @@ function FormMembro({
           </button>
           <button className="btn btn-accent" disabled={ocupado}>
             {ocupado
-              ? 'Salvando...'
+              ? 'Salvando…'
               : membro
                 ? 'Salvar'
                 : 'Enviar convite'}

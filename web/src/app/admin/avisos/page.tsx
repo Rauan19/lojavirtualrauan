@@ -182,7 +182,7 @@ export default function AvisosPage() {
       </div>
 
       {erro ? (
-        <p className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent">
+        <p role="alert" className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent">
           {erro}
         </p>
       ) : null}
@@ -195,7 +195,7 @@ export default function AvisosPage() {
       <section className="border border-line bg-white px-4 py-4">
         <h2 className="text-sm font-bold">Este aparelho</h2>
         {!painel ? (
-          <p className="mt-2 text-sm text-muted">Carregando...</p>
+          <p className="mt-2 text-sm text-muted">Carregando…</p>
         ) : !painel.disponivel ? (
           <p className="mt-2 text-sm text-muted">
             Os avisos no celular ainda não foram ligados na plataforma.
@@ -269,7 +269,7 @@ export default function AvisosPage() {
               disabled={ocupado || permissao === 'denied'}
               onClick={() => void ligar()}
             >
-              {ocupado ? 'Ligando...' : 'Ligar avisos neste aparelho'}
+              {ocupado ? 'Ligando…' : 'Ligar avisos neste aparelho'}
             </button>
           </div>
         )}

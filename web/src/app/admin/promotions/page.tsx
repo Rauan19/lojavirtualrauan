@@ -120,7 +120,7 @@ export default function AdminPromotionsPage() {
       </div>
 
       {message ? <p className="text-sm text-[var(--ok)]">{message}</p> : null}
-      {error ? <p className="text-sm text-accent">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
 
       <form onSubmit={onCreate} className="card form-grid md:grid-cols-2">
         <h2 className="text-sm font-bold md:col-span-2">Nova promoção</h2>
@@ -132,7 +132,7 @@ export default function AdminPromotionsPage() {
             onChange={(e) => setProductId(e.target.value)}
             required
           >
-            <option value="">Selecione...</option>
+            <option value="">Selecione…</option>
             {available.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name} · {money(p.price)}
@@ -183,7 +183,7 @@ export default function AdminPromotionsPage() {
           />
         </div>
         <button className="btn btn-accent md:col-span-2" disabled={busy || !productId}>
-          {busy ? 'Salvando...' : 'Criar promoção'}
+          {busy ? 'Salvando…' : 'Criar promoção'}
         </button>
       </form>
 
@@ -217,7 +217,7 @@ export default function AdminPromotionsPage() {
                   ) : null}
                 </div>
                 <div className="space-y-0.5 p-2.5">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-accent">
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-accent">
                     {promo.title || 'Promoção'}
                   </p>
                   <h2 className="text-sm font-medium">{promo.product.name}</h2>

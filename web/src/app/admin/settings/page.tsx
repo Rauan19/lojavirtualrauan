@@ -251,21 +251,21 @@ const POLITICAS = [
     rota: 'termos',
     titulo: 'Termos de uso',
     hint: 'Condições de venda, pagamento e entrega. É a página que o cliente aceita no checkout.',
-    exemplo: '<p>Ao comprar nesta loja, você concorda com...</p>',
+    exemplo: '<p>Ao comprar nesta loja, você concorda com…</p>',
   },
   {
     campo: 'privacyHtml' as const,
     rota: 'privacidade',
     titulo: 'Política de privacidade',
     hint: 'Como os dados do cliente são coletados e tratados. Exigida pela LGPD.',
-    exemplo: '<p>Os dados informados são usados para...</p>',
+    exemplo: '<p>Os dados informados são usados para…</p>',
   },
   {
     campo: 'returnsHtml' as const,
     rota: 'trocas',
     titulo: 'Trocas e devoluções',
     hint: 'Prazos e condições. O Código de Defesa do Consumidor garante 7 dias para compra online.',
-    exemplo: '<p>Você pode solicitar a troca em até...</p>',
+    exemplo: '<p>Você pode solicitar a troca em até…</p>',
   },
 ];
 
@@ -830,7 +830,7 @@ function SettingsModal({
           </button>
         </div>
         {erro ? (
-          <p className="shrink-0 border-b border-accent/30 bg-[#fff5f6] px-4 py-2.5 text-sm text-accent">
+          <p role="alert" className="shrink-0 border-b border-accent/30 bg-[#fff5f6] px-4 py-2.5 text-sm text-accent">
             {erro}
           </p>
         ) : null}
@@ -851,7 +851,7 @@ function StatusPill({
 }) {
   return (
     <span
-      className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+      className={`inline-flex items-center rounded px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide ${
         ok
           ? 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200'
           : 'bg-amber-50 text-amber-900 ring-1 ring-amber-200'
@@ -1537,7 +1537,7 @@ export default function AdminSettingsPage() {
     }
   }
 
-  if (!store) return <p className="text-muted">Carregando...</p>;
+  if (!store) return <p className="text-muted">Carregando…</p>;
 
   const logo = mediaUrl(store.logoUrl);
   const marquee = asImages(store.marqueeImages);
@@ -1759,7 +1759,7 @@ export default function AdminSettingsPage() {
                   />
                 </div>
                 {error ? (
-                  <p className="text-sm text-accent sm:col-span-2">{error}</p>
+                  <p role="alert" className="text-sm text-accent sm:col-span-2">{error}</p>
                 ) : null}
               </div>
 
@@ -1784,7 +1784,7 @@ export default function AdminSettingsPage() {
                   className="btn btn-accent order-1 sm:order-2"
                   disabled={savingOrigin}
                 >
-                  {savingOrigin ? 'Salvando...' : 'Salvar endereço de origem'}
+                  {savingOrigin ? 'Salvando…' : 'Salvar endereço de origem'}
                 </button>
               </div>
             </form>
@@ -2243,7 +2243,7 @@ export default function AdminSettingsPage() {
                 ) : null}
                 <button
                   type="button"
-                  className="absolute right-1 top-1 bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100"
+                  className="absolute right-1 top-1 bg-black/70 px-1.5 py-0.5 text-[11px] font-bold text-white opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100"
                   onClick={() => removeMarqueeImage(path)}
                 >
                   Remover
@@ -2264,7 +2264,7 @@ export default function AdminSettingsPage() {
               }`}
             >
               <IconMais />
-              {uploadingMarquee ? 'Enviando...' : 'Adicionar foto'}
+              {uploadingMarquee ? 'Enviando…' : 'Adicionar foto'}
               <input
                 type="file"
                 className="sr-only"
@@ -2323,7 +2323,7 @@ export default function AdminSettingsPage() {
                       onClick={() => req.resolver(setFreteModal, irParaDocumento)}
                     >
                       <span
-                        className={`flex h-4 w-4 shrink-0 items-center justify-center border text-[10px] font-bold ${
+                        className={`flex h-4 w-4 shrink-0 items-center justify-center border text-[11px] font-bold ${
                           ok
                             ? 'border-[var(--ok)] text-[var(--ok)]'
                             : 'border-accent text-accent'
@@ -2642,7 +2642,7 @@ export default function AdminSettingsPage() {
                           disabled={meBusy}
                         >
                           {meBusy
-                            ? 'Aguarde...'
+                            ? 'Aguarde…'
                             : freteConectado
                               ? 'Desconectar'
                               : 'Conectar conta'}
@@ -2929,7 +2929,7 @@ export default function AdminSettingsPage() {
           tone={store.mpOauthConectado ? 'ok' : 'pendente'}
           cta={
             mpBusy
-              ? 'Aguarde...'
+              ? 'Aguarde…'
               : store.mpOauthConectado
                 ? 'Desconectar'
                 : 'Conectar'
@@ -3283,7 +3283,7 @@ export default function AdminSettingsPage() {
                           })
                         }
                       >
-                        <option value="">Selecione...</option>
+                        <option value="">Selecione…</option>
                         <option value="CPF">CPF — pessoa física</option>
                         <option value="CNPJ">CNPJ — empresa</option>
                       </select>

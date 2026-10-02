@@ -14,6 +14,7 @@ import { ImportarPlanilha } from '@/components/ImportarPlanilha';
 import { useEscapeKey, useUnsavedWarning } from '@/lib/modal-guards';
 import { PaginationBar } from '@/components/PaginationBar';
 import { api, thumbUrl, money } from '@/lib/api';
+import { SemFoto } from '@/components/SemFoto';
 import { getToken, getUser } from '@/lib/auth';
 
 type ProductVariant = {
@@ -1237,7 +1238,7 @@ export default function AdminProductsPage() {
       <div className="flex flex-wrap gap-2">
         <input
           className="field max-w-xs"
-          placeholder="Buscar por nome ou SKU..."
+          placeholder="Buscar por nome ou SKU…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
@@ -1321,20 +1322,22 @@ export default function AdminProductsPage() {
                       alt={p.name}
                       className="h-full w-full object-cover"
                     />
-                  ) : null}
+                  ) : (
+                    <SemFoto nome={p.name} />
+                  )}
                   {discount ? (
-                    <span className="absolute left-1 top-1 bg-accent px-1 py-0.5 text-[9px] font-bold text-white">
+                    <span className="absolute left-1 top-1 bg-accent px-1 py-0.5 text-[11px] font-bold text-white">
                       -{discount}%
                     </span>
                   ) : null}
                   {p.images.length > 1 ? (
-                    <span className="absolute bottom-1 right-1 bg-black/65 px-1 py-0.5 text-[9px] font-semibold text-white">
+                    <span className="absolute bottom-1 right-1 bg-black/65 px-1 py-0.5 text-[11px] font-semibold text-white">
                       {p.images.length} fotos
                     </span>
                   ) : null}
                 </button>
                 <div className="space-y-0.5 p-1.5">
-                  <p className="truncate text-[9px] uppercase tracking-wide text-muted">
+                  <p className="truncate text-[11px] uppercase tracking-wide text-muted">
                     {p.category?.name || 'Sem categoria'}
                     {p.brand ? ` · ${p.brand}` : ''}
                   </p>
@@ -1349,34 +1352,34 @@ export default function AdminProductsPage() {
                   </h2>
                   <div className="flex flex-wrap items-baseline gap-1">
                     {de && de > priceNum ? (
-                      <span className="text-[10px] text-muted line-through">
+                      <span className="text-[11px] text-muted line-through">
                         {money(de)}
                       </span>
                     ) : null}
                     <p className="text-xs font-semibold">{money(p.price)}</p>
                   </div>
                   {p.installments && p.installments >= 2 ? (
-                    <p className="text-[10px] font-semibold text-[var(--ok)]">
+                    <p className="text-[11px] font-semibold text-[var(--ok)]">
                       à vista ou até {p.installments}x s/ juros
                     </p>
                   ) : (
-                    <p className="text-[10px] text-muted">à vista · cartão c/ juros</p>
+                    <p className="text-[11px] text-muted">à vista · cartão c/ juros</p>
                   )}
-                  <p className="text-[10px] text-muted">Estoque: {p.stock}</p>
+                  <p className="text-[11px] text-muted">Estoque: {p.stock}</p>
                   {variantCount > 0 || p.hasVariants ? (
-                    <p className="text-[10px] font-semibold text-ink">
+                    <p className="text-[11px] font-semibold text-ink">
                       {variantCount || '—'} variação(ões)
                     </p>
                   ) : null}
                   {p.sku ? (
-                    <p className="truncate text-[10px] font-semibold text-ink">
+                    <p className="truncate text-[11px] font-semibold text-ink">
                       Cód: {p.sku}
                     </p>
                   ) : null}
                   <div className="mt-1.5 flex gap-1">
                     <button
                       type="button"
-                      className="btn btn-ghost flex-1 py-1 text-[10px]"
+                      className="btn btn-ghost flex-1 py-1 text-[11px]"
                       onClick={() => openEdit(p.id)}
                       disabled={editBusy}
                     >
@@ -1384,7 +1387,7 @@ export default function AdminProductsPage() {
                     </button>
                     <button
                       type="button"
-                      className={`btn btn-ghost flex-1 py-1 text-[10px] ${
+                      className={`btn btn-ghost flex-1 py-1 text-[11px] ${
                         p.active ? 'text-accent' : 'text-[var(--ok)]'
                       }`}
                       onClick={() => void setProductActive(p, !p.active)}
@@ -1393,14 +1396,14 @@ export default function AdminProductsPage() {
                     </button>
                   </div>
                   {!p.active ? (
-                    <p className="mt-1 text-[10px] font-semibold text-muted">
+                    <p className="mt-1 text-[11px] font-semibold text-muted">
                       Inativo na vitrine
                     </p>
                   ) : null}
                   {canDeleteProduct(p) ? (
                     <button
                       type="button"
-                      className="mt-1 w-full text-left text-[10px] text-muted underline"
+                      className="mt-1 w-full text-left text-[11px] text-muted underline"
                       onClick={() => void removeProduct(p)}
                     >
                       Excluir de vez (sem pedidos)
@@ -1477,7 +1480,7 @@ export default function AdminProductsPage() {
                           }`}
                         />
                         <span
-                          className={`block truncate text-[10px] font-semibold sm:text-[11px] ${
+                          className={`block truncate text-[11px] font-semibold sm:text-[11px] ${
                             current ? 'text-ink' : 'text-muted'
                           }`}
                         >
@@ -1588,7 +1591,7 @@ export default function AdminProductsPage() {
                                 className="h-full w-full object-cover"
                               />
                               {i === 0 ? (
-                                <span className="absolute bottom-0 left-0 right-0 bg-black/70 py-0.5 text-center text-[10px] font-bold text-white">
+                                <span className="absolute bottom-0 left-0 right-0 bg-black/70 py-0.5 text-center text-[11px] font-bold text-white">
                                   Capa
                                 </span>
                               ) : null}
@@ -1990,7 +1993,7 @@ export default function AdminProductsPage() {
                                     ) : null}
                                     <span>{opt}</span>
                                     {on ? (
-                                      <span className="text-[10px] opacity-80">
+                                      <span className="text-[11px] opacity-80">
                                         ✓
                                       </span>
                                     ) : null}
@@ -2257,7 +2260,7 @@ export default function AdminProductsPage() {
                 ) : null}
 
                 {error ? (
-                  <p className="mt-3 text-sm text-accent">{error}</p>
+                  <p role="alert" className="mt-3 text-sm text-accent">{error}</p>
                 ) : null}
               </div>
 
@@ -2277,7 +2280,7 @@ export default function AdminProductsPage() {
                     </button>
                   ) : (
                     <button type="submit" className="btn" disabled={loading}>
-                      {loading ? 'Salvando...' : 'Adicionar produto'}
+                      {loading ? 'Salvando…' : 'Adicionar produto'}
                     </button>
                   )}
                 </div>
@@ -2316,7 +2319,7 @@ export default function AdminProductsPage() {
 
             <div className="form-grid min-h-0 flex-1 overflow-y-auto px-4 py-4 md:grid-cols-2">
               {error ? (
-                <p className="text-sm text-accent md:col-span-2">{error}</p>
+                <p role="alert" className="text-sm text-accent md:col-span-2">{error}</p>
               ) : null}
               <div>
                 <label className="label">Nome</label>
@@ -2664,7 +2667,7 @@ export default function AdminProductsPage() {
                   Cancelar
                 </button>
                 <button type="submit" className="btn" disabled={editBusy}>
-                  {editBusy ? 'Salvando...' : 'Salvar alterações'}
+                  {editBusy ? 'Salvando…' : 'Salvar alterações'}
                 </button>
               </div>
             </div>

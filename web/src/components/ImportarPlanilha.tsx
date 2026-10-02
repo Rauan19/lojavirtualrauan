@@ -200,7 +200,7 @@ export function ImportarPlanilha({
           </div>
 
           {ocupado && !previa ? (
-            <p className="text-sm text-muted">Lendo a planilha...</p>
+            <p className="text-sm text-muted">Lendo a planilha…</p>
           ) : null}
 
           {previa ? (
@@ -289,7 +289,7 @@ export function ImportarPlanilha({
                   onClick={() => void confirmar()}
                 >
                   {ocupado
-                    ? 'Importando...'
+                    ? 'Importando…'
                     : `Importar ${gravaveis} produto${gravaveis === 1 ? '' : 's'}`}
                 </button>
               </div>

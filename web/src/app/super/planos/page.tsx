@@ -281,17 +281,17 @@ export default function SuperPlanosPage() {
           <div className="flex flex-wrap items-center gap-1.5">
             <h3 className="text-base font-bold">{plan.name}</h3>
             {plan.highlight ? (
-              <span className="rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold text-white">
+              <span className="rounded-full bg-ink px-2 py-0.5 text-[11px] font-bold text-white">
                 Destaque
               </span>
             ) : null}
             {plan.badge ? (
-              <span className="rounded-full bg-[#eef0f4] px-2 py-0.5 text-[10px] font-bold text-muted">
+              <span className="rounded-full bg-[#eef0f4] px-2 py-0.5 text-[11px] font-bold text-muted">
                 {plan.badge}
               </span>
             ) : null}
             {!plan.active ? (
-              <span className="rounded-full bg-[#f3e8e8] px-2 py-0.5 text-[10px] font-bold text-accent">
+              <span className="rounded-full bg-[#f3e8e8] px-2 py-0.5 text-[11px] font-bold text-accent">
                 Desativado
               </span>
             ) : null}
@@ -315,7 +315,7 @@ export default function SuperPlanosPage() {
               >
                 <span
                   aria-hidden
-                  className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold ${
+                  className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-[11px] font-bold ${
                     i.ok ? 'bg-[#e3f4ea] text-[#1b7f45]' : 'bg-[#eef0f4] text-muted'
                   }`}
                 >
@@ -399,7 +399,7 @@ export default function SuperPlanosPage() {
           />
         </div>
         <button className="btn btn-ghost" disabled={trialSaving}>
-          {trialSaving ? 'Salvando...' : 'Salvar'}
+          {trialSaving ? 'Salvando…' : 'Salvar'}
         </button>
         <p className="w-full text-[11px] text-muted">
           Vale para lojas criadas a partir de agora. Não muda o prazo de quem já
@@ -408,7 +408,7 @@ export default function SuperPlanosPage() {
       </form>
 
       {loading ? (
-        <p className="text-sm text-muted">Carregando...</p>
+        <p className="text-sm text-muted">Carregando…</p>
       ) : plans.length === 0 ? (
         <p className="border border-dashed border-line bg-white px-4 py-8 text-center text-sm text-muted">
           Nenhum plano cadastrado. Crie o primeiro em &quot;+ Novo plano&quot;.
@@ -664,7 +664,7 @@ export default function SuperPlanosPage() {
               </button>
               <button className="btn btn-accent" disabled={saving}>
                 {saving
-                  ? 'Salvando...'
+                  ? 'Salvando…'
                   : editingId
                     ? 'Salvar alterações'
                     : 'Criar plano'}

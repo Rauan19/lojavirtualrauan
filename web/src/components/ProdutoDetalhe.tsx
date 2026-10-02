@@ -109,7 +109,7 @@ export function ProdutoDetalhe({
                 {produto.name}
               </h2>
               <span
-                className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${
+                className={`rounded px-1.5 py-0.5 text-[11px] font-bold uppercase ${
                   produto.active ? 'bg-emerald-50 text-emerald-700' : 'bg-zinc-100 text-muted'
                 }`}
               >
@@ -179,7 +179,7 @@ export function ProdutoDetalhe({
                 <h3 className="mb-1.5 text-sm font-bold">Variações</h3>
                 <div className="overflow-x-auto rounded ring-1 ring-line">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-zinc-50 text-[10px] uppercase tracking-wide text-muted">
+                    <thead className="bg-zinc-50 text-[11px] uppercase tracking-wide text-muted">
                       <tr>
                         <th className="px-2 py-1.5">Variação</th>
                         <th className="px-2 py-1.5">Código</th>

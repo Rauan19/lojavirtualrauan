@@ -398,7 +398,7 @@ export default function AdminOrdersPage() {
         setMessage(
           result.mode === 'NETWORK'
             ? 'Enviado para a impressora térmica (rede)'
-            : 'Abrindo impressão no navegador...',
+            : 'Abrindo impressão no navegador…',
         );
       }
     } catch (err) {
@@ -746,7 +746,7 @@ export default function AdminOrdersPage() {
             onClick={() => void printSelected()}
           >
             {bulkBusy
-              ? 'Processando...'
+              ? 'Processando…'
               : `Imprimir (${selected.size})`}
           </button>
           <button
@@ -760,7 +760,7 @@ export default function AdminOrdersPage() {
       </div>
 
       {message ? <p className="text-sm text-[var(--ok)]">{message}</p> : null}
-      {error ? <p className="text-sm text-accent">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
 
       {printerOpen ? (
         <div className="card form-grid !p-3 md:grid-cols-2">
@@ -969,8 +969,32 @@ export default function AdminOrdersPage() {
           <tbody>
             {items.length === 0 ? (
               <tr>
-                <td className="px-2.5 py-3 text-muted" colSpan={8}>
-                  Nenhum pedido
+                <td className="px-2.5 py-8 text-center" colSpan={8}>
+                  {q || status || from || to ? (
+                    <span className="text-muted">
+                      Nenhum pedido com esses filtros.
+                    </span>
+                  ) : (
+                    <span className="mx-auto block max-w-sm">
+                      <strong className="block text-sm text-ink">
+                        Nenhum pedido ainda
+                      </strong>
+                      <span className="mt-1 block text-[13px] text-muted">
+                        Quando alguém comprar, o pedido aparece aqui e você recebe
+                        um aviso. Divulgue o link da sua loja para a primeira venda.
+                      </span>
+                      {getUser()?.store?.slug ? (
+                        <a
+                          href={`/loja/${getUser()?.store?.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-ghost mt-3 inline-flex h-10 px-4 text-[13px]"
+                        >
+                          Abrir minha loja
+                        </a>
+                      ) : null}
+                    </span>
+                  )}
                 </td>
               </tr>
             ) : (
@@ -1098,7 +1122,7 @@ export default function AdminOrdersPage() {
             onClick={(e) => e.stopPropagation()}
           >
             {detailLoading || !detail ? (
-              <p className="text-sm text-muted">Carregando detalhes...</p>
+              <p className="text-sm text-muted">Carregando detalhes…</p>
             ) : (
               <>
                 <div className="mb-3 flex items-start justify-between gap-2">
@@ -1169,7 +1193,7 @@ export default function AdminOrdersPage() {
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center text-[9px] text-muted">
+                            <div className="flex h-full w-full items-center justify-center text-[10px] text-muted">
                               —
                             </div>
                           )}
@@ -1308,7 +1332,7 @@ export default function AdminOrdersPage() {
                         onClick={() => void gerarEtiqueta(detail)}
                       >
                         {labelBusyId === detail.id
-                          ? 'Gerando etiqueta...'
+                          ? 'Gerando etiqueta…'
                           : 'Gerar etiqueta no Melhor Envio'}
                       </button>
                     ) : null}
@@ -1495,7 +1519,7 @@ export default function AdminOrdersPage() {
                       onClick={() => void issueInvoice(detail.id)}
                     >
                       {invoiceBusy
-                        ? 'Emitindo...'
+                        ? 'Emitindo…'
                         : invoice?.status === 'AUTHORIZED'
                           ? 'NFC-e autorizada'
                           : invoice?.status === 'PENDING'

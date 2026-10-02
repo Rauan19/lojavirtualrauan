@@ -348,7 +348,7 @@ export default function AdminCategoriesPage() {
           </div>
         </div>
         <button type="submit" className="btn btn-accent" disabled={busy}>
-          {busy ? 'Salvando...' : 'Adicionar'}
+          {busy ? 'Salvando…' : 'Adicionar'}
         </button>
       </form>
       <p className="text-xs text-muted">
@@ -388,7 +388,7 @@ export default function AdminCategoriesPage() {
           >
             <h2 className="text-base font-bold">Editar categoria</h2>
             <p className="mt-0.5 text-xs text-muted">/{editing.slug}</p>
-            {error ? <p className="mt-2 text-sm text-accent">{error}</p> : null}
+            {error ? <p role="alert" className="mt-2 text-sm text-accent">{error}</p> : null}
             <div className="mt-3">
               <label className="label">Nome</label>
               <input
@@ -483,7 +483,7 @@ export default function AdminCategoriesPage() {
                 Cancelar
               </button>
               <button type="submit" className="btn" disabled={busy}>
-                {busy ? 'Salvando...' : 'Salvar'}
+                {busy ? 'Salvando…' : 'Salvar'}
               </button>
             </div>
           </form>
