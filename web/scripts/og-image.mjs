@@ -59,7 +59,7 @@ const fundo = `
   <rect x="80" y="446" width="316" height="60" rx="4" fill="${ACCENT}" />
   <text x="238" y="484" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#ffffff" text-anchor="middle">Criar minha loja grátis</text>
 
-  <text x="80" y="566" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="${MUTED}">vendira.com.br · comece grátis, sem cartão de crédito</text>
+  <text x="80" y="566" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="${MUTED}">vendira.com.br · comece grátis</text>
 
   <!-- vitrine -->
   <rect x="${CARD.x}" y="${CARD.y}" width="${CARD.w}" height="${CARD.h}" rx="12" fill="#ffffff" />

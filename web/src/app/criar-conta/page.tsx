@@ -234,7 +234,7 @@ export default function CriarContaPage() {
         Criar minha loja
       </h2>
       <p className="mt-1 text-[14px] text-[#4a5560]">
-        Leva menos de 3 minutos. Sem cartão de crédito.
+        Leva menos de 3 minutos.
       </p>
 
       {/* Indicador de etapas */}

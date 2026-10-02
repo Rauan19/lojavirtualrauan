@@ -427,12 +427,11 @@ export default async function HomePage() {
         <section id="planos" className="scroll-mt-20 bg-[#f7f8fa]">
           <div className="mx-auto max-w-[1180px] px-4 py-16 md:px-6 md:py-24">
             <h2 className="font-[family-name:var(--font-brand)] text-[1.75rem] font-800 leading-[1.12] tracking-tight text-balance text-[#171a1f] md:text-[2.4rem]">
-              Comece de graça. Sem pegadinha, sem cartão.
+              Comece de graça. Sem pegadinha.
             </h2>
             <p className="mt-3 max-w-[48ch] text-[1.05rem] leading-relaxed text-[#4a5560]">
-              Monta a loja e testa sem gastar nada. Cartão só entra se você
-              decidir ficar — e mesmo assim, o preço que você vê é o que você
-              paga.
+              Monta a loja e testa sem gastar nada. Quando decidir ficar, o
+              preço que você vê é o que você paga.
             </p>
 
             {plans.some((p) => p.periodDays >= 360) ? (
@@ -596,8 +595,8 @@ export default async function HomePage() {
               Não perca mais uma venda. Crie sua loja hoje.
             </h2>
             <p className="mt-3 text-[1.05rem] leading-relaxed text-white/90">
-              Comece sem cartão de crédito. Sua loja pode estar no ar em poucos
-              minutos — quanto antes começar, antes vende. Se preferir conversar
+              Sua loja pode estar no ar em poucos minutos — quanto antes
+              começar, antes vende. Se preferir conversar
               antes, também respondemos no WhatsApp.
             </p>
           </div>
