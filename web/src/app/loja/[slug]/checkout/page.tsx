@@ -22,6 +22,7 @@ import {
 } from '@/lib/shipping-display';
 import { SemFoto } from '@/components/SemFoto';
 import { corDeTexto, tintaSobre } from '@/lib/contraste';
+import { AvisoPagamento, motivoRecusa } from '@/components/AvisoPagamento';
 
 type Store = {
   name: string;
@@ -97,6 +98,8 @@ function CheckoutInner({ slug }: { slug: string }) {
 
   const [store, setStore] = useState<Store | null>(null);
   const [error, setError] = useState('');
+  /** Pagamento recusado: aparece em janela no meio da tela */
+  const [erroPagamento, setErroPagamento] = useState('');
   const [recuperado, setRecuperado] = useState('');
 
   /*
@@ -676,6 +679,12 @@ function CheckoutInner({ slug }: { slug: string }) {
         } as React.CSSProperties
       }
     >
+      {erroPagamento ? (
+        <AvisoPagamento
+          mensagem={erroPagamento}
+          onFechar={() => setErroPagamento('')}
+        />
+      ) : null}
       <header className="border-b border-line bg-white">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
           <Link href={`/loja/${slug}`} className="text-sm font-medium text-muted">
@@ -1171,10 +1180,7 @@ function CheckoutInner({ slug }: { slug: string }) {
                             setBusy(false);
                           } else if (status === 'rejected') {
                             setBusy(false);
-                            setError(
-                              result.status_detail ||
-                                'Pagamento recusado. Tente outro meio.',
-                            );
+                            setErroPagamento(motivoRecusa(result.status_detail));
                           } else {
                             setBusy(false);
                           }
@@ -1185,10 +1191,10 @@ function CheckoutInner({ slug }: { slug: string }) {
                             status_detail: result.status_detail,
                           };
                         } catch (err) {
-                          setError(
+                          setErroPagamento(
                             err instanceof Error
                               ? err.message
-                              : 'Pagamento recusado',
+                              : motivoRecusa(null),
                           );
                           setBusy(false);
                           throw err;

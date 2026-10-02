@@ -632,8 +632,18 @@ export class PaymentsService {
     }
 
     if (!response.ok) {
+      // friendly: explicação para o lojista/suporte (só no log);
+      // o cliente vê uma frase curta, sem detalhe técnico do Mercado Pago
       let friendly = errText.slice(0, 300);
-      if (
+      let problemaDaLoja = false;
+      if (errText.includes('"code":2034') || errText.includes('Invalid users involved')) {
+        problemaDaLoja = true;
+        friendly =
+          'Usuários incompatíveis (código 2034). Em teste, a conta dona do app (que recebe a comissão), ' +
+          'o vendedor conectado e o comprador precisam ser todos usuários de teste; em produção, o comprador ' +
+          'não pode ser a própria conta do vendedor. Resposta: ' +
+          errText.slice(0, 200);
+      } else if (
         errText.includes('Unauthorized use of live credentials') ||
         errText.includes('"code":7')
       ) {
@@ -668,11 +678,19 @@ export class PaymentsService {
           '(4) CPF válido no Brick. Resposta: ' +
           errText.slice(0, 180);
       }
+      if (
+        errText.includes('Unauthorized use of live credentials') ||
+        errText.includes('"code":7')
+      ) {
+        problemaDaLoja = true;
+      }
       this.logger.warn(
-        `MP recusou pay-brick order=${order.id}: ${errText.slice(0, 400)}`,
+        `MP recusou pay-brick order=${order.id}: ${friendly} | ${errText.slice(0, 400)}`,
       );
       throw new BadRequestException(
-        `Mercado Pago recusou o pagamento: ${friendly}`,
+        problemaDaLoja
+          ? 'A loja não conseguiu receber este pagamento agora. Tente de novo em alguns minutos ou fale com a loja.'
+          : 'Não foi possível concluir o pagamento. Confira os dados do cartão ou tente outra forma de pagamento.',
       );
     }
 
