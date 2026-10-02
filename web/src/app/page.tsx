@@ -206,7 +206,7 @@ export default async function HomePage() {
             ) : null}
           </div>
 
-          <div className="relative" aria-hidden>
+          <div className="relative mx-auto w-full max-w-[520px] md:max-w-none" aria-hidden>
             <div className="lp-hero-devices">
               <StoreDeviceShowcase />
             </div>

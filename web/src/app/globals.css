@@ -473,6 +473,7 @@
 /* ---------- Hero da landing: notebook + celular com a vitrine dentro ----- */
 
 .lp-stage {
+  margin-inline: auto;
   position: relative;
   width: 100%;
   max-width: 500px;
@@ -1358,19 +1359,38 @@
   background: #bf2f46;
 }
 
-@media (max-width: 479px) {
+/* No celular, campo e botão separados, cada um com a largura toda (como a
+   Nuvemshop): dentro de uma caixa só, o campo ficava espremido */
+@media (max-width: 639px) {
   .lp-comecar {
     flex-direction: column;
-    border-radius: 18px;
+    gap: 0.625rem;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
   }
 
+  .lp-comecar:focus-within {
+    outline: none;
+  }
+
+  /* flex: none: em coluna, o flex: 1 de cima zera a altura do campo */
   .lp-comecar__campo {
+    flex: none;
     height: 3.25rem;
-    padding: 0 0.9rem;
+    border-radius: 999px;
+    background: #fff;
+    padding: 0 1.25rem;
+    box-shadow: 0 14px 30px -16px rgba(0, 0, 0, 0.55);
+  }
+
+  .lp-comecar__campo:focus-visible {
+    outline: 3px solid rgba(63, 162, 180, 0.7);
+    outline-offset: 2px;
   }
 
   .lp-comecar__botao {
-    border-radius: 13px;
+    width: 100%;
   }
 }
 
