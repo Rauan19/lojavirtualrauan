@@ -3,6 +3,7 @@ import { CARRIER_QUOTE_MODES } from './packaging';
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
@@ -23,10 +24,33 @@ import {
   type ShipOption,
 } from './providers/types';
 
-
+/*
+ * A cotação é pública: quem lê a mensagem de erro é o cliente da loja, na
+ * página do produto ou no checkout. Instrução de configuração ("token",
+ * "Configurações → Frete") não serve para ele; vai para o log, onde o
+ * lojista e o suporte enxergam, e o cliente recebe o que fazer.
+ */
+const MSG_FRETE_INDISPONIVEL =
+  'O cálculo de frete desta loja está indisponível no momento. Fale com a loja para combinar a entrega.';
+const MSG_SEM_ENTREGA =
+  'Não encontramos entrega para este CEP. Confira o número ou fale com a loja.';
+const MSG_TENTE_DE_NOVO =
+  'Não foi possível calcular o frete agora. Tente de novo em instantes.';
 
 @Injectable()
 export class ShippingService {
+  private readonly logger = new Logger(ShippingService.name);
+
+  /** Registra o motivo técnico para o lojista e devolve a mensagem do cliente. */
+  private falhaParaCliente(
+    storeId: string,
+    motivo: string,
+    mensagemCliente: string,
+  ): never {
+    this.logger.warn(`Frete da loja ${storeId}: ${motivo}`);
+    throw new BadRequestException(mensagemCliente);
+  }
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly secrets: SecretsService,
@@ -73,7 +97,10 @@ export class ShippingService {
       };
     }
 
-    if (store.freteModo === 'manual' || !CARRIER_QUOTE_MODES.has(store.freteModo)) {
+    if (
+      store.freteModo === 'manual' ||
+      !CARRIER_QUOTE_MODES.has(store.freteModo)
+    ) {
       const options = this.manualOptions(store.freteValorFixo).map((o) =>
         qualifiesFreeShipping
           ? {
@@ -92,21 +119,27 @@ export class ShippingService {
 
     const fromZip = normalizeZip(store.freteCepOrigem || '');
     if (fromZip.length !== 8) {
-      throw new BadRequestException(
-        'Configure o CEP de origem real da loja em Configurações → Frete',
+      this.falhaParaCliente(
+        storeId,
+        'CEP de origem não configurado (Configurações → Frete)',
+        MSG_FRETE_INDISPONIVEL,
       );
     }
     if (!store.freteToken?.trim()) {
-      throw new BadRequestException(
-        'Configure o token de produção da API de frete em Configurações → Frete',
+      this.falhaParaCliente(
+        storeId,
+        'token da API de frete não configurado (Configurações → Frete)',
+        MSG_FRETE_INDISPONIVEL,
       );
     }
     if (
       store.freteModo === 'melhor_envio' &&
       !store.freteEmailContato?.trim()
     ) {
-      throw new BadRequestException(
-        'Informe o e-mail de contato da loja (exigido pelo Melhor Envio)',
+      this.falhaParaCliente(
+        storeId,
+        'e-mail de contato exigido pelo Melhor Envio não informado',
+        MSG_FRETE_INDISPONIVEL,
       );
     }
 
@@ -147,10 +180,12 @@ export class ShippingService {
       }
 
       if (options.length === 0) {
-        throw new BadRequestException(
+        this.falhaParaCliente(
+          storeId,
           allowed.length > 0
-            ? 'Nenhuma transportadora selecionada atende este CEP. Libere mais opções em Configurações → Frete ou confira o CEP.'
-            : 'A API de frete não retornou opções para este CEP. Verifique token, CEP de origem e cadastro na transportadora.',
+            ? `nenhuma das transportadoras escolhidas atende o CEP ${toZip} (libere mais opções em Configurações → Frete)`
+            : `a API de frete não retornou opções para o CEP ${toZip} (verifique token, CEP de origem e cadastro)`,
+          MSG_SEM_ENTREGA,
         );
       }
 
@@ -166,8 +201,11 @@ export class ShippingService {
       return { provider: store.freteModo, sandbox: useSandbox, options };
     } catch (err) {
       if (err instanceof BadRequestException) throw err;
-      const msg = err instanceof Error ? err.message : 'Erro ao cotar frete';
-      throw new BadRequestException(msg);
+      this.falhaParaCliente(
+        storeId,
+        `erro na API de frete: ${err instanceof Error ? err.message : String(err)}`,
+        MSG_TENTE_DE_NOVO,
+      );
     }
   }
 
