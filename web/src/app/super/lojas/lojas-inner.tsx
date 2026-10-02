@@ -16,6 +16,7 @@ import {
   moneyBr,
   planBadge,
   statusLabel,
+  statusTone,
   StoreRow,
   SuperSection,
   toInputDate,
@@ -253,9 +254,7 @@ export function SuperLojasInner() {
       adminName: store.admin?.name || '',
       adminEmail: store.admin?.email || '',
       adminPassword: '',
-      sellerPhone: store.sellerPhone
-        ? formatPhoneBr(store.sellerPhone)
-        : '',
+      sellerPhone: store.sellerPhone ? formatPhoneBr(store.sellerPhone) : '',
     });
   }
 
@@ -366,22 +365,61 @@ export function SuperLojasInner() {
 
   return (
     <SuperSection
+      icone="/super/lojas"
       title="Lojas"
       summary="Cadastro, planos e acesso dos lojistas"
+      acoes={
+        <button
+          type="button"
+          className="btn btn-accent"
+          onClick={abrirNovaLoja}
+        >
+          + Nova loja
+        </button>
+      }
     >
       {error ? (
-        <p role="alert" className="border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#b42318]">
+        <p
+          role="alert"
+          className="border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#b42318]"
+        >
           {error}
         </p>
       ) : null}
 
-      <div className="flex flex-wrap items-end gap-2 border border-[#d9dde3] bg-white p-3">
-        <div className="min-w-[180px] flex-1">
-          <label className="label">Buscar</label>
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-white p-3">
+        <div className="relative min-w-[200px] flex-1">
+          <label className="sr-only" htmlFor="busca-lojas">
+            Buscar loja
+          </label>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"
+          >
+            <circle
+              cx="11"
+              cy="11"
+              r="6.5"
+              stroke="currentColor"
+              strokeWidth="1.8"
+            />
+            <path
+              d="m16 16 4 4"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+          </svg>
           <input
-            className="field"
+            id="busca-lojas"
+            type="search"
+            className="field !pl-10"
             value={q}
-            placeholder="Nome, slug, e-mail…"
+            placeholder="Buscar por nome, endereço ou e-mail"
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') patchQuery({ q: q.trim() || null });
@@ -389,27 +427,33 @@ export function SuperLojasInner() {
           />
         </div>
         <div>
-          <label className="label">Status</label>
+          <label className="sr-only" htmlFor="filtro-status">
+            Situação
+          </label>
           <select
+            id="filtro-status"
             className="field"
             value={statusFilter}
             onChange={(e) => patchQuery({ status: e.target.value || null })}
           >
-            <option value="">Todos</option>
+            <option value="">Todas as situações</option>
             <option value="ACTIVE">Ativa</option>
-            <option value="TRIAL">Trial</option>
+            <option value="TRIAL">Em teste</option>
             <option value="PAST_DUE">Em atraso</option>
             <option value="SUSPENDED">Suspensa</option>
           </select>
         </div>
         <div>
-          <label className="label">Vencimento</label>
+          <label className="sr-only" htmlFor="filtro-vencimento">
+            Vencimento
+          </label>
           <select
+            id="filtro-vencimento"
             className="field"
             value={planFilter}
             onChange={(e) => patchQuery({ plan: e.target.value || null })}
           >
-            <option value="">Todos</option>
+            <option value="">Qualquer vencimento</option>
             <option value="ok">Em dia</option>
             <option value="expiring">Vencendo</option>
             <option value="expired">Vencido</option>
@@ -435,67 +479,70 @@ export function SuperLojasInner() {
             Limpar
           </button>
         )}
-        <button
-          type="button"
-          className="btn btn-accent ml-auto"
-          onClick={abrirNovaLoja}
-        >
-          + Nova loja
-        </button>
       </div>
 
-      <p className="text-xs text-muted">
+      <p className="-mb-2 text-[13px] text-muted">
         {loading
           ? 'Carregando…'
           : `${filtered.length} loja${filtered.length === 1 ? '' : 's'} encontrada${filtered.length === 1 ? '' : 's'}`}
       </p>
 
-      <ul className="space-y-2">
+      <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white">
         {pageItems.map((s) => {
           const badge = planBadge(s);
           return (
             <li
               key={s.id}
-              className="border border-[#d9dde3] bg-white px-4 py-3"
+              className="px-4 py-4 transition-colors hover:bg-[#f8fafb] sm:px-5"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-bold">{s.name}</p>
-                    <span
-                      className={`rounded px-1.5 py-0.5 text-[11px] font-bold uppercase ${badge.className}`}
-                    >
-                      {badge.text}
-                    </span>
-                    <span className="rounded bg-[#f0f1f3] px-1.5 py-0.5 text-[11px] font-bold uppercase text-[#5c6570]">
-                      {statusLabel[s.status] || s.status}
-                    </span>
+                <div className="flex min-w-0 flex-1 items-start gap-3.5">
+                  <span
+                    className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#e9f1f3] text-[15px] font-bold text-[var(--brand-deep)]"
+                    aria-hidden
+                  >
+                    {(s.name || '?').trim().charAt(0).toUpperCase()}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-[15px] font-bold">{s.name}</p>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusTone(s.status)}`}
+                      >
+                        {statusLabel[s.status] || s.status}
+                      </span>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${badge.className}`}
+                      >
+                        {badge.text}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-muted">
+                      /loja/{s.slug} · plano {nomePlano(s.planName)} ·{' '}
+                      {feeNumber(s.monthlyFee) > 0
+                        ? moneyBr(feeNumber(s.monthlyFee))
+                        : 'sem mensalidade'}{' '}
+                      · vence {formatDate(s.planDueAt)}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted">
+                      Admin: {s.admin?.name || '—'} ({s.admin?.email || '—'}) ·{' '}
+                      {s._count.products} produtos · {s._count.orders} pedidos ·{' '}
+                      {s._count.customers} clientes
+                      {s.sellerPhone ? ` · WhatsApp ${s.sellerPhone}` : ''}
+                    </p>
                   </div>
-                  <p className="mt-1 text-sm text-muted">
-                    /loja/{s.slug} · plano {nomePlano(s.planName)} ·{' '}
-                    {feeNumber(s.monthlyFee) > 0
-                      ? moneyBr(feeNumber(s.monthlyFee))
-                      : 'sem mensalidade'}{' '}
-                    · vence {formatDate(s.planDueAt)}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted">
-                    Admin: {s.admin?.name || '—'} ({s.admin?.email || '—'}) ·{' '}
-                    {s._count.products} produtos · {s._count.orders} pedidos ·{' '}
-                    {s._count.customers} clientes
-                    {s.sellerPhone ? ` · WhatsApp ${s.sellerPhone}` : ''}
-                  </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 sm:pl-0">
                   <Link
                     href={`/loja/${s.slug}`}
                     target="_blank"
-                    className="btn btn-ghost text-xs"
+                    className="btn btn-ghost h-9 px-3 text-[13px]"
                   >
-                    Vitrine
+                    Ver loja
                   </Link>
                   <button
                     type="button"
-                    className="btn btn-ghost text-xs"
+                    className="btn btn-accent h-9 px-3 text-[13px]"
                     onClick={() => openEdit(s)}
                   >
                     Gerenciar
@@ -506,8 +553,13 @@ export function SuperLojasInner() {
           );
         })}
         {!loading && pageItems.length === 0 ? (
-          <li className="border border-dashed border-[#d9dde3] bg-white px-4 py-8 text-center text-sm text-muted">
-            Nenhuma loja neste filtro.
+          <li className="px-4 py-12 text-center">
+            <p className="text-[15px] font-semibold">
+              Nenhuma loja neste filtro
+            </p>
+            <p className="mt-1 text-sm text-muted">
+              Troque a busca ou limpe os filtros.
+            </p>
           </li>
         ) : null}
       </ul>
@@ -531,296 +583,296 @@ export function SuperLojasInner() {
           largura="lg"
           onClose={() => setCreateOpen(false)}
         >
-            <form onSubmit={onCreate} className="grid gap-3 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <label className="label">Nome da loja</label>
-                <input
-                  className="field"
-                  required
-                  value={createForm.name}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, name: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="label">Slug (opcional)</label>
-                <input
-                  className="field"
-                  value={createForm.slug}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, slug: e.target.value })
-                  }
-                  placeholder="minha-loja"
-                />
-              </div>
-              <div>
-                <label className="label">Status</label>
+          <form onSubmit={onCreate} className="grid gap-3 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label className="label">Nome da loja</label>
+              <input
+                className="field"
+                required
+                value={createForm.name}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, name: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label className="label">Slug (opcional)</label>
+              <input
+                className="field"
+                value={createForm.slug}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, slug: e.target.value })
+                }
+                placeholder="minha-loja"
+              />
+            </div>
+            <div>
+              <label className="label">Status</label>
+              <select
+                className="field"
+                value={createForm.status}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, status: e.target.value })
+                }
+              >
+                <option value="TRIAL">Em teste</option>
+                <option value="ACTIVE">Ativa</option>
+                <option value="PAST_DUE">Em atraso</option>
+                <option value="SUSPENDED">Suspensa</option>
+              </select>
+            </div>
+            <div>
+              <label className="label" htmlFor="nova-plano">
+                Plano
+              </label>
+              {seletorPlano(
+                createForm.planName,
+                (id, mensalidade) =>
+                  setCreateForm({
+                    ...createForm,
+                    planName: id,
+                    monthlyFee: mensalidade,
+                  }),
+                'nova-plano',
+              )}
+            </div>
+            <div>
+              <label className="label">Mensalidade (R$)</label>
+              <input
+                className="field"
+                type="number"
+                min={0}
+                step="0.01"
+                value={createForm.monthlyFee}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, monthlyFee: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label className="label">Vencimento</label>
+              <input
+                className="field"
+                type="date"
+                value={createForm.planDueAt}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, planDueAt: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label className="label">WhatsApp vendedor</label>
+              <input
+                className="field"
+                value={createForm.sellerPhone}
+                onChange={(e) =>
+                  setCreateForm({
+                    ...createForm,
+                    sellerPhone: formatPhoneBr(e.target.value),
+                  })
+                }
+                placeholder="(11) 99999-9999"
+                required
+              />
+            </div>
+            <div>
+              <label className="label">Doc. (CPF/CNPJ)</label>
+              <div className="flex gap-2">
                 <select
-                  className="field"
-                  value={createForm.status}
+                  className="field w-24"
+                  value={createForm.sellerDocType}
                   onChange={(e) =>
-                    setCreateForm({ ...createForm, status: e.target.value })
+                    setCreateForm({
+                      ...createForm,
+                      sellerDocType: e.target.value as 'CPF' | 'CNPJ' | '',
+                      sellerDocument: '',
+                    })
                   }
+                  required
                 >
-                  <option value="TRIAL">Trial</option>
-                  <option value="ACTIVE">Ativa</option>
-                  <option value="PAST_DUE">Em atraso</option>
-                  <option value="SUSPENDED">Suspensa</option>
+                  <option value="">—</option>
+                  <option value="CPF">CPF</option>
+                  <option value="CNPJ">CNPJ</option>
                 </select>
-              </div>
-              <div>
-                <label className="label" htmlFor="nova-plano">
-                  Plano
-                </label>
-                {seletorPlano(
-                  createForm.planName,
-                  (id, mensalidade) =>
-                    setCreateForm({
-                      ...createForm,
-                      planName: id,
-                      monthlyFee: mensalidade,
-                    }),
-                  'nova-plano',
-                )}
-              </div>
-              <div>
-                <label className="label">Mensalidade (R$)</label>
                 <input
                   className="field"
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={createForm.monthlyFee}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, monthlyFee: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="label">Vencimento</label>
-                <input
-                  className="field"
-                  type="date"
-                  value={createForm.planDueAt}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, planDueAt: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="label">WhatsApp vendedor</label>
-                <input
-                  className="field"
-                  value={createForm.sellerPhone}
+                  value={createForm.sellerDocument}
                   onChange={(e) =>
                     setCreateForm({
                       ...createForm,
-                      sellerPhone: formatPhoneBr(e.target.value),
+                      sellerDocument: e.target.value,
                     })
                   }
-                  placeholder="(11) 99999-9999"
-                  required
-                />
-              </div>
-              <div>
-                <label className="label">Doc. (CPF/CNPJ)</label>
-                <div className="flex gap-2">
-                  <select
-                    className="field w-24"
-                    value={createForm.sellerDocType}
-                    onChange={(e) =>
-                      setCreateForm({
-                        ...createForm,
-                        sellerDocType: e.target.value as 'CPF' | 'CNPJ' | '',
-                        sellerDocument: '',
-                      })
-                    }
-                    required
-                  >
-                    <option value="">—</option>
-                    <option value="CPF">CPF</option>
-                    <option value="CNPJ">CNPJ</option>
-                  </select>
-                  <input
-                    className="field"
-                    value={createForm.sellerDocument}
-                    onChange={(e) =>
-                      setCreateForm({
-                        ...createForm,
-                        sellerDocument: e.target.value,
-                      })
-                    }
-                    placeholder={
-                      createForm.sellerDocType === 'CNPJ'
-                        ? '00.000.000/0000-00'
-                        : '000.000.000-00'
-                    }
-                    required
-                  />
-                </div>
-              </div>
-              <div className="sm:col-span-2 border-t border-[#ebebeb] pt-3">
-                <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-muted">
-                  Endereço do lojista
-                </p>
-                <p className="mb-2 text-[11px] text-muted">
-                  Vira também a origem do frete — não precisa preencher de
-                  novo depois.
-                </p>
-              </div>
-              <div>
-                <label className="label">CEP</label>
-                <input
-                  className="field"
-                  value={createForm.sellerZipCode}
-                  onChange={(e) =>
-                    setCreateForm({
-                      ...createForm,
-                      sellerZipCode: formatCep(e.target.value),
-                    })
-                  }
-                  onBlur={(e) => onCreateCepBlur(e.target.value)}
-                  placeholder="00000-000"
-                  inputMode="numeric"
-                  required
-                />
-                {cepLoading ? (
-                  <p className="mt-0.5 text-[11px] text-muted">Buscando…</p>
-                ) : null}
-              </div>
-              <div>
-                <label className="label">Número</label>
-                <input
-                  className="field"
-                  value={createForm.sellerNumber}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, sellerNumber: e.target.value })
+                  placeholder={
+                    createForm.sellerDocType === 'CNPJ'
+                      ? '00.000.000/0000-00'
+                      : '000.000.000-00'
                   }
                   required
                 />
               </div>
-              <div className="sm:col-span-2">
-                <label className="label">Rua</label>
-                <input
-                  className="field"
-                  value={createForm.sellerStreet}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, sellerStreet: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <label className="label">Complemento (opcional)</label>
-                <input
-                  className="field"
-                  value={createForm.sellerComplement}
-                  onChange={(e) =>
-                    setCreateForm({
-                      ...createForm,
-                      sellerComplement: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label className="label">Bairro</label>
-                <input
-                  className="field"
-                  value={createForm.sellerNeighborhood}
-                  onChange={(e) =>
-                    setCreateForm({
-                      ...createForm,
-                      sellerNeighborhood: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <label className="label">Cidade</label>
-                <input
-                  className="field"
-                  value={createForm.sellerCity}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, sellerCity: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <label className="label">UF</label>
-                <input
-                  className="field"
-                  value={createForm.sellerState}
-                  onChange={(e) =>
-                    setCreateForm({
-                      ...createForm,
-                      sellerState: e.target.value.toUpperCase().slice(0, 2),
-                    })
-                  }
-                  maxLength={2}
-                  required
-                />
-              </div>
-              <div className="sm:col-span-2 border-t border-[#ebebeb] pt-3">
-                <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-muted">
-                  Admin da loja
-                </p>
-              </div>
-              <div>
-                <label className="label">Nome</label>
-                <input
-                  className="field"
-                  required
-                  value={createForm.adminName}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, adminName: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="label">E-mail</label>
-                <input
-                  className="field"
-                  type="email"
-                  required
-                  value={createForm.adminEmail}
-                  onChange={(e) =>
-                    setCreateForm({ ...createForm, adminEmail: e.target.value })
-                  }
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label className="label">Senha</label>
-                <input
-                  className="field"
-                  type="password"
-                  required
-                  minLength={6}
-                  value={createForm.adminPassword}
-                  onChange={(e) =>
-                    setCreateForm({
-                      ...createForm,
-                      adminPassword: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="sm:col-span-2 flex justify-end gap-2 pt-1">
-                <button type="button" className="btn btn-ghost" data-modal-cancel>
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-accent"
-                  disabled={creating}
-                >
-                  {creating ? 'Criando…' : 'Criar loja'}
-                </button>
-              </div>
-            </form>
+            </div>
+            <div className="sm:col-span-2 border-t border-line pt-3">
+              <p className="mb-2 text-[13px] font-semibold text-ink">
+                Endereço do lojista
+              </p>
+              <p className="mb-2 text-[11px] text-muted">
+                Vira também a origem do frete — não precisa preencher de novo
+                depois.
+              </p>
+            </div>
+            <div>
+              <label className="label">CEP</label>
+              <input
+                className="field"
+                value={createForm.sellerZipCode}
+                onChange={(e) =>
+                  setCreateForm({
+                    ...createForm,
+                    sellerZipCode: formatCep(e.target.value),
+                  })
+                }
+                onBlur={(e) => onCreateCepBlur(e.target.value)}
+                placeholder="00000-000"
+                inputMode="numeric"
+                required
+              />
+              {cepLoading ? (
+                <p className="mt-0.5 text-[11px] text-muted">Buscando…</p>
+              ) : null}
+            </div>
+            <div>
+              <label className="label">Número</label>
+              <input
+                className="field"
+                value={createForm.sellerNumber}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, sellerNumber: e.target.value })
+                }
+                required
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="label">Rua</label>
+              <input
+                className="field"
+                value={createForm.sellerStreet}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, sellerStreet: e.target.value })
+                }
+                required
+              />
+            </div>
+            <div>
+              <label className="label">Complemento (opcional)</label>
+              <input
+                className="field"
+                value={createForm.sellerComplement}
+                onChange={(e) =>
+                  setCreateForm({
+                    ...createForm,
+                    sellerComplement: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <div>
+              <label className="label">Bairro</label>
+              <input
+                className="field"
+                value={createForm.sellerNeighborhood}
+                onChange={(e) =>
+                  setCreateForm({
+                    ...createForm,
+                    sellerNeighborhood: e.target.value,
+                  })
+                }
+                required
+              />
+            </div>
+            <div>
+              <label className="label">Cidade</label>
+              <input
+                className="field"
+                value={createForm.sellerCity}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, sellerCity: e.target.value })
+                }
+                required
+              />
+            </div>
+            <div>
+              <label className="label">UF</label>
+              <input
+                className="field"
+                value={createForm.sellerState}
+                onChange={(e) =>
+                  setCreateForm({
+                    ...createForm,
+                    sellerState: e.target.value.toUpperCase().slice(0, 2),
+                  })
+                }
+                maxLength={2}
+                required
+              />
+            </div>
+            <div className="sm:col-span-2 border-t border-line pt-3">
+              <p className="mb-2 text-[13px] font-semibold text-ink">
+                Admin da loja
+              </p>
+            </div>
+            <div>
+              <label className="label">Nome</label>
+              <input
+                className="field"
+                required
+                value={createForm.adminName}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, adminName: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label className="label">E-mail</label>
+              <input
+                className="field"
+                type="email"
+                required
+                value={createForm.adminEmail}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, adminEmail: e.target.value })
+                }
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="label">Senha</label>
+              <input
+                className="field"
+                type="password"
+                required
+                minLength={6}
+                value={createForm.adminPassword}
+                onChange={(e) =>
+                  setCreateForm({
+                    ...createForm,
+                    adminPassword: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <div className="sm:col-span-2 flex justify-end gap-2 pt-1">
+              <button type="button" className="btn btn-ghost" data-modal-cancel>
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="btn btn-accent"
+                disabled={creating}
+              >
+                {creating ? 'Criando…' : 'Criar loja'}
+              </button>
+            </div>
+          </form>
         </Modal>
       ) : null}
 
@@ -832,149 +884,147 @@ export function SuperLojasInner() {
           largura="lg"
           onClose={() => setEditId(null)}
         >
-            <form onSubmit={onSaveEdit} className="grid gap-3 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <label className="label">Nome</label>
-                <input
-                  className="field"
-                  required
-                  value={editForm.name}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, name: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="label">Slug</label>
-                <input
-                  className="field"
-                  required
-                  value={editForm.slug}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, slug: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="label">Status</label>
-                <select
-                  className="field"
-                  value={editForm.status}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, status: e.target.value })
-                  }
-                >
-                  <option value="TRIAL">Trial</option>
-                  <option value="ACTIVE">Ativa</option>
-                  <option value="PAST_DUE">Em atraso</option>
-                  <option value="SUSPENDED">Suspensa</option>
-                </select>
-              </div>
-              <div>
-                <label className="label" htmlFor="editar-plano">
-                  Plano
-                </label>
-                {seletorPlano(
-                  editForm.planName,
-                  (id, mensalidade) =>
-                    setEditForm({
-                      ...editForm,
-                      planName: id,
-                      monthlyFee: mensalidade,
-                    }),
-                  'editar-plano',
-                )}
-              </div>
-              <div>
-                <label className="label">Mensalidade (R$)</label>
-                <input
-                  className="field"
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={editForm.monthlyFee}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, monthlyFee: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="label">Vencimento</label>
-                <input
-                  className="field"
-                  type="date"
-                  value={editForm.planDueAt}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, planDueAt: e.target.value })
-                  }
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label className="label">WhatsApp vendedor</label>
-                <input
-                  className="field"
-                  value={editForm.sellerPhone}
-                  onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      sellerPhone: formatPhoneBr(e.target.value),
-                    })
-                  }
-                  placeholder="(11) 99999-9999"
-                />
-              </div>
-              <div className="sm:col-span-2 border-t border-[#ebebeb] pt-3">
-                <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-muted">
-                  Admin
-                </p>
-              </div>
-              <div>
-                <label className="label">Nome</label>
-                <input
-                  className="field"
-                  value={editForm.adminName}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, adminName: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="label">E-mail</label>
-                <input
-                  className="field"
-                  type="email"
-                  value={editForm.adminEmail}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, adminEmail: e.target.value })
-                  }
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label className="label">Nova senha (opcional)</label>
-                <input
-                  className="field"
-                  type="password"
-                  minLength={6}
-                  value={editForm.adminPassword}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, adminPassword: e.target.value })
-                  }
-                  placeholder="Deixe em branco para manter"
-                />
-              </div>
-              <div className="sm:col-span-2 flex justify-end gap-2 pt-1">
-                <button type="button" className="btn btn-ghost" data-modal-cancel>
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-accent"
-                  disabled={saving}
-                >
-                  {saving ? 'Salvando…' : 'Salvar'}
-                </button>
-              </div>
-            </form>
+          <form onSubmit={onSaveEdit} className="grid gap-3 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label className="label">Nome</label>
+              <input
+                className="field"
+                required
+                value={editForm.name}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, name: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label className="label">Slug</label>
+              <input
+                className="field"
+                required
+                value={editForm.slug}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, slug: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label className="label">Status</label>
+              <select
+                className="field"
+                value={editForm.status}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, status: e.target.value })
+                }
+              >
+                <option value="TRIAL">Em teste</option>
+                <option value="ACTIVE">Ativa</option>
+                <option value="PAST_DUE">Em atraso</option>
+                <option value="SUSPENDED">Suspensa</option>
+              </select>
+            </div>
+            <div>
+              <label className="label" htmlFor="editar-plano">
+                Plano
+              </label>
+              {seletorPlano(
+                editForm.planName,
+                (id, mensalidade) =>
+                  setEditForm({
+                    ...editForm,
+                    planName: id,
+                    monthlyFee: mensalidade,
+                  }),
+                'editar-plano',
+              )}
+            </div>
+            <div>
+              <label className="label">Mensalidade (R$)</label>
+              <input
+                className="field"
+                type="number"
+                min={0}
+                step="0.01"
+                value={editForm.monthlyFee}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, monthlyFee: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label className="label">Vencimento</label>
+              <input
+                className="field"
+                type="date"
+                value={editForm.planDueAt}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, planDueAt: e.target.value })
+                }
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="label">WhatsApp vendedor</label>
+              <input
+                className="field"
+                value={editForm.sellerPhone}
+                onChange={(e) =>
+                  setEditForm({
+                    ...editForm,
+                    sellerPhone: formatPhoneBr(e.target.value),
+                  })
+                }
+                placeholder="(11) 99999-9999"
+              />
+            </div>
+            <div className="sm:col-span-2 border-t border-line pt-3">
+              <p className="mb-2 text-[13px] font-semibold text-ink">Admin</p>
+            </div>
+            <div>
+              <label className="label">Nome</label>
+              <input
+                className="field"
+                value={editForm.adminName}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, adminName: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label className="label">E-mail</label>
+              <input
+                className="field"
+                type="email"
+                value={editForm.adminEmail}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, adminEmail: e.target.value })
+                }
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="label">Nova senha (opcional)</label>
+              <input
+                className="field"
+                type="password"
+                minLength={6}
+                value={editForm.adminPassword}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, adminPassword: e.target.value })
+                }
+                placeholder="Deixe em branco para manter"
+              />
+            </div>
+            <div className="sm:col-span-2 flex justify-end gap-2 pt-1">
+              <button type="button" className="btn btn-ghost" data-modal-cancel>
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="btn btn-accent"
+                disabled={saving}
+              >
+                {saving ? 'Salvando…' : 'Salvar'}
+              </button>
+            </div>
+          </form>
         </Modal>
       ) : null}
     </SuperSection>

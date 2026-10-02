@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
+import { CabecalhoPagina } from '@/components/admin/Pagina';
 import {
   BillingSummary,
   feeNumber,
@@ -12,6 +13,7 @@ import {
   planBadge,
   PlatformMpSettings,
   statusLabel,
+  statusTone,
   StoreRow,
 } from './_lib';
 
@@ -37,14 +39,6 @@ function todayLabel() {
     day: 'numeric',
     month: 'long',
   });
-}
-
-function statusTone(status: string) {
-  if (status === 'ACTIVE') return 'bg-[#e8f6ee] text-[#1b8f4a]';
-  if (status === 'TRIAL') return 'bg-[#eef2ff] text-[#3b4cca]';
-  if (status === 'PAST_DUE') return 'bg-[#fff4e5] text-[#b54708]';
-  if (status === 'SUSPENDED') return 'bg-[#fde8e8] text-[#b42318]';
-  return 'bg-[#f0f1f3] text-[#5c6570]';
 }
 
 export default function SuperDashboardPage() {
@@ -180,81 +174,89 @@ export default function SuperDashboardPage() {
 
   if (loading) {
     return (
-      <div className="space-y-5 animate-pulse">
-        <div className="h-8 w-48 bg-[#e4e7ec]" />
+      <div className="admin-page animate-pulse">
+        <div className="h-11 w-56 rounded-xl bg-[#e4e7ec]" />
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-28 border border-[#d9dde3] bg-white" />
+            <div
+              key={i}
+              className="h-28 rounded-2xl border border-line bg-white"
+            />
           ))}
         </div>
         <div className="grid gap-4 lg:grid-cols-5">
-          <div className="h-56 border border-[#d9dde3] bg-white lg:col-span-3" />
-          <div className="h-56 border border-[#d9dde3] bg-white lg:col-span-2" />
+          <div className="h-56 rounded-2xl border border-line bg-white lg:col-span-3" />
+          <div className="h-56 rounded-2xl border border-line bg-white lg:col-span-2" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">
-            Dashboard
-          </h1>
-          <p className="mt-1 text-sm capitalize text-muted">{todayLabel()}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span
-            className={`inline-flex items-center gap-1.5 rounded border px-2.5 py-1.5 text-xs font-semibold ${
-              mp?.paymentsEnabled
-                ? 'border-[#b7e4c7] bg-[#f0faf4] text-[#1b8f4a]'
-                : 'border-[#f5c2c7] bg-[#fff5f5] text-[#b42318]'
-            }`}
-          >
+    <div className="admin-page">
+      <CabecalhoPagina
+        icone="/super"
+        titulo="Visão geral"
+        descricao={<span className="capitalize">{todayLabel()}</span>}
+        acoes={
+          <>
             <span
-              className={`h-1.5 w-1.5 rounded-full ${
-                mp?.paymentsEnabled ? 'bg-[#1b8f4a]' : 'bg-[#b42318]'
+              className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold ${
+                mp?.paymentsEnabled
+                  ? 'bg-[#e8f6ee] text-[#166534]'
+                  : 'bg-[#fde8e8] text-[#b42318]'
               }`}
-            />
-            MP {mp?.paymentsEnabled ? 'ok' : 'pendente'}
-            {mp?.mpUseSandbox ? ' · sandbox' : mp ? ' · prod' : ''}
-          </span>
-          <button
-            type="button"
-            className="btn btn-ghost text-xs"
-            disabled={refreshing}
-            onClick={() => void load(true)}
-          >
-            {refreshing ? 'Atualizando…' : 'Atualizar'}
-          </button>
-          <Link href="/super/lojas" className="btn btn-accent text-xs">
-            Gerenciar lojas
-          </Link>
-        </div>
-      </header>
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  mp?.paymentsEnabled ? 'bg-[#1b8f4a]' : 'bg-[#b42318]'
+                }`}
+              />
+              Mercado Pago {mp?.paymentsEnabled ? 'ok' : 'pendente'}
+              {mp?.mpUseSandbox ? ' · teste' : mp ? ' · produção' : ''}
+            </span>
+            <button
+              type="button"
+              className="btn btn-ghost h-9 px-3 text-[13px]"
+              disabled={refreshing}
+              onClick={() => void load(true)}
+            >
+              {refreshing ? 'Atualizando…' : 'Atualizar'}
+            </button>
+            <Link
+              href="/super/lojas"
+              className="btn btn-accent h-9 px-3 text-[13px]"
+            >
+              Gerenciar lojas
+            </Link>
+          </>
+        }
+      />
 
       {error ? (
-        <p role="alert" className="border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#b42318]">
+        <p
+          role="alert"
+          className="rounded-xl border border-[#f5c2c7] bg-[#fff5f5] px-5 py-3 text-sm text-[#b42318]"
+        >
           {error}
         </p>
       ) : null}
 
       {/* KPIs principais */}
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="relative overflow-hidden border border-[#171a1f] bg-[#171a1f] px-4 py-4 text-white sm:col-span-2 xl:col-span-1">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-white/55">
-            MRR
+        <div className="relative overflow-hidden rounded-2xl bg-[var(--brand-deep)] px-5 py-4 text-white sm:col-span-2 xl:col-span-1">
+          <p className="text-[13px] font-medium text-white/75">
+            Receita mensal (MRR)
           </p>
           <p className="mt-2 text-3xl font-bold tracking-tight">
             {moneyBr(stats.mrr)}
           </p>
-          <p className="mt-2 text-xs text-white/65">
+          <p className="mt-2 text-xs text-white/75">
             Potencial {moneyBr(stats.potential)} · captura {stats.capture}%
           </p>
-          <div className="mt-3 h-1 bg-white/15">
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/15">
             <div
-              className="h-1 bg-[#4ade80] transition-[width] duration-700 ease-out"
+              className="h-1.5 rounded-full bg-[#7fd1a0] transition-[width] duration-700 ease-out"
               style={{ width: `${Math.min(100, Math.max(4, stats.capture))}%` }}
             />
           </div>
@@ -262,24 +264,24 @@ export default function SuperDashboardPage() {
 
         <Link
           href="/super/lojas"
-          className="border border-[#d9dde3] bg-white px-4 py-4 transition-colors hover:border-[#171a1f]"
+          className="rounded-2xl border border-line bg-white px-5 py-4 transition-colors hover:border-[var(--brand-teal)]"
         >
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted">
-            Lojas
+          <p className="text-[13px] font-medium text-muted">Lojas</p>
+          <p className="mt-2 text-3xl font-bold tracking-tight">
+            {stats.total}
           </p>
-          <p className="mt-2 text-3xl font-bold tracking-tight">{stats.total}</p>
           <p className="mt-2 text-xs text-muted">
-            {stats.active.length} ativas · {stats.trial.length} trial ·{' '}
+            {stats.active.length} ativas · {stats.trial.length} em teste ·{' '}
             {stats.paying} pagando
           </p>
         </Link>
 
         <Link
           href="/super/lojas?plan=expired"
-          className="border border-[#d9dde3] bg-white px-4 py-4 transition-colors hover:border-[#171a1f]"
+          className="rounded-2xl border border-line bg-white px-5 py-4 transition-colors hover:border-[var(--brand-teal)]"
         >
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted">
-            Precisam atenção
+          <p className="text-[13px] font-medium text-muted">
+            Precisam de atenção
           </p>
           <p
             className={`mt-2 text-3xl font-bold tracking-tight ${
@@ -294,15 +296,13 @@ export default function SuperDashboardPage() {
           </p>
         </Link>
 
-        <div className="border border-[#d9dde3] bg-white px-4 py-4">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted">
-            Em atraso
-          </p>
+        <div className="rounded-2xl border border-line bg-white px-5 py-4">
+          <p className="text-[13px] font-medium text-muted">Em atraso</p>
           <p className="mt-2 text-3xl font-bold tracking-tight text-[#b54708]">
             {moneyBr(stats.overdue)}
           </p>
           <p className="mt-2 text-xs text-muted">
-            Trial {moneyBr(stats.trialAmount)} · ticket médio{' '}
+            Em teste {moneyBr(stats.trialAmount)} · ticket médio{' '}
             {moneyBr(stats.avgTicket)}
           </p>
         </div>
@@ -318,9 +318,9 @@ export default function SuperDashboardPage() {
           <Link
             key={item.label}
             href={item.href}
-            className="flex items-baseline justify-between border border-[#d9dde3] bg-white px-4 py-3 transition-colors hover:border-[#171a1f]"
+            className="flex items-baseline justify-between rounded-2xl border border-line bg-white px-5 py-3.5 transition-colors hover:border-[var(--brand-teal)]"
           >
-            <span className="text-xs font-bold uppercase tracking-wider text-muted">
+            <span className="text-[13px] font-medium text-muted">
               {item.label}
             </span>
             <span className="text-xl font-bold tabular-nums">
@@ -332,19 +332,19 @@ export default function SuperDashboardPage() {
 
       <div className="grid gap-4 xl:grid-cols-5">
         {/* Gráfico MRR */}
-        <section className="border border-[#d9dde3] bg-white p-4 xl:col-span-3">
+        <section className="rounded-2xl border border-line bg-white p-5 xl:col-span-3">
           <div className="flex flex-wrap items-end justify-between gap-2">
             <div>
-              <h2 className="text-sm font-bold">MRR estimado</h2>
+              <h2 className="text-[15px] font-bold">MRR estimado</h2>
               <p className="mt-0.5 text-xs text-muted">
                 Últimos 6 meses · lojas ativas com mensalidade
               </p>
             </div>
             {billing?.monthlySeries?.length ? (
-              <p className="text-sm font-semibold tabular-nums text-[#1b8f4a]">
+              <p className="text-[15px] font-bold tabular-nums text-[#166534]">
                 {moneyBr(
-                  billing.monthlySeries[billing.monthlySeries.length - 1]?.mrr ||
-                    0,
+                  billing.monthlySeries[billing.monthlySeries.length - 1]
+                    ?.mrr || 0,
                 )}
               </p>
             ) : null}
@@ -370,13 +370,15 @@ export default function SuperDashboardPage() {
                     </span>
                     <div className="relative flex w-full flex-1 items-end">
                       <div
-                        className={`w-full transition-[height] duration-700 ease-out ${
-                          isLast ? 'bg-[#171a1f]' : 'bg-[#c5cad3] group-hover:bg-[#171a1f]'
+                        className={`w-full rounded-t-md transition-[height] duration-700 ease-out ${
+                          isLast
+                            ? 'bg-[var(--brand-deep)]'
+                            : 'bg-[#c9dde2] group-hover:bg-[var(--brand-teal)]'
                         }`}
                         style={{ height: `${h}%` }}
                       />
                     </div>
-                    <span className="text-[11px] uppercase tracking-wide text-muted">
+                    <span className="text-[11px] capitalize text-muted">
                       {point.label}
                     </span>
                     <span className="text-[11px] tabular-nums text-muted/80">
@@ -392,9 +394,11 @@ export default function SuperDashboardPage() {
         </section>
 
         {/* Mix de planos */}
-        <section className="border border-[#d9dde3] bg-white p-4 xl:col-span-2">
-          <h2 className="text-sm font-bold">Mix de planos</h2>
-          <p className="mt-0.5 text-xs text-muted">Receita por plano cadastrado</p>
+        <section className="rounded-2xl border border-line bg-white p-5 xl:col-span-2">
+          <h2 className="text-[15px] font-bold">Mix de planos</h2>
+          <p className="mt-0.5 text-xs text-muted">
+            Receita por plano cadastrado
+          </p>
           <ul className="mt-5 space-y-4">
             {planEntries.map(([plan, data]) => (
               <li key={plan}>
@@ -405,9 +409,9 @@ export default function SuperDashboardPage() {
                   </span>
                 </div>
                 <div className="mt-1.5 flex items-center gap-2">
-                  <div className="h-1.5 flex-1 bg-[#eef0f3]">
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#eef0f3]">
                     <div
-                      className="h-1.5 bg-[#1b8f4a] transition-[width] duration-700 ease-out"
+                      className="h-1.5 rounded-full bg-[var(--brand-teal)] transition-[width] duration-700 ease-out"
                       style={{
                         width: `${Math.max(3, (data.revenue / maxPlanRev) * 100)}%`,
                       }}
@@ -424,11 +428,9 @@ export default function SuperDashboardPage() {
             ) : null}
           </ul>
 
-          <div className="mt-6 border-t border-[#ebebeb] pt-4">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
-              Por status
-            </p>
-            <div className="mt-3 flex h-2 overflow-hidden bg-[#eef0f3]">
+          <div className="mt-6 border-t border-line pt-4">
+            <p className="text-[13px] font-semibold text-muted">Por status</p>
+            <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-[#eef0f3]">
               {statusEntries.map(([st, data]) => {
                 const width = pct(data.count, stats.total || 1);
                 if (!width) return null;
@@ -455,7 +457,7 @@ export default function SuperDashboardPage() {
                 <Link
                   key={st}
                   href={`/super/lojas?status=${st}`}
-                  className={`rounded px-2 py-1 text-[11px] font-semibold transition-opacity hover:opacity-80 ${statusTone(st)}`}
+                  className={`rounded-full px-2.5 py-1 text-[12px] font-semibold transition-opacity hover:opacity-80 ${statusTone(st)}`}
                 >
                   {statusLabel[st] || st} {data.count}
                 </Link>
@@ -467,10 +469,10 @@ export default function SuperDashboardPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Atenção */}
-        <section className="border border-[#d9dde3] bg-white">
-          <div className="flex items-center justify-between gap-2 border-b border-[#ebebeb] px-4 py-3">
+        <section className="overflow-hidden rounded-2xl border border-line bg-white">
+          <div className="flex items-center justify-between gap-2 border-b border-line px-5 py-4">
             <div>
-              <h2 className="text-sm font-bold">Fila de atenção</h2>
+              <h2 className="text-[15px] font-bold">Fila de atenção</h2>
               <p className="text-xs text-muted">
                 Vencidas, vencendo ou em atraso
               </p>
@@ -485,17 +487,17 @@ export default function SuperDashboardPage() {
             ) : null}
           </div>
           {stats.attention.length === 0 ? (
-            <p className="px-4 py-8 text-center text-sm text-muted">
+            <p className="px-5 py-10 text-center text-sm text-muted">
               Nenhuma loja crítica no momento.
             </p>
           ) : (
-            <ul className="divide-y divide-[#ebebeb]">
+            <ul className="divide-y divide-line">
               {stats.attention.map((s) => {
                 const badge = planBadge(s);
                 return (
                   <li
                     key={s.id}
-                    className="flex flex-wrap items-center justify-between gap-2 px-4 py-3"
+                    className="flex flex-wrap items-center justify-between gap-2 px-5 py-3"
                   >
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold">{s.name}</p>
@@ -508,13 +510,13 @@ export default function SuperDashboardPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <span
-                        className={`rounded px-1.5 py-0.5 text-[11px] font-bold uppercase ${badge.className}`}
+                        className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${badge.className}`}
                       >
                         {badge.text}
                       </span>
                       <Link
                         href={`/super/lojas?q=${encodeURIComponent(s.slug)}`}
-                        className="btn btn-ghost px-2 py-1 text-xs"
+                        className="btn btn-ghost h-8 px-3 text-[12px]"
                       >
                         Abrir
                       </Link>
@@ -527,22 +529,19 @@ export default function SuperDashboardPage() {
         </section>
 
         {/* Top lojas */}
-        <section className="border border-[#d9dde3] bg-white">
-          <div className="border-b border-[#ebebeb] px-4 py-3">
-            <h2 className="text-sm font-bold">Mais pedidos</h2>
+        <section className="overflow-hidden rounded-2xl border border-line bg-white">
+          <div className="border-b border-line px-5 py-4">
+            <h2 className="text-[15px] font-bold">Mais pedidos</h2>
             <p className="text-xs text-muted">Ranking na rede</p>
           </div>
           {stats.topByOrders.every((s) => !(s._count?.orders > 0)) ? (
-            <p className="px-4 py-8 text-center text-sm text-muted">
+            <p className="px-5 py-10 text-center text-sm text-muted">
               Ainda sem pedidos nas lojas.
             </p>
           ) : (
-            <ul className="divide-y divide-[#ebebeb]">
+            <ul className="divide-y divide-line">
               {stats.topByOrders.map((s, i) => (
-                <li
-                  key={s.id}
-                  className="flex items-center gap-3 px-4 py-3"
-                >
+                <li key={s.id} className="flex items-center gap-3 px-5 py-3">
                   <span className="w-5 text-xs font-bold tabular-nums text-muted">
                     {i + 1}
                   </span>
@@ -557,7 +556,7 @@ export default function SuperDashboardPage() {
                     <p className="text-sm font-bold tabular-nums">
                       {s._count.orders}
                     </p>
-                    <p className="text-[11px] uppercase text-muted">pedidos</p>
+                    <p className="text-[11px] text-muted">pedidos</p>
                   </div>
                 </li>
               ))}
@@ -568,10 +567,10 @@ export default function SuperDashboardPage() {
 
       {/* Recentes + atalhos */}
       <div className="grid gap-4 lg:grid-cols-5">
-        <section className="border border-[#d9dde3] bg-white lg:col-span-3">
-          <div className="flex items-center justify-between border-b border-[#ebebeb] px-4 py-3">
+        <section className="overflow-hidden rounded-2xl border border-line bg-white lg:col-span-3">
+          <div className="flex items-center justify-between border-b border-line px-5 py-4">
             <div>
-              <h2 className="text-sm font-bold">Lojas recentes</h2>
+              <h2 className="text-[15px] font-bold">Lojas recentes</h2>
               <p className="text-xs text-muted">Últimas cadastradas</p>
             </div>
             <Link
@@ -582,15 +581,15 @@ export default function SuperDashboardPage() {
             </Link>
           </div>
           {stats.newest.length === 0 ? (
-            <p className="px-4 py-8 text-center text-sm text-muted">
+            <p className="px-5 py-10 text-center text-sm text-muted">
               Nenhuma loja cadastrada.
             </p>
           ) : (
-            <ul className="divide-y divide-[#ebebeb]">
+            <ul className="divide-y divide-line">
               {stats.newest.map((s) => (
                 <li
                   key={s.id}
-                  className="flex flex-wrap items-center justify-between gap-2 px-4 py-3"
+                  className="flex flex-wrap items-center justify-between gap-2 px-5 py-3"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold">{s.name}</p>
@@ -600,7 +599,7 @@ export default function SuperDashboardPage() {
                     </p>
                   </div>
                   <span
-                    className={`rounded px-1.5 py-0.5 text-[11px] font-bold uppercase ${statusTone(s.status)}`}
+                    className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${statusTone(s.status)}`}
                   >
                     {statusLabel[s.status] || s.status}
                   </span>
@@ -610,31 +609,31 @@ export default function SuperDashboardPage() {
           )}
         </section>
 
-        <section className="flex flex-col border border-[#d9dde3] bg-white lg:col-span-2">
-          <div className="border-b border-[#ebebeb] px-4 py-3">
-            <h2 className="text-sm font-bold">Atalhos</h2>
+        <section className="flex flex-col overflow-hidden rounded-2xl border border-line bg-white lg:col-span-2">
+          <div className="border-b border-line px-5 py-4">
+            <h2 className="text-[15px] font-bold">Atalhos</h2>
             <p className="text-xs text-muted">Operação rápida</p>
           </div>
-          <div className="flex flex-1 flex-col gap-2 p-4">
+          <div className="flex flex-1 flex-col gap-2 p-5">
             <Link
               href="/super/lojas"
-              className="flex items-center justify-between border border-[#d9dde3] px-3 py-2.5 text-sm font-semibold transition-colors hover:border-[#171a1f] hover:bg-[#f7f8fa]"
+              className="flex items-center justify-between rounded-xl border border-line px-3.5 py-3 text-sm font-semibold transition-colors hover:border-[var(--brand-teal)] hover:bg-[#f4f9fa]"
             >
               Todas as lojas
               <span className="text-muted">→</span>
             </Link>
             <Link
               href="/super/lojas?status=TRIAL"
-              className="flex items-center justify-between border border-[#d9dde3] px-3 py-2.5 text-sm font-semibold transition-colors hover:border-[#171a1f] hover:bg-[#f7f8fa]"
+              className="flex items-center justify-between rounded-xl border border-line px-3.5 py-3 text-sm font-semibold transition-colors hover:border-[var(--brand-teal)] hover:bg-[#f4f9fa]"
             >
-              Trials
+              Lojas em teste
               <span className="tabular-nums text-muted">
                 {stats.trial.length}
               </span>
             </Link>
             <Link
               href="/super/lojas?plan=expiring"
-              className="flex items-center justify-between border border-[#d9dde3] px-3 py-2.5 text-sm font-semibold transition-colors hover:border-[#171a1f] hover:bg-[#f7f8fa]"
+              className="flex items-center justify-between rounded-xl border border-line px-3.5 py-3 text-sm font-semibold transition-colors hover:border-[var(--brand-teal)] hover:bg-[#f4f9fa]"
             >
               Vencendo em 7 dias
               <span className="tabular-nums text-muted">
@@ -643,7 +642,7 @@ export default function SuperDashboardPage() {
             </Link>
             <Link
               href="/super/mercadopago"
-              className="flex items-center justify-between border border-[#d9dde3] px-3 py-2.5 text-sm font-semibold transition-colors hover:border-[#171a1f] hover:bg-[#f7f8fa]"
+              className="flex items-center justify-between rounded-xl border border-line px-3.5 py-3 text-sm font-semibold transition-colors hover:border-[var(--brand-teal)] hover:bg-[#f4f9fa]"
             >
               Mercado Pago
               <span className="text-muted">

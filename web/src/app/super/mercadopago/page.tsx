@@ -150,61 +150,71 @@ export default function SuperMercadoPagoPage() {
 
   return (
     <SuperSection
+      icone="/super/mercadopago"
       title="Mercado Pago"
       summary="Credenciais da plataforma — recebe a mensalidade de todas as lojas"
     >
       {error ? (
-        <p role="alert" className="border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#b42318]">
+        <p
+          role="alert"
+          className="rounded-xl border border-[#f5c2c7] bg-[#fff5f5] px-4 py-3 text-sm text-[#b42318]"
+        >
           {error}
         </p>
       ) : null}
       {ok ? (
-        <p className="border border-[#b7e4c7] bg-[#f0faf4] px-4 py-3 text-sm text-[#1b8f4a]">
+        <p className="rounded-xl border border-[#b7e4c7] bg-[#f0faf4] px-4 py-3 text-sm text-[#166534]">
           {ok}
         </p>
       ) : null}
 
       {settings ? (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="border border-[#d9dde3] bg-white px-4 py-3">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
-              Status
+          <div className="rounded-2xl border border-line bg-white px-5 py-4">
+            <p className="text-[13px] font-medium text-muted">Situação</p>
+            <p className="mt-1.5">
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[13px] font-semibold ${
+                  settings.paymentsEnabled
+                    ? 'bg-[#e8f6ee] text-[#166534]'
+                    : 'bg-[#fde8e8] text-[#b42318]'
+                }`}
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    settings.paymentsEnabled ? 'bg-[#1b8f4a]' : 'bg-[#b42318]'
+                  }`}
+                  aria-hidden
+                />
+                {settings.paymentsEnabled ? 'Recebendo' : 'Sem credencial'}
+              </span>
             </p>
-            <p className="mt-1 text-sm font-bold">
-              {settings.paymentsEnabled ? 'Habilitado' : 'Sem token'}
-            </p>
-            <p className="mt-0.5 text-[11px] text-muted">
+            <p className="mt-1 text-[12px] text-muted">
               Fonte: {settings.source}
             </p>
           </div>
-          <div className="border border-[#d9dde3] bg-white px-4 py-3">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
-              Ambiente
-            </p>
-            <p className="mt-1 text-sm font-bold">
-              {settings.mpUseSandbox ? 'Sandbox / teste' : 'Produção'}
+          <div className="rounded-2xl border border-line bg-white px-5 py-4">
+            <p className="text-[13px] font-medium text-muted">Ambiente</p>
+            <p className="mt-1.5 text-[15px] font-bold">
+              {settings.mpUseSandbox ? 'Teste' : 'Produção'}
             </p>
             <p className="mt-0.5 text-[11px] text-muted">
               {settings.liveMode === true
-                ? 'Live'
+                ? 'Conta real'
                 : settings.liveMode === false
-                  ? 'Não live'
+                  ? 'Conta de teste'
                   : '—'}
             </p>
           </div>
-          <div className="border border-[#d9dde3] bg-white px-4 py-3">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
-              Access Token
-            </p>
-            <p className="mt-1 break-all text-xs font-semibold">
+          <div className="rounded-2xl border border-line bg-white px-5 py-4">
+            <p className="text-[13px] font-medium text-muted">Access Token</p>
+            <p className="mt-1.5 break-all font-mono text-[12px] font-semibold">
               {settings.mpAccessTokenHint || 'Não configurado'}
             </p>
           </div>
-          <div className="border border-[#d9dde3] bg-white px-4 py-3">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
-              Public Key
-            </p>
-            <p className="mt-1 break-all text-xs font-semibold">
+          <div className="rounded-2xl border border-line bg-white px-5 py-4">
+            <p className="text-[13px] font-medium text-muted">Public Key</p>
+            <p className="mt-1.5 break-all font-mono text-[12px] font-semibold">
               {settings.mpPublicKeyHint || 'Não configurada'}
             </p>
           </div>
@@ -212,7 +222,7 @@ export default function SuperMercadoPagoPage() {
       ) : null}
 
       {settings?.subscriptionsHint ? (
-        <p className="border border-[#ffe8b3] bg-[#fffaf0] px-4 py-3 text-sm text-[#8a5a00]">
+        <p className="rounded-xl border border-[#ffe8b3] bg-[#fffaf0] px-4 py-3 text-sm text-[#8a5a00]">
           {settings.subscriptionsHint}
         </p>
       ) : null}
@@ -222,13 +232,11 @@ export default function SuperMercadoPagoPage() {
         token certo com PUBLIC_URL errada é o cenário em que tudo parece
         configurado e nenhum pagamento é confirmado.
       */}
-      <div className="border border-[#d9dde3] bg-white px-4 py-3">
+      <div className="rounded-2xl border border-line bg-white px-5 py-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
-              URL pública e webhooks
-            </p>
-            <p className="mt-0.5 text-sm">
+            <h2 className="text-[15px] font-bold">URL pública e webhooks</h2>
+            <p className="mt-0.5 text-[13px] text-muted">
               Sem uma URL que o Mercado Pago alcance, o cliente paga e o pedido
               fica parado em “aguardando pagamento”.
             </p>
@@ -245,12 +253,12 @@ export default function SuperMercadoPagoPage() {
 
         {webhook ? (
           <div
-            className={`mt-3 border-l-2 px-3 py-2 text-sm ${
+            className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
               webhook.ok && !webhook.tunel
-                ? 'border-emerald-500 bg-emerald-50 text-emerald-950'
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-950'
                 : webhook.ok
-                  ? 'border-amber-400 bg-amber-50 text-amber-950'
-                  : 'border-rose-500 bg-rose-50 text-rose-950'
+                  ? 'border-amber-200 bg-amber-50 text-amber-950'
+                  : 'border-rose-200 bg-rose-50 text-rose-950'
             }`}
           >
             <p className="font-semibold">
@@ -267,10 +275,10 @@ export default function SuperMercadoPagoPage() {
         {webhook?.webhookPedidos ? (
           <div className="mt-3 space-y-2 text-xs">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
+              <p className="text-[13px] font-medium text-muted">
                 Pedidos das lojas
               </p>
-              <code className="mt-0.5 block break-all">
+              <code className="mt-1 block break-all rounded-lg bg-[#f4f6f8] px-2.5 py-1.5">
                 {webhook.webhookPedidos}
               </code>
               <p className="mt-0.5 text-[11px] text-muted">
@@ -279,10 +287,10 @@ export default function SuperMercadoPagoPage() {
               </p>
             </div>
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
+              <p className="text-[13px] font-medium text-muted">
                 Mensalidade da plataforma
               </p>
-              <code className="mt-0.5 block break-all">
+              <code className="mt-1 block break-all rounded-lg bg-[#f4f6f8] px-2.5 py-1.5">
                 {webhook.webhookMensalidade}
               </code>
               <p className="mt-0.5 text-[11px] text-muted">
@@ -292,10 +300,10 @@ export default function SuperMercadoPagoPage() {
           </div>
         ) : settings?.billingWebhookUrl ? (
           <div className="mt-3 text-xs">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
+            <p className="text-[13px] font-medium text-muted">
               Webhook de billing
             </p>
-            <code className="mt-0.5 block break-all">
+            <code className="mt-1 block break-all rounded-lg bg-[#f4f6f8] px-2.5 py-1.5">
               {settings.billingWebhookUrl}
             </code>
           </div>
@@ -304,8 +312,14 @@ export default function SuperMercadoPagoPage() {
 
       <form
         onSubmit={onSave}
-        className="space-y-3 border border-[#d9dde3] bg-white p-4"
+        className="space-y-3 rounded-2xl border border-line bg-white p-5"
       >
+        <div>
+          <h2 className="text-[15px] font-bold">Credenciais da plataforma</h2>
+          <p className="mt-0.5 text-[13px] text-muted">
+            Da sua conta do Mercado Pago, em Suas integrações → Credenciais.
+          </p>
+        </div>
         <div>
           <label className="label">Access Token</label>
           <input
@@ -344,7 +358,7 @@ export default function SuperMercadoPagoPage() {
             value={mpUseSandbox ? 'sandbox' : 'prod'}
             onChange={(e) => setMpUseSandbox(e.target.value === 'sandbox')}
           >
-            <option value="sandbox">Sandbox (teste)</option>
+            <option value="sandbox">Teste (sandbox)</option>
             <option value="prod">Produção</option>
           </select>
         </div>
@@ -356,9 +370,8 @@ export default function SuperMercadoPagoPage() {
             onChange={(e) => setMpTestPayerEmail(e.target.value)}
             placeholder="test_user_…@testuser.com ou TESTUSER…"
           />
-          <p className="mt-1 text-[11px] text-muted">
-            Usado no checkout de assinaturas em sandbox. Aceita username
-            TESTUSER.
+          <p className="mt-1 text-[12px] text-muted">
+            Usado no checkout de assinaturas em teste. Aceita username TESTUSER.
           </p>
         </div>
         <div className="flex flex-wrap gap-2 pt-1">

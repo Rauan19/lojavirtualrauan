@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useEffect, useState } from 'react';
 import { BrandLogo } from '@/components/BrandLogo';
+import { IconeMenu } from '@/components/admin/IconeMenu';
 import { api, AuthUser } from '@/lib/api';
 import { clearSession, getToken, saveSession } from '@/lib/auth';
 
@@ -91,42 +92,60 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
     );
   }
 
+  const itens = precisaAtivar
+    ? nav.filter((i) => i.href === '/super/seguranca')
+    : nav;
+
   const side = (
     <>
-      <div className="border-b border-[#d9dde3] px-4 py-3">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
-          Super admin
-        </p>
-        <p className="mt-0.5 truncate text-sm font-bold">{user.email}</p>
+      <div className="border-b border-line px-3 py-3">
+        <div className="flex items-center gap-3 rounded-xl px-1 py-1">
+          <span
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-deep)] text-white"
+            aria-hidden
+          >
+            <IconeMenu href="/super/seguranca" />
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-[15px] font-bold leading-tight">
+              Super admin
+            </span>
+            <span className="block truncate text-xs text-muted">
+              {user.email}
+            </span>
+          </span>
+        </div>
       </div>
-      <nav className="flex-1 overflow-y-auto py-2">
-        <p className="px-4 pb-1 pt-2 text-[11px] font-bold uppercase tracking-wider text-muted">
-          Menu
+      <nav
+        className="flex-1 overflow-y-auto py-2"
+        aria-label="Menu do super admin"
+      >
+        <p className="px-5 pb-1 pt-3 text-[12px] font-semibold text-muted">
+          Plataforma
         </p>
-        {(precisaAtivar
-          ? nav.filter((i) => i.href === '/super/seguranca')
-          : nav
-        ).map((item) => {
+        {itens.map((item) => {
           const active = isActive(pathname, item.href, 'exact' in item);
           return (
             <Link
               key={item.href}
               href={item.href}
               onClick={() => setOpen(false)}
-              className={`mx-2 block rounded px-3 py-2 text-sm transition-colors ${
+              aria-current={active ? 'page' : undefined}
+              className={`mx-2 flex items-center gap-3 rounded-lg px-3 py-2 text-[14px] transition-colors ${
                 active
                   ? 'bg-[var(--brand-deep)] font-semibold text-white'
-                  : 'text-ink hover:bg-[#eef0f3]'
+                  : 'text-ink hover:bg-[#e9f1f3]'
               }`}
             >
-              {item.label}
+              <IconeMenu href={item.href} />
+              <span className="min-w-0 flex-1 truncate">{item.label}</span>
             </Link>
           );
         })}
       </nav>
       <button
         type="button"
-        className="border-t border-[#d9dde3] px-4 py-3 text-left text-sm font-medium text-accent"
+        className="mx-2 mb-2 flex items-center gap-3 rounded-lg border-t border-line px-3 py-2.5 text-left text-[14px] font-medium text-[#b42318] hover:bg-[#fef3f2]"
         onClick={() => {
           clearSession();
           router.push('/login');
@@ -138,19 +157,27 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen bg-[#f4f5f7] text-[#171a1f] md:grid md:grid-cols-[220px_1fr]">
-      <header className="sticky top-0 z-20 flex h-12 items-center justify-between border-b border-[#d9dde3] bg-white px-3 md:hidden">
+    <div className="min-h-screen bg-[#f4f6f8] text-[#171a1f] md:grid md:grid-cols-[240px_1fr]">
+      <header className="sticky top-0 z-20 flex h-12 items-center justify-between border-b border-line bg-white px-3 md:hidden">
         <div className="flex items-center gap-2">
-          <BrandLogo height={30} />
-          <strong className="text-sm">Super admin</strong>
+          <BrandLogo height={26} />
+          <span className="rounded-full bg-[#e9f1f3] px-2 py-0.5 text-[11px] font-semibold text-[var(--brand-deep)]">
+            Super admin
+          </span>
         </div>
         <button
           type="button"
           className="icon-btn"
-          aria-label="Menu"
+          aria-label="Abrir menu"
           onClick={() => setOpen(true)}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden
+          >
             <path
               d="M4 7h16M4 12h16M4 17h16"
               stroke="currentColor"
@@ -161,9 +188,9 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
         </button>
       </header>
 
-      <aside className="hidden border-r border-[#d9dde3] bg-white md:flex md:flex-col">
-        <div className="border-b border-[#d9dde3] px-4 py-4">
-          <BrandLogo height={34} />
+      <aside className="sticky top-0 hidden h-screen border-r border-line bg-white md:flex md:flex-col">
+        <div className="px-5 pb-1 pt-4">
+          <BrandLogo height={30} />
         </div>
         {side}
       </aside>
@@ -172,9 +199,11 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
         className={`drawer-backdrop ${open ? 'open' : ''}`}
         onClick={() => setOpen(false)}
       />
-      <aside className={`drawer ${open ? 'open' : ''} md:hidden`}>{side}</aside>
+      <aside className={`drawer flex flex-col ${open ? 'open' : ''} md:hidden`}>
+        {side}
+      </aside>
 
-      <main className="painel min-w-0 bg-[#f4f6f8] p-4 md:p-6">{children}</main>
+      <main className="painel min-w-0 bg-[#f4f6f8] p-3 md:p-5">{children}</main>
     </div>
   );
 }

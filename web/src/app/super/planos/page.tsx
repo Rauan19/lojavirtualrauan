@@ -5,6 +5,7 @@ import { useConfirm } from '@/components/ConfirmDialog';
 import { Modal } from '@/components/Modal';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
+import { CabecalhoPagina } from '@/components/admin/Pagina';
 
 type Plan = {
   id: string;
@@ -124,7 +125,9 @@ export default function SuperPlanosPage() {
       maxProducts: plan.maxProducts ? String(plan.maxProducts) : '',
       maxUsers: plan.maxUsers ? String(plan.maxUsers) : '',
       nfeIncluded: plan.nfeIncluded ?? true,
-      feePercent: plan.feeBps ? String(plan.feeBps / 100).replace('.', ',') : '',
+      feePercent: plan.feeBps
+        ? String(plan.feeBps / 100).replace('.', ',')
+        : '',
       customDomainIncluded: plan.customDomainIncluded ?? true,
     });
     setShowForm(true);
@@ -208,7 +211,10 @@ export default function SuperPlanosPage() {
     if (!token) return;
     setError('');
     try {
-      await api(`/billing/platform/plans/${plan.id}`, { method: 'DELETE', token });
+      await api(`/billing/platform/plans/${plan.id}`, {
+        method: 'DELETE',
+        token,
+      });
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Falha ao apagar');
@@ -273,30 +279,32 @@ export default function SuperPlanosPage() {
     return (
       <li
         key={plan.id}
-        className={`flex flex-col border bg-white ${
-          plan.highlight ? 'border-ink' : 'border-line'
+        className={`flex flex-col overflow-hidden rounded-2xl bg-white ${
+          plan.highlight
+            ? 'border-2 border-[var(--brand-deep)] shadow-[0_14px_30px_-22px_rgba(13,58,67,0.6)]'
+            : 'border border-line'
         } ${plan.active ? '' : 'opacity-60'}`}
       >
-        <div className="flex-1 p-4">
+        <div className="flex-1 p-5">
           <div className="flex flex-wrap items-center gap-1.5">
             <h3 className="text-base font-bold">{plan.name}</h3>
             {plan.highlight ? (
-              <span className="rounded-full bg-ink px-2 py-0.5 text-[11px] font-bold text-white">
+              <span className="rounded-full bg-[var(--brand-deep)] px-2 py-0.5 text-[11px] font-semibold text-white">
                 Destaque
               </span>
             ) : null}
             {plan.badge ? (
-              <span className="rounded-full bg-[#eef0f4] px-2 py-0.5 text-[11px] font-bold text-muted">
+              <span className="rounded-full bg-[#e9f1f3] px-2 py-0.5 text-[11px] font-semibold text-[var(--brand-deep)]">
                 {plan.badge}
               </span>
             ) : null}
             {!plan.active ? (
-              <span className="rounded-full bg-[#f3e8e8] px-2 py-0.5 text-[11px] font-bold text-accent">
+              <span className="rounded-full bg-[#fde8e8] px-2 py-0.5 text-[11px] font-semibold text-[#b42318]">
                 Desativado
               </span>
             ) : null}
           </div>
-          <p className="mt-2 text-2xl font-bold tracking-tight">
+          <p className="mt-3 text-[1.75rem] font-bold leading-tight tracking-tight tabular-nums">
             {plan.amount > 0 ? money(plan.amount) : 'Grátis'}
             {plan.amount > 0 ? (
               <span className="text-sm font-normal text-muted">
@@ -305,45 +313,64 @@ export default function SuperPlanosPage() {
             ) : null}
           </p>
           {plan.description ? (
-            <p className="mt-1 text-xs text-muted">{plan.description}</p>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
+              {plan.description}
+            </p>
           ) : null}
-          <ul className="mt-3 space-y-1 text-sm">
+          <ul className="mt-4 space-y-2 border-t border-line pt-4 text-[13px]">
             {itens.map((i) => (
               <li
                 key={i.texto}
                 className={`flex items-center gap-2 ${i.ok ? '' : 'text-muted line-through'}`}
               >
-                <span
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
                   aria-hidden
-                  className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-[11px] font-bold ${
-                    i.ok ? 'bg-[#e3f4ea] text-[#1b7f45]' : 'bg-[#eef0f4] text-muted'
-                  }`}
+                  className={`shrink-0 ${i.ok ? 'text-[var(--ok)]' : 'text-[#b0b7c0]'}`}
                 >
-                  {i.ok ? '✓' : '–'}
-                </span>
+                  {i.ok ? (
+                    <path
+                      d="m5 12.5 4.2 4.2L19 7"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  ) : (
+                    <path
+                      d="M6 12h12"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                    />
+                  )}
+                </svg>
                 {i.texto}
               </li>
             ))}
           </ul>
         </div>
-        <div className="flex items-center gap-1.5 border-t border-line px-3 py-2.5">
+        <div className="flex items-center gap-1.5 border-t border-line bg-[#fafbfc] px-4 py-3">
           <button
             type="button"
-            className="btn btn-ghost px-2.5 py-1.5 text-xs"
+            className="btn btn-ghost h-8 px-3 text-[12px]"
             onClick={() => startEditLimpo(plan)}
           >
             Editar
           </button>
           <button
             type="button"
-            className="btn btn-ghost px-2.5 py-1.5 text-xs"
+            className="btn btn-ghost h-8 px-3 text-[12px]"
             onClick={() => void confirmarAtivacao(plan)}
           >
             {plan.active ? 'Desativar' : 'Ativar'}
           </button>
           <button
             type="button"
-            className="btn btn-ghost ml-auto px-2.5 py-1.5 text-xs text-accent"
+            className="btn btn-ghost ml-auto h-8 px-3 text-[12px] text-[#b42318]"
             onClick={() => void removePlan(plan)}
           >
             Apagar
@@ -354,36 +381,45 @@ export default function SuperPlanosPage() {
   }
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="admin-page max-w-5xl">
       {confirmDialog}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-bold">Planos</h1>
-          <p className="text-sm text-muted">
-            O que o lojista escolhe em Configurações → Planos. Preço, taxa e
-            limites mudam aqui, sem programação.
-          </p>
-        </div>
-        <button type="button" className="btn btn-accent" onClick={startCreateLimpo}>
-          + Novo plano
-        </button>
-      </div>
+      <CabecalhoPagina
+        icone="/super/planos"
+        titulo="Planos"
+        descricao="O que o lojista escolhe em Configurações → Planos. Preço, taxa e limites mudam aqui, sem programação."
+        acoes={
+          <button
+            type="button"
+            className="btn btn-accent"
+            onClick={startCreateLimpo}
+          >
+            + Novo plano
+          </button>
+        }
+      />
 
       {error && !showForm ? (
-        <p className="border border-[#f3b3b3] bg-[#fef2f2] px-3 py-2 text-sm text-accent">
+        <p className="rounded-xl border border-[#f3b3b3] bg-[#fef2f2] px-4 py-3 text-sm text-accent">
           {error}
         </p>
       ) : null}
       {ok ? (
-        <p className="border border-[#bfe3c8] bg-[#f0fbf3] px-3 py-2 text-sm text-[#166534]">
+        <p className="rounded-xl border border-[#bfe3c8] bg-[#f0fbf3] px-4 py-3 text-sm text-[#166534]">
           {ok}
         </p>
       ) : null}
 
       <form
         onSubmit={saveTrialDays}
-        className="flex flex-wrap items-end gap-3 border border-line bg-white p-4"
+        className="flex flex-wrap items-end gap-3 rounded-2xl border border-line bg-white p-5"
       >
+        <div className="w-full">
+          <h2 className="text-[15px] font-bold">Teste grátis</h2>
+          <p className="mt-0.5 text-[13px] text-muted">
+            Vale para lojas criadas a partir de agora. Não muda o prazo de quem
+            já está em teste.
+          </p>
+        </div>
         <div>
           <label className="label" htmlFor="dias-teste">
             Dias de teste grátis
@@ -401,39 +437,35 @@ export default function SuperPlanosPage() {
         <button className="btn btn-ghost" disabled={trialSaving}>
           {trialSaving ? 'Salvando…' : 'Salvar'}
         </button>
-        <p className="w-full text-[11px] text-muted">
-          Vale para lojas criadas a partir de agora. Não muda o prazo de quem já
-          está em teste.
-        </p>
       </form>
 
       {loading ? (
         <p className="text-sm text-muted">Carregando…</p>
       ) : plans.length === 0 ? (
-        <p className="border border-dashed border-line bg-white px-4 py-8 text-center text-sm text-muted">
+        <p className="rounded-2xl border border-dashed border-line bg-white px-4 py-12 text-center text-sm text-muted">
           Nenhum plano cadastrado. Crie o primeiro em &quot;+ Novo plano&quot;.
         </p>
       ) : (
         <>
           <section>
-            <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted">
+            <h2 className="mb-3 text-[15px] font-bold text-ink">
               Mensais ({mensais.length})
             </h2>
-            <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {mensais.map(cartao)}
             </ul>
           </section>
           {anuais.length > 0 ? (
             <section>
-              <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted">
+              <h2 className="mb-3 text-[15px] font-bold text-ink">
                 Anuais ({anuais.length})
               </h2>
-              <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {anuais.map(cartao)}
               </ul>
             </section>
           ) : null}
-          <p className="text-xs text-muted">
+          <p className="text-[13px] leading-relaxed text-muted">
             Os limites valem de verdade: a loja não cadastra produto acima do
             limite nem emite nota se o plano não incluir. No teste grátis os
             recursos ficam liberados. Toda mudança de preço ou taxa fica
@@ -456,7 +488,7 @@ export default function SuperPlanosPage() {
         >
           <form onSubmit={onSubmit} className="space-y-5">
             <fieldset className="space-y-3">
-              <legend className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">
+              <legend className="mb-1 text-[14px] font-semibold text-ink">
                 Preço
               </legend>
               <div className="grid gap-3 sm:grid-cols-3">
@@ -484,7 +516,9 @@ export default function SuperPlanosPage() {
                     min={0}
                     placeholder="0 = grátis"
                     value={form.amount}
-                    onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, amount: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -513,7 +547,7 @@ export default function SuperPlanosPage() {
             </fieldset>
 
             <fieldset className="space-y-2">
-              <legend className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">
+              <legend className="mb-1 text-[14px] font-semibold text-ink">
                 Taxa por venda
               </legend>
               <div className="flex flex-wrap items-end gap-3">
@@ -541,7 +575,7 @@ export default function SuperPlanosPage() {
             </fieldset>
 
             <fieldset className="space-y-3">
-              <legend className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">
+              <legend className="mb-1 text-[14px] font-semibold text-ink">
                 Limites
               </legend>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -593,7 +627,10 @@ export default function SuperPlanosPage() {
                     type="checkbox"
                     checked={form.customDomainIncluded}
                     onChange={(e) =>
-                      setForm({ ...form, customDomainIncluded: e.target.checked })
+                      setForm({
+                        ...form,
+                        customDomainIncluded: e.target.checked,
+                      })
                     }
                   />
                   Domínio próprio
@@ -602,7 +639,7 @@ export default function SuperPlanosPage() {
             </fieldset>
 
             <fieldset className="space-y-3">
-              <legend className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">
+              <legend className="mb-1 text-[14px] font-semibold text-ink">
                 Como aparece para o lojista
               </legend>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -628,7 +665,9 @@ export default function SuperPlanosPage() {
                     className="field"
                     placeholder="Ex.: Mais escolhido"
                     value={form.badge}
-                    onChange={(e) => setForm({ ...form, badge: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, badge: e.target.value })
+                    }
                   />
                 </div>
               </div>

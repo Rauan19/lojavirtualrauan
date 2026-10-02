@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useConfirm } from '@/components/ConfirmDialog';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
+import { CabecalhoPagina } from '@/components/admin/Pagina';
 
 type Liberacao = 'geral' | 'ligada' | 'desligada';
 
@@ -69,7 +70,9 @@ export default function SuperComissoesPage() {
   const [dados, setDados] = useState<Relatorio | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
-  const [filtro, setFiltro] = useState<'movimento' | 'taxa' | 'todas'>('movimento');
+  const [filtro, setFiltro] = useState<'movimento' | 'taxa' | 'todas'>(
+    'movimento',
+  );
   const [busca, setBusca] = useState('');
 
   const carregar = useCallback(async () => {
@@ -191,45 +194,50 @@ export default function SuperComissoesPage() {
   const t = dados?.totais;
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="admin-page max-w-5xl">
       {dialog}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-bold">Comissões</h1>
-          <p className="text-sm text-muted">
-            O que o Mercado Pago reteve para a plataforma em cada venda, por
-            loja. Base para a nota fiscal do mês.
-          </p>
-        </div>
-        <div className="flex items-end gap-2">
-          <div>
-            <label className="label" htmlFor="mes">
-              Mês
-            </label>
-            <input
-              id="mes"
-              type="month"
-              className="field"
-              value={mes}
-              max={mesAtual()}
-              onChange={(e) => e.target.value && setMes(e.target.value)}
-            />
+      <CabecalhoPagina
+        icone="/super/comissoes"
+        titulo="Comissões"
+        descricao="O que o Mercado Pago reteve para a plataforma em cada venda, por loja. Base para a nota fiscal do mês."
+        acoes={
+          <div className="flex items-end gap-2">
+            <div>
+              <label className="label" htmlFor="mes">
+                Mês
+              </label>
+              <input
+                id="mes"
+                type="month"
+                className="field"
+                value={mes}
+                max={mesAtual()}
+                onChange={(e) => e.target.value && setMes(e.target.value)}
+              />
+            </div>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => void baixarCsv()}
+            >
+              Baixar CSV
+            </button>
           </div>
-          <button type="button" className="btn btn-ghost" onClick={() => void baixarCsv()}>
-            Baixar CSV
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {erro ? (
-        <p role="alert" className="border border-[#f3b3b3] bg-[#fef2f2] px-3 py-2 text-sm text-accent">
+        <p
+          role="alert"
+          className="rounded-xl border border-[#f3b3b3] bg-[#fef2f2] px-4 py-3 text-sm text-accent"
+        >
           {erro}
         </p>
       ) : null}
 
       {dados ? (
         <p
-          className={`border px-3 py-2 text-sm ${
+          className={`rounded-xl border px-4 py-3 text-sm ${
             dados.geral.ligadaNoGeral
               ? 'border-[#bfe3c8] bg-[#f0fbf3] text-[#166534]'
               : 'border-[#f0d998] bg-[#fff8e1] text-[#6b4f00]'
@@ -244,23 +252,38 @@ export default function SuperComissoesPage() {
         </p>
       ) : null}
 
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
           ['Vendas com taxa', t ? String(t.pedidos) : '—'],
           ['Cobrado', t ? reais(t.cobradoCents) : '—'],
           ['Devolvido', t ? reais(t.devolvidoCents) : '—'],
           ['Líquido do mês', t ? reais(t.liquidoCents) : '—'],
         ].map(([rotulo, valor]) => (
-          <div key={rotulo} className="border border-line bg-white p-3">
-            <dt className="text-xs text-muted">{rotulo}</dt>
-            <dd className="mt-1 text-lg font-bold">{carregando ? '…' : valor}</dd>
+          <div
+            key={rotulo}
+            className={`rounded-2xl px-5 py-4 ${
+              rotulo === 'Líquido do mês'
+                ? 'bg-[var(--brand-deep)] text-white'
+                : 'border border-line bg-white'
+            }`}
+          >
+            <dt
+              className={`text-[13px] font-medium ${
+                rotulo === 'Líquido do mês' ? 'text-white/75' : 'text-muted'
+              }`}
+            >
+              {rotulo}
+            </dt>
+            <dd className="mt-1 text-[1.5rem] font-bold leading-tight tabular-nums">
+              {carregando ? '…' : valor}
+            </dd>
           </div>
         ))}
       </dl>
 
       {dados && dados.divergencias.length > 0 ? (
-        <section className="border border-rose-200 bg-white">
-          <h2 className="border-b border-rose-200 bg-rose-50 px-4 py-2 text-sm font-bold text-rose-800">
+        <section className="overflow-hidden rounded-2xl border border-rose-200 bg-white">
+          <h2 className="border-b border-rose-200 bg-rose-50 px-5 py-3 text-[14px] font-bold text-rose-800">
             Divergências ({dados.divergencias.length}) — o Mercado Pago reteve
             valor diferente do calculado
           </h2>
@@ -268,7 +291,7 @@ export default function SuperComissoesPage() {
             {dados.divergencias.map((d) => (
               <li
                 key={d.orderId}
-                className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm"
+                className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-sm"
               >
                 <span>
                   <strong>{d.loja}</strong> · pedido #{d.orderNumber}
@@ -278,7 +301,7 @@ export default function SuperComissoesPage() {
                 </span>
                 <button
                   type="button"
-                  className="btn btn-ghost text-xs"
+                  className="btn btn-ghost h-8 px-3 text-[12px]"
                   onClick={() => void resolver(d.orderId)}
                 >
                   Marcar conferida
@@ -289,64 +312,75 @@ export default function SuperComissoesPage() {
         </section>
       ) : null}
 
-      <section className="border border-line bg-white">
-        <div className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-3">
-          <input
-            className="field max-w-xs"
-            placeholder="Buscar loja"
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            aria-label="Buscar loja"
-          />
-          <select
-            className="field w-auto"
-            value={filtro}
-            onChange={(e) => setFiltro(e.target.value as typeof filtro)}
-            aria-label="Filtrar lojas"
-          >
-            <option value="movimento">Com movimento no mês</option>
-            <option value="taxa">Plano com taxa</option>
-            <option value="todas">Todas as lojas</option>
-          </select>
+      <section className="overflow-hidden rounded-2xl border border-line bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-5 py-4">
+          <h2 className="text-[15px] font-bold">Por loja</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              className="field max-w-xs"
+              placeholder="Buscar loja"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              aria-label="Buscar loja"
+            />
+            <select
+              className="field w-auto"
+              value={filtro}
+              onChange={(e) => setFiltro(e.target.value as typeof filtro)}
+              aria-label="Filtrar lojas"
+            >
+              <option value="movimento">Com movimento no mês</option>
+              <option value="taxa">Plano com taxa</option>
+              <option value="todas">Todas as lojas</option>
+            </select>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-sm">
-            <thead className="bg-[#fafafa] text-left text-xs text-muted">
+            <thead className="text-left">
               <tr>
-                <th className="px-4 py-2 font-semibold">Loja</th>
-                <th className="px-2 py-2 font-semibold">Taxa</th>
-                <th className="px-2 py-2 font-semibold">Mercado Pago</th>
-                <th className="px-2 py-2 text-right font-semibold">Vendas</th>
-                <th className="px-2 py-2 text-right font-semibold">Cobrado</th>
-                <th className="px-2 py-2 text-right font-semibold">Devolvido</th>
-                <th className="px-2 py-2 text-right font-semibold">Líquido</th>
-                <th className="px-4 py-2 font-semibold">Cobrança</th>
+                <th className="px-5">Loja</th>
+                <th className="px-3">Taxa</th>
+                <th className="px-3">Mercado Pago</th>
+                <th className="px-3 text-right">Vendas</th>
+                <th className="px-3 text-right">Cobrado</th>
+                <th className="px-3 text-right">Devolvido</th>
+                <th className="px-3 text-right">Líquido</th>
+                <th className="px-5">Cobrança</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
               {lojas.map((l) => (
                 <tr key={l.storeId}>
-                  <td className="px-4 py-2">
+                  <td className="px-5">
                     <p className="font-semibold">{l.nome}</p>
                     <p className="text-xs text-muted">{l.slug}</p>
                   </td>
-                  <td className="px-2 py-2">{l.feeBps ? pct(l.feeBps) : '—'}</td>
-                  <td className="px-2 py-2">
+                  <td className="px-3">{l.feeBps ? pct(l.feeBps) : '—'}</td>
+                  <td className="px-3">
                     {l.conectado ? (
-                      <span className="text-[#166534]">Conectado</span>
+                      <span className="rounded-full bg-[#e8f6ee] px-2 py-0.5 text-[12px] font-semibold text-[#166534]">
+                        Conectado
+                      </span>
                     ) : (
-                      <span className="text-[#9a6700]">Não conectado</span>
+                      <span className="rounded-full bg-[#fff6e0] px-2 py-0.5 text-[12px] font-semibold text-[#8a5a00]">
+                        Não conectado
+                      </span>
                     )}
                   </td>
-                  <td className="px-2 py-2 text-right">{l.pedidos}</td>
-                  <td className="px-2 py-2 text-right">{reais(l.cobradoCents)}</td>
-                  <td className="px-2 py-2 text-right">{reais(l.devolvidoCents)}</td>
-                  <td className="px-2 py-2 text-right font-semibold">
+                  <td className="px-3 text-right tabular-nums">{l.pedidos}</td>
+                  <td className="px-3 text-right tabular-nums">
+                    {reais(l.cobradoCents)}
+                  </td>
+                  <td className="px-3 text-right tabular-nums">
+                    {reais(l.devolvidoCents)}
+                  </td>
+                  <td className="px-3 text-right font-semibold tabular-nums">
                     {reais(l.liquidoCents)}
                   </td>
-                  <td className="px-4 py-2">
+                  <td className="px-5">
                     <select
-                      className="field w-auto py-1 text-xs"
+                      className="field h-9 w-auto text-[13px]"
                       value={l.liberacao}
                       onChange={(e) =>
                         void mudarLiberacao(l, e.target.value as Liberacao)
@@ -354,7 +388,8 @@ export default function SuperComissoesPage() {
                       aria-label={`Cobrança da loja ${l.nome}`}
                     >
                       <option value="geral">
-                        Segue o geral ({dados?.geral.ligadaNoGeral ? 'ligada' : 'desligada'})
+                        Segue o geral (
+                        {dados?.geral.ligadaNoGeral ? 'ligada' : 'desligada'})
                       </option>
                       <option value="ligada">Ligada</option>
                       <option value="desligada">Desligada</option>
@@ -364,7 +399,7 @@ export default function SuperComissoesPage() {
               ))}
               {!carregando && lojas.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-6 text-center text-muted">
+                  <td colSpan={8} className="px-5 py-12 text-center text-muted">
                     Nenhuma loja neste filtro.
                   </td>
                 </tr>

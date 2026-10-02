@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { CabecalhoPagina } from '@/components/admin/Pagina';
 
 export type PlanState = 'ok' | 'expiring' | 'expired' | 'none';
 
@@ -82,7 +83,7 @@ export const emptyCreateStore = {
 
 export const statusLabel: Record<string, string> = {
   ACTIVE: 'Ativa',
-  TRIAL: 'Trial',
+  TRIAL: 'Em teste',
   PAST_DUE: 'Em atraso',
   SUSPENDED: 'Suspensa',
 };
@@ -90,6 +91,15 @@ export const statusLabel: Record<string, string> = {
 export function formatDate(value: string | null) {
   if (!value) return '—';
   return new Date(value).toLocaleDateString('pt-BR');
+}
+
+/** Cor do selo de situação da loja (ativa, teste, em atraso, suspensa) */
+export function statusTone(status: string) {
+  if (status === 'ACTIVE') return 'bg-[#e8f6ee] text-[#1b8f4a]';
+  if (status === 'TRIAL') return 'bg-[#eef2ff] text-[#3b4cca]';
+  if (status === 'PAST_DUE') return 'bg-[#fff4e5] text-[#b54708]';
+  if (status === 'SUSPENDED') return 'bg-[#fde8e8] text-[#b42318]';
+  return 'bg-[#f0f1f3] text-[#5c6570]';
 }
 
 export function planBadge(store: StoreRow) {
@@ -133,18 +143,25 @@ export function feeNumber(value: string | number | null | undefined) {
 export function SuperSection({
   title,
   summary,
+  icone,
+  acoes,
   children,
 }: {
   title: string;
   summary?: string;
+  /** Endereço da tela no menu, para usar o mesmo ícone */
+  icone?: string;
+  acoes?: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <div className="space-y-3">
-      <div>
-        <h1 className="text-xl font-bold">{title}</h1>
-        {summary ? <p className="mt-1 text-sm text-muted">{summary}</p> : null}
-      </div>
+    <div className="admin-page">
+      <CabecalhoPagina
+        titulo={title}
+        descricao={summary}
+        icone={icone}
+        acoes={acoes}
+      />
       {children}
     </div>
   );
