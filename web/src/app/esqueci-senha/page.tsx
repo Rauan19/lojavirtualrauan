@@ -42,7 +42,7 @@ export default function AdminEsqueciSenhaPage() {
           Enviamos um link se o e-mail existir no painel.
         </p>
         {error ? (
-          <p className="mt-3 border border-accent/20 bg-accent/5 px-3 py-2 text-sm text-accent">
+          <p role="alert" className="mt-3 border border-accent/20 bg-accent/5 px-3 py-2 text-sm text-accent">
             {error}
           </p>
         ) : null}
@@ -56,6 +56,8 @@ export default function AdminEsqueciSenhaPage() {
           <input
             className="field"
             type="email"
+            autoComplete="email"
+            spellCheck={false}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required

@@ -19,7 +19,7 @@ const faq: [string, string][] = [
   ],
   [
     'Tem taxa por venda, além da mensalidade?',
-    'A plataforma cobra só a mensalidade do plano. As taxas do processador de pagamento (como em qualquer venda com cartão ou Pix) são cobradas por ele, não por nós.',
+    'Sim, pequena e mostrada em cada plano acima. Ela sai automaticamente de cada venda aprovada, sem boleto à parte, e quanto maior o plano, menor a taxa. As tarifas do Mercado Pago (cartão e Pix) são cobradas por ele, como em qualquer loja.',
   ],
   [
     'Posso usar o domínio da minha loja?',
@@ -34,6 +34,11 @@ const faq: [string, string][] = [
     'Sim, NFC-e integrada: emite direto do pedido quando o pagamento é aprovado.',
   ],
 ];
+
+/** 200 pontos-base → "2%"; 50 → "0,5%" */
+function taxaTexto(bps: number) {
+  return `${String(bps / 100).replace('.', ',')}%`;
+}
 
 function money(value: number) {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -157,10 +162,6 @@ export default async function HomePage() {
         <div className="lp-hero-glow" aria-hidden />
         <div className="relative mx-auto flex max-w-[1180px] flex-col items-center gap-6 px-4 pb-14 pt-[4rem] md:flex-row md:gap-8 md:px-6 md:pb-20 md:pt-24 lg:gap-12">
           <div className="flex flex-1 flex-col justify-center md:max-w-[47%]">
-            <span className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-[#d9dde3] bg-white px-3 py-1.5 text-[12px] font-semibold text-[#4a5560]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[var(--ok)]" />
-              Sua loja no ar hoje mesmo
-            </span>
             <h1 className="max-w-[19ch] font-[family-name:var(--font-brand)] text-[2.2rem] font-800 leading-[1.04] tracking-tight text-[#171a1f] md:text-[3.05rem]">
               Sua loja virtual vende 24 horas por dia.{' '}
               <span style={{ color: 'var(--accent)' }}>Sem depender do seu atendimento.</span>
@@ -319,48 +320,96 @@ export default async function HomePage() {
               </p>
             ) : null}
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-12 grid gap-x-4 gap-y-7 sm:grid-cols-2 lg:grid-cols-4">
               {plans
                 .filter((plan, _i, all) =>
                   all.some((p) => p.periodDays < 360) ? plan.periodDays < 360 : true,
                 )
-                .map((plan) => (
-                <div
-                  key={plan.id}
-                  className={`flex flex-col border bg-white p-5 ${
-                    plan.highlight ? 'border-ink' : 'border-[#d9dde3]'
-                  }`}
-                >
-                  {plan.badge ? (
-                    <span className="mb-2 self-start border border-[#d9dde3] px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-muted">
-                      {plan.badge}
-                    </span>
-                  ) : null}
-                  <h3 className="text-base font-bold text-[#171a1f]">{plan.name}</h3>
-                  <p className="mt-1 text-2xl font-bold text-[#171a1f]">
-                    {plan.amount > 0 ? (
-                      <>
-                        {money(plan.amount)}
-                        <span className="text-sm font-normal text-muted">/mês</span>
-                      </>
-                    ) : (
-                      'Grátis'
-                    )}
-                  </p>
-                  {plan.description ? (
-                    <p className="mt-2 text-sm leading-relaxed text-[#4a5560]">
-                      {plan.description}
-                    </p>
-                  ) : null}
-                  {plan.features?.length ? (
-                    <ul className="mt-4 space-y-1.5 border-t border-[#ebebeb] pt-4 text-[13px] text-[#4a5560]">
-                      {plan.features.map((f) => (
-                        <li key={f}>{f}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
-              ))}
+                .map((plan) => {
+                  // O que muda entre os planos, com os números reais do banco
+                  const fatos = [
+                    plan.feeBps && plan.feeBps > 0
+                      ? `${taxaTexto(plan.feeBps)} por venda aprovada`
+                      : 'Sem taxa por venda',
+                    plan.maxProducts
+                      ? `Até ${plan.maxProducts} produtos`
+                      : 'Produtos ilimitados',
+                    !plan.maxUsers
+                      ? 'Equipe sem limite'
+                      : plan.maxUsers === 1
+                        ? 'Só você no painel'
+                        : `Até ${plan.maxUsers} pessoas no painel`,
+                  ];
+                  return (
+                    <div
+                      key={plan.id}
+                      className={`relative flex flex-col bg-white p-5 ${
+                        plan.highlight
+                          ? 'border-2 border-[#171a1f] shadow-[0_18px_40px_-24px_rgba(23,26,31,0.45)]'
+                          : 'border border-[#d9dde3]'
+                      }`}
+                    >
+                      {plan.badge ? (
+                        <span
+                          className={`absolute -top-3 left-5 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide ${
+                            plan.highlight
+                              ? 'bg-[#171a1f] text-white'
+                              : 'border border-[#d9dde3] bg-white text-[#4a5560]'
+                          }`}
+                        >
+                          {plan.badge}
+                        </span>
+                      ) : null}
+                      <h3 className="text-base font-bold text-[#171a1f]">{plan.name}</h3>
+                      <p className="mt-1 text-[1.75rem] font-bold leading-tight tabular-nums text-[#171a1f]">
+                        {plan.amount > 0 ? (
+                          <>
+                            {money(plan.amount)}
+                            <span className="text-sm font-normal text-[#4a5560]">/mês</span>
+                          </>
+                        ) : (
+                          'Grátis'
+                        )}
+                      </p>
+                      {plan.description ? (
+                        <p className="mt-2 text-sm leading-relaxed text-[#4a5560]">
+                          {plan.description}
+                        </p>
+                      ) : null}
+                      <ul className="mt-4 space-y-2 border-t border-[#ebebeb] pt-4 text-[13px] text-[#171a1f]">
+                        {[...fatos, ...(plan.features || [])].map((f) => (
+                          <li key={f} className="flex gap-2">
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              aria-hidden
+                              className="mt-0.5 shrink-0 text-[var(--ok)]"
+                            >
+                              <path
+                                d="m5 12.5 4.2 4.2L19 7"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <Link
+                        href="/criar-conta"
+                        className={`btn mt-5 h-11 w-full text-[14px] ${
+                          plan.highlight ? 'btn-accent' : 'btn-ghost'
+                        }`}
+                      >
+                        {plan.amount > 0 ? 'Testar grátis' : 'Começar grátis'}
+                      </Link>
+                    </div>
+                  );
+                })}
             </div>
           </div>
         </section>

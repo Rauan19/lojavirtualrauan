@@ -55,7 +55,7 @@ function RedefinirSenhaForm() {
         ) : (
           <>
             {error ? (
-              <p className="mt-3 border border-accent/20 bg-accent/5 px-3 py-2 text-sm text-accent">
+              <p role="alert" className="mt-3 border border-accent/20 bg-accent/5 px-3 py-2 text-sm text-accent">
                 {error}
               </p>
             ) : null}

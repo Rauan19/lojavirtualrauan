@@ -195,7 +195,7 @@ export default function LoginPage() {
             </div>
 
             {error ? (
-              <p className="border border-accent/25 bg-accent/5 px-3 py-2 text-[13px] leading-snug text-accent">
+              <p role="alert" className="border border-accent/25 bg-accent/5 px-3 py-2 text-[13px] leading-snug text-accent">
                 {error}
               </p>
             ) : null}
@@ -291,7 +291,7 @@ export default function LoginPage() {
           </div>
 
           {error ? (
-            <p className="border border-accent/25 bg-accent/5 px-3 py-2 text-[13px] leading-snug text-accent">
+            <p role="alert" className="border border-accent/25 bg-accent/5 px-3 py-2 text-[13px] leading-snug text-accent">
               {error}
             </p>
           ) : null}

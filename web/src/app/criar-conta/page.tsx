@@ -464,7 +464,7 @@ export default function CriarContaPage() {
               </label>
             ) : null}
 
-            {error ? <p className="mt-3 text-sm text-accent">{error}</p> : null}
+            {error ? <p role="alert" className="mt-3 text-sm text-accent">{error}</p> : null}
 
             <div className="mt-5 flex items-center gap-2">
               {step > 1 ? (

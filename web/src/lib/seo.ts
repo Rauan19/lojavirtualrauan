@@ -93,6 +93,12 @@ export type PublicPlan = {
   badge?: string;
   highlight?: boolean;
   features?: string[];
+  /** Taxa por venda aprovada, em pontos-base (200 = 2%) */
+  feeBps?: number;
+  /** null = produtos ilimitados */
+  maxProducts?: number | null;
+  /** Pessoas no painel, contando o dono; null = sem limite */
+  maxUsers?: number | null;
 };
 
 /** Planos reais do banco (editados pelo Super Admin) — usado na landing. */
