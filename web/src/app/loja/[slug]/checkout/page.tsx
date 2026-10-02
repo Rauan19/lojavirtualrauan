@@ -21,6 +21,7 @@ import {
   formatDeliveryEstimate,
 } from '@/lib/shipping-display';
 import { SemFoto } from '@/components/SemFoto';
+import { corDeTexto, tintaSobre } from '@/lib/contraste';
 
 type Store = {
   name: string;
@@ -664,12 +665,14 @@ function CheckoutInner({ slug }: { slug: string }) {
 
   return (
     <main
-      className="min-h-screen bg-[#fafafa] pb-10"
+      className="loja-ui min-h-screen bg-[#f4f5f7] pb-10"
       style={
         {
           '--store-primary': store.primaryColor,
           '--store-accent': store.accentColor,
           '--store-accent-hover': `color-mix(in srgb, ${store.accentColor} 86%, #000)`,
+          '--store-accent-ink': tintaSobre(store.accentColor),
+          '--store-accent-text': corDeTexto(store.accentColor),
         } as React.CSSProperties
       }
     >

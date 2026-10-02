@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { api, mediaUrl } from '@/lib/api';
+import { corDeTexto, tintaSobre } from '@/lib/contraste';
 
 type StoreBrand = {
   name: string;
@@ -64,39 +65,6 @@ const PERKS = [
   { icon: <ShieldIcon />, text: 'Pagamento protegido' },
 ];
 
-/** Logo em chip claro: a maioria das lojas envia JPG com fundo branco, que
- *  desaparece (ou vira bloco) se jogado direto sobre o painel escuro. */
-function LogoChip({
-  logo,
-  name,
-  color,
-  className = '',
-}: {
-  logo: string | null;
-  name: string;
-  color: string;
-  className?: string;
-}) {
-  if (logo) {
-    return (
-      <span
-        className={`inline-flex items-center justify-center rounded-xl bg-white p-2 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.5)] ${className}`}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={logo} alt={name} className="h-11 max-w-[168px] object-contain" />
-      </span>
-    );
-  }
-  return (
-    <span
-      className={`inline-flex items-center rounded-xl bg-white px-3 py-2 text-lg font-bold tracking-tight shadow-[0_8px_24px_-12px_rgba(0,0,0,0.5)] ${className}`}
-      style={{ color }}
-    >
-      {name || 'Loja'}
-    </span>
-  );
-}
-
 export function StoreAuthShell({
   slug,
   title,
@@ -134,121 +102,104 @@ export function StoreAuthShell({
   const logo = mediaUrl(store?.logoUrl);
   const name = store?.name || '';
 
+  /*
+   * Mesmo padrão do login da plataforma (Nuvemshop): a página inteira na cor
+   * da loja e o formulário num cartão branco. Atrás, bem apagado, o mosaico
+   * com o catálogo da própria loja: cada loja ganha uma tela que é só dela.
+   */
   return (
     <main
-      className="fixed inset-0 z-20 grid overflow-y-auto bg-white lg:grid-cols-[1.05fr_1fr]"
+      className="fixed inset-0 z-20 overflow-y-auto"
       style={
         {
           '--store-primary': primary,
           '--store-accent': accent,
           '--store-accent-hover': `color-mix(in srgb, ${accent} 86%, #000)`,
+          '--store-accent-ink': tintaSobre(accent),
+          '--store-accent-text': corDeTexto(accent),
+          background: `color-mix(in srgb, ${primary} 82%, #000)`,
         } as React.CSSProperties
       }
     >
-      <aside className="relative hidden flex-col justify-between overflow-hidden p-10 text-white lg:flex xl:p-14">
-        {/* Camada 1: vitrine da própria loja */}
-        {shots.length > 0 ? (
-          <div className="absolute inset-0 grid grid-cols-3 grid-rows-3" aria-hidden>
-            {shots.map((src, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img key={`${src}-${i}`} src={src} alt="" className="h-full w-full object-cover" />
-            ))}
-          </div>
-        ) : null}
+      {shots.length > 0 ? (
+        <div
+          className="pointer-events-none fixed inset-0 grid grid-cols-3 grid-rows-3 opacity-[0.16] mix-blend-luminosity"
+          aria-hidden
+        >
+          {shots.map((src, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img key={`${src}-${i}`} src={src} alt="" className="h-full w-full object-cover" />
+          ))}
+        </div>
+      ) : null}
+      <div
+        className="pointer-events-none fixed inset-0"
+        style={{
+          background: `radial-gradient(50rem 36rem at 80% 70%, color-mix(in srgb, ${accent} 30%, transparent), transparent 65%)`,
+        }}
+        aria-hidden
+      />
 
-        {/* Camada 2: cor da loja por cima, forte o bastante para o texto ler */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `linear-gradient(155deg, color-mix(in srgb, ${primary} 96%, #000) 4%, color-mix(in srgb, ${primary} 88%, transparent) 46%, color-mix(in srgb, ${accent} 82%, ${primary}) 100%)`,
-            opacity: shots.length > 0 ? 0.94 : 1,
-          }}
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute -right-28 -top-28 h-80 w-80 rounded-full opacity-30 blur-3xl"
-          style={{ background: accent }}
-          aria-hidden
-        />
-        {/* Camada 3: escurece só a metade de baixo, onde fica o texto. Sem
-            isso uma foto clara do catálogo apaga o título e o subtítulo. */}
-        <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-black/60 via-black/25 to-transparent"
-          aria-hidden
-        />
-
-        <Link href={`/loja/${slug}`} className="relative">
-          <LogoChip logo={logo} name={name} color={primary} />
+      <div className="relative mx-auto grid min-h-full max-w-[1180px] content-start gap-6 px-4 py-6 text-white md:grid-cols-[minmax(0,440px)_minmax(0,1fr)] md:content-center md:items-center md:gap-16 md:px-8 md:py-10">
+        <Link
+          href={`/loja/${slug}`}
+          className="inline-flex w-fit items-center gap-1.5 text-sm text-white/80 transition hover:text-white md:col-span-2"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path
+              d="M15 5l-7 7 7 7"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Voltar à loja
         </Link>
 
-        <div className="relative">
-          <h2 className="max-w-[15ch] text-[2.5rem] font-extrabold leading-[1.05] tracking-tight xl:text-[3rem]">
+        <section className="auth-card w-full rounded-[22px] bg-white p-6 text-ink shadow-[0_30px_70px_-30px_rgba(0,0,0,0.6)] sm:p-9">
+          <Link href={`/loja/${slug}`} className="mb-6 inline-block">
+            {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logo} alt={name} className="h-11 max-w-[180px] object-contain" />
+            ) : (
+              <span
+                className="text-xl font-bold tracking-tight"
+                style={{ color: 'var(--store-accent-text)' }}
+              >
+                {name}
+              </span>
+            )}
+          </Link>
+          <h1 className="text-[26px] font-bold leading-tight tracking-tight text-ink sm:text-[28px]">
+            {title}
+          </h1>
+          <p className="mt-1.5 text-[14px] leading-snug text-muted">{subtitle}</p>
+          <div className="mt-6">{children}</div>
+        </section>
+
+        <aside className="hidden md:block">
+          <h2 className="max-w-[15ch] text-[2.6rem] font-extrabold leading-[1.04] tracking-tight text-balance xl:text-[3rem]">
             Sua conta, suas compras.
           </h2>
-          <p className="mt-3 max-w-[36ch] text-[15px] leading-relaxed text-white/85">
-            Entre para acompanhar tudo que você comprou{name ? ` na ${name}` : ''} e
-            finalizar a próxima em segundos.
+          <p className="mt-3 max-w-[36ch] text-[16px] leading-relaxed text-white/85">
+            Acompanhe tudo que você comprou{name ? ` na ${name}` : ''} e finalize a
+            próxima em segundos.
           </p>
-
-          <ul className="mt-7 flex flex-wrap gap-2">
+          <ul className="mt-7 space-y-3">
             {PERKS.map((p) => (
-              <li
-                key={p.text}
-                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[13px] text-white/90 backdrop-blur-[2px]"
-              >
-                {p.icon}
+              <li key={p.text} className="flex items-center gap-3 text-[15px] text-white/90">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15">
+                  {p.icon}
+                </span>
                 {p.text}
               </li>
             ))}
           </ul>
-        </div>
-
-        <p className="relative text-[13px] text-white/55">
-          {name ? `${name} · ` : ''}Ambiente seguro
-        </p>
-      </aside>
-
-      <div className="flex flex-col">
-        <header className="flex h-14 shrink-0 items-center justify-between px-4 lg:px-8">
-          <Link
-            href={`/loja/${slug}`}
-            className="inline-flex items-center gap-1.5 text-sm text-muted transition hover:text-ink"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path
-                d="M15 5l-7 7 7 7"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Voltar à loja
-          </Link>
-        </header>
-
-        <div className="flex flex-1 items-start justify-center px-4 pb-10 pt-2 sm:items-center sm:pt-0 lg:px-8">
-          <div className="w-full max-w-[400px]">
-            {/* No celular a marca aparece aqui, já que o painel não é exibido */}
-            <Link href={`/loja/${slug}`} className="mb-6 block lg:hidden">
-              {logo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={logo} alt={name} className="h-12 max-w-[190px] object-contain" />
-              ) : (
-                <span className="text-xl font-bold tracking-tight" style={{ color: primary }}>
-                  {name}
-                </span>
-              )}
-            </Link>
-
-            <h1 className="text-[26px] font-bold leading-tight tracking-tight text-ink sm:text-[30px]">
-              {title}
-            </h1>
-            <p className="mt-1.5 text-[14px] leading-snug text-muted">{subtitle}</p>
-
-            <div className="mt-7">{children}</div>
-          </div>
-        </div>
+          <p className="mt-10 text-[13px] text-white/60">
+            {name ? `${name} · ` : ''}Ambiente seguro
+          </p>
+        </aside>
       </div>
     </main>
   );

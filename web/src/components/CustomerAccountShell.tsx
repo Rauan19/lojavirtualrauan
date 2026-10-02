@@ -4,6 +4,10 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useCustomer } from '@/components/CustomerProvider';
+import { api, mediaUrl } from '@/lib/api';
+import { corDeTexto, tintaSobre } from '@/lib/contraste';
+
+type Marca = { name: string; logoUrl?: string | null; accentColor: string };
 
 type Props = {
   storeSlug: string;
@@ -37,6 +41,20 @@ export function CustomerAccountShell({ storeSlug, children }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const items = nav(storeSlug);
   const homeHref = `/loja/${storeSlug}`;
+  // A conta é da loja, não da plataforma: nome, logo e cor dela
+  const [marca, setMarca] = useState<Marca | null>(null);
+  useEffect(() => {
+    api<Marca>(`/stores/public/${storeSlug}`)
+      .then(setMarca)
+      .catch(() => setMarca(null));
+  }, [storeSlug]);
+  const cor = marca?.accentColor || '#1f2430';
+  const temaDaLoja = {
+    '--store-accent': cor,
+    '--store-accent-hover': `color-mix(in srgb, ${cor} 86%, #000)`,
+    '--store-accent-ink': tintaSobre(cor),
+    '--store-accent-text': corDeTexto(cor),
+  } as React.CSSProperties;
 
   const isAuthPage =
     pathname.includes('/conta/entrar') ||
@@ -69,7 +87,7 @@ export function CustomerAccountShell({ storeSlug, children }: Props) {
   }
 
   if (loading || !customer) {
-    return <p className="p-8 text-sm text-muted">Carregando conta...</p>;
+    return <p className="p-8 text-sm text-muted">Carregando sua conta…</p>;
   }
 
   // O narrowing do `if` acima não alcança dentro da função aninhada:
@@ -79,24 +97,31 @@ export function CustomerAccountShell({ storeSlug, children }: Props) {
   function renderSideLinks() {
     return (
       <>
-        <div className="border-b border-line px-4 py-4">
-          <p className="text-sm font-semibold">{account.name}</p>
-          <p className="mt-0.5 truncate text-xs text-muted">{account.email}</p>
+        <div className="flex items-center gap-3 px-4 py-4">
+          <span
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[15px] font-bold"
+            style={{ background: 'var(--store-accent)', color: 'var(--store-accent-ink)' }}
+            aria-hidden
+          >
+            {account.name.trim().charAt(0).toUpperCase() || '·'}
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold">{account.name}</span>
+            <span className="block truncate text-xs text-muted">{account.email}</span>
+          </span>
         </div>
-        <nav className="flex-1 py-2">
-          <p className="px-4 pb-1 pt-2 text-[10px] font-bold uppercase tracking-wider text-muted">
-            Menu da conta
-          </p>
+        <nav className="flex-1 space-y-0.5 px-2 pb-2" aria-label="Menu da conta">
           {items.map((item) => {
             const active = item.match(pathname);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`block border-b border-line px-4 py-3 text-sm font-medium ${
+                aria-current={active ? 'page' : undefined}
+                className={`block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                   active
-                    ? 'bg-[#fafafa] text-[var(--store-accent-text,#e11d48)]'
-                    : ''
+                    ? 'bg-[color-mix(in_srgb,var(--store-accent)_10%,#fff)] text-[var(--store-accent-text)]'
+                    : 'text-ink hover:bg-[#f3f4f6]'
                 }`}
                 onClick={() => setDrawerOpen(false)}
               >
@@ -106,16 +131,16 @@ export function CustomerAccountShell({ storeSlug, children }: Props) {
           })}
           <Link
             href={homeHref}
-            className="block border-b border-line px-4 py-3 text-sm font-medium"
+            className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink hover:bg-[#f3f4f6]"
             onClick={() => setDrawerOpen(false)}
           >
             Voltar à loja
           </Link>
         </nav>
-        <div className="border-t border-line p-4">
+        <div className="border-t border-line p-2">
           <button
             type="button"
-            className="w-full border border-rose-600 bg-rose-600 px-3 py-2.5 text-sm font-bold text-white"
+            className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-[#b42318] hover:bg-[#fef3f2]"
             onClick={() => {
               logout();
               setDrawerOpen(false);
@@ -130,7 +155,24 @@ export function CustomerAccountShell({ storeSlug, children }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div className="loja-ui min-h-screen bg-[#f4f5f7]" style={temaDaLoja}>
+      <div className="hidden border-b border-line bg-white md:block">
+        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
+          <Link href={homeHref} className="flex items-center">
+            {marca?.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={mediaUrl(marca.logoUrl) || ''} alt={marca.name} className="h-9 max-w-[170px] object-contain" />
+            ) : (
+              <span className="text-lg font-bold tracking-tight text-[var(--store-accent-text)]">
+                {marca?.name || 'Loja'}
+              </span>
+            )}
+          </Link>
+          <Link href={homeHref} className="text-sm font-medium text-muted hover:text-ink">
+            Voltar à loja
+          </Link>
+        </div>
+      </div>
       <header className="sticky top-0 z-20 border-b border-line bg-white md:hidden">
         <div className="flex h-14 items-center gap-2 px-3">
           <button
@@ -175,10 +217,10 @@ export function CustomerAccountShell({ storeSlug, children }: Props) {
       </aside>
 
       <div className="mx-auto flex max-w-5xl gap-0 md:gap-6 md:px-4 md:py-8">
-        <aside className="hidden w-56 shrink-0 border border-line bg-white md:flex md:flex-col md:self-start">
+        <aside className="hidden w-60 shrink-0 overflow-hidden rounded-2xl border border-line bg-white md:flex md:flex-col md:self-start">
           {renderSideLinks()}
         </aside>
-        <div className="min-w-0 flex-1 bg-white md:border md:border-line md:p-6">
+        <div className="min-w-0 flex-1 bg-white md:rounded-2xl md:border md:border-line md:p-7">
           {children}
         </div>
       </div>

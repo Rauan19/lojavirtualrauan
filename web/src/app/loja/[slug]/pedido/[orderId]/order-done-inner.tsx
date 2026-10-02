@@ -260,7 +260,7 @@ export function OrderDoneInner({
 
   if (paid) {
     return (
-      <main className="min-h-screen bg-[#fafafa]">
+      <main className="loja-ui min-h-screen bg-[#f4f5f7]">
         <PaymentStatusScreen
           mode="success"
           orderNumber={order?.orderNumber}
@@ -274,7 +274,7 @@ export function OrderDoneInner({
 
   if (rejected) {
     return (
-      <main className="min-h-screen bg-[#fafafa]">
+      <main className="loja-ui min-h-screen bg-[#f4f5f7]">
         <div className="mx-auto max-w-md px-4 py-10 text-center">
           <PaymentStatusScreen
             mode="rejected"
@@ -303,7 +303,7 @@ export function OrderDoneInner({
 
   if (awaitingWebhook && !retryPay && !offlinePay) {
     return (
-      <main className="min-h-screen bg-[#fafafa]">
+      <main className="loja-ui min-h-screen bg-[#f4f5f7]">
         <PaymentStatusScreen
           mode="waiting"
           orderNumber={order?.orderNumber}
@@ -316,7 +316,7 @@ export function OrderDoneInner({
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-lg px-4 py-8">
+    <main className="loja-ui mx-auto min-h-screen max-w-lg px-4 py-8">
       <Link href={`/loja/${slug}`} className="text-sm text-muted">
         ← Voltar à loja
       </Link>

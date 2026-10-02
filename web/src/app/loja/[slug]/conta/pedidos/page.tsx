@@ -481,10 +481,35 @@ export default function MeusPedidosPage() {
           );
         })}
         {orders.length === 0 ? (
-          <li className="text-sm text-muted">
-            Você ainda não tem compras.{' '}
-            <Link href={`/loja/${params.slug}`} className="underline">
-              Ir à loja
+          <li className="rounded-2xl border border-dashed border-line px-4 py-10 text-center">
+            <svg
+              width="36"
+              height="36"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden
+              className="mx-auto text-[var(--store-accent-text,#111)]"
+            >
+              <path
+                d="M6.5 8.5h11l-.8 10.2a1.5 1.5 0 01-1.5 1.3H8.8a1.5 1.5 0 01-1.5-1.3L6.5 8.5z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M9 8.5V7a3 3 0 016 0v1.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+            <p className="mt-3 text-[15px] font-semibold text-ink">
+              Você ainda não tem compras aqui
+            </p>
+            <p className="mt-1 text-sm text-muted">
+              Quando comprar, o pedido e o rastreio da entrega aparecem nesta tela.
+            </p>
+            <Link href={`/loja/${params.slug}`} className="btn btn-accent mt-4 inline-flex h-11 px-5">
+              Ver produtos
             </Link>
           </li>
         ) : null}

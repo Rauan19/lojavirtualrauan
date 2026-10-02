@@ -233,7 +233,7 @@ export function StoreShell({
 
   return (
     <div
-      className="store-theme pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0"
+      className="store-theme loja-ui pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0"
       style={
         {
           '--store-primary': primaryColor,

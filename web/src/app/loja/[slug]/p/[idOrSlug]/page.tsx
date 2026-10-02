@@ -396,7 +396,7 @@ function ProductInner({
             <div className="md:sticky md:top-24 md:self-start">
               {/* No celular a foto é achatada de propósito: quadrada empurra
                   preço e botão pra fora da primeira tela. */}
-              <div className="relative h-[260px] overflow-hidden bg-[#f3f3f3] sm:h-[340px] md:aspect-square md:h-auto md:max-h-[460px]">
+              <div className="loja-foto relative h-[260px] overflow-hidden bg-[#f3f3f3] sm:h-[340px] md:aspect-square md:h-auto md:max-h-[460px]">
                 {currentUrl ? (
                   <button
                     type="button"

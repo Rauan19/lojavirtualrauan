@@ -94,7 +94,7 @@ export function CartDrawer({
         aria-hidden
       />
       <aside
-        className="fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col border-l border-line bg-white shadow-xl"
+        className="loja-ui fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col border-l border-line bg-white shadow-xl"
         style={themeVars}
         role="dialog"
         aria-label="Sacola"

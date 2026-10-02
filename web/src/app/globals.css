@@ -1134,3 +1134,36 @@
   --store-accent: var(--brand-teal);
   --store-accent-text: var(--brand-deep);
 }
+
+/* ---------- Vitrine do lojista: acabamento (.loja-ui) ------------------- */
+/*
+ * Mesma família visual dos temas das plataformas grandes: foto do produto,
+ * cartões, botões e campos com canto arredondado. A cor continua sendo a
+ * de cada loja; aqui só a forma.
+ */
+.loja-ui .btn {
+  border-radius: 10px;
+}
+
+.loja-ui .field {
+  border-radius: 9px;
+}
+
+.loja-ui .field:focus {
+  border-color: var(--store-accent-text, var(--ink));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--store-accent, #111) 20%, transparent);
+  outline: none;
+}
+
+.loja-ui .store-card-media,
+.loja-ui .loja-foto {
+  border-radius: 14px;
+}
+
+.loja-ui :is(.card, .border.bg-white, .border.bg-\[\#fafafa\]) {
+  border-radius: 14px;
+}
+
+.loja-ui :is(.card, .border.bg-white):has(table) {
+  overflow: hidden;
+}
