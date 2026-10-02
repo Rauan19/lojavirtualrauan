@@ -395,9 +395,18 @@
  */
 @media (min-width: 768px) {
   .store-promo-marquee {
-    width: min(1400px, calc(100% - 32px));
+    /* mesma largura do conteúdo da loja (vitrines, categorias) */
+    width: min(1200px, calc(100% - 32px));
     margin: 16px auto 0;
     border-radius: 18px;
+    /* teto: o banner não pode tomar a primeira tela inteira */
+    max-height: 420px;
+  }
+
+  /* com o teto, a arte preenche a caixa (corta um pouco em cima/embaixo)
+     em vez de encolher e deixar sobra desfocada dos lados */
+  .store-promo-marquee picture img {
+    object-fit: cover;
   }
 }
 
