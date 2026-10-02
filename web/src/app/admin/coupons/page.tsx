@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { Modal } from '@/components/Modal';
 import { api, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 
@@ -39,6 +40,7 @@ export default function AdminCouponsPage() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  const [criando, setCriando] = useState(false);
 
   const auth = () => {
     const user = getUser();
@@ -83,6 +85,7 @@ export default function AdminCouponsPage() {
       });
       setForm(empty);
       setMessage('Cupom criado');
+      setCriando(false);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar');
@@ -134,18 +137,37 @@ export default function AdminCouponsPage() {
 
   return (
     <div className="admin-page">
-      <div>
-        <h1>Cupons</h1>
-        <p className="text-sm text-muted">
-          Códigos de desconto pro cliente no checkout.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1>Cupons</h1>
+          <p className="text-sm text-muted">
+            Códigos de desconto pro cliente no checkout.
+          </p>
+        </div>
+        <button
+          type="button"
+          className="btn btn-accent h-10 px-4"
+          onClick={() => {
+            setError('');
+            setCriando(true);
+          }}
+        >
+          Criar cupom
+        </button>
       </div>
 
       {message ? <p className="text-sm text-[var(--ok)]">{message}</p> : null}
       {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
 
-      <form onSubmit={onCreate} className="card form-grid md:grid-cols-2">
-        <h2 className="text-sm font-bold md:col-span-2">Novo cupom</h2>
+      {criando ? (
+      <Modal
+        title="Novo cupom"
+        hint="O cliente digita o código no checkout para ganhar o desconto."
+        erro={error}
+        onClose={() => setCriando(false)}
+        largura="lg"
+      >
+      <form onSubmit={onCreate} className="form-grid md:grid-cols-2">
         <div>
           <label className="label">Código</label>
           <input
@@ -266,17 +288,36 @@ export default function AdminCouponsPage() {
           />
           Mostrar num banner na vitrine da loja
         </label>
-        <button className="btn btn-accent md:col-span-2" disabled={busy}>
-          {busy ? 'Criando…' : 'Criar cupom'}
-        </button>
+        <div className="flex justify-end gap-2 border-t border-line pt-3 md:col-span-2">
+          <button type="button" className="btn btn-ghost" data-modal-cancel>
+            Cancelar
+          </button>
+          <button className="btn btn-accent" disabled={busy}>
+            {busy ? 'Criando…' : 'Criar cupom'}
+          </button>
+        </div>
       </form>
+      </Modal>
+      ) : null}
 
       <div className="card overflow-hidden !p-0">
         <div className="border-b border-line px-3 py-2">
           <h2 className="text-sm font-semibold">Cupons da loja</h2>
         </div>
         {items.length === 0 ? (
-          <p className="px-3 py-6 text-sm text-muted">Nenhum cupom ainda.</p>
+          <div className="px-4 py-10 text-center">
+            <p className="text-[15px] font-semibold text-ink">Nenhum cupom ainda</p>
+            <p className="mt-1 text-sm text-muted">
+              Cupom de primeira compra ou de frete grátis ajuda a fechar a venda.
+            </p>
+            <button
+              type="button"
+              className="btn btn-ghost mt-4 h-10 px-4"
+              onClick={() => setCriando(true)}
+            >
+              Criar o primeiro cupom
+            </button>
+          </div>
         ) : (
           <ul className="divide-y divide-line">
             {items.map((c) => (

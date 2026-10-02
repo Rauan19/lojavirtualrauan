@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { Modal } from '@/components/Modal';
 import { api, mediaUrl, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 
@@ -33,6 +34,7 @@ export default function AdminPromotionsPage() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  const [criando, setCriando] = useState(false);
 
   const auth = () => {
     const user = getUser();
@@ -86,6 +88,7 @@ export default function AdminPromotionsPage() {
       setEndsAt('');
       setProductId('');
       setMessage('Promoção criada — o preço do produto foi atualizado na vitrine');
+      setCriando(false);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar');
@@ -112,18 +115,37 @@ export default function AdminPromotionsPage() {
 
   return (
     <div className="admin-page">
-      <div>
-        <h1>Promoções</h1>
-        <p className="text-sm text-muted">
-          Oferta com preço “de” / “por” na vitrine.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1>Promoções</h1>
+          <p className="text-sm text-muted">
+            Oferta com preço “de” / “por” na vitrine.
+          </p>
+        </div>
+        <button
+          type="button"
+          className="btn btn-accent h-10 px-4"
+          onClick={() => {
+            setError('');
+            setCriando(true);
+          }}
+        >
+          Criar promoção
+        </button>
       </div>
 
       {message ? <p className="text-sm text-[var(--ok)]">{message}</p> : null}
       {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
 
-      <form onSubmit={onCreate} className="card form-grid md:grid-cols-2">
-        <h2 className="text-sm font-bold md:col-span-2">Nova promoção</h2>
+      {criando ? (
+      <Modal
+        title="Nova promoção"
+        hint="O produto aparece na vitrine com o preço de antes riscado e o novo em destaque."
+        erro={error}
+        onClose={() => setCriando(false)}
+        largura="lg"
+      >
+      <form onSubmit={onCreate} className="form-grid md:grid-cols-2">
         <div className="md:col-span-2">
           <label className="label">Produto</label>
           <select
@@ -182,16 +204,33 @@ export default function AdminPromotionsPage() {
             onChange={(e) => setEndsAt(e.target.value)}
           />
         </div>
-        <button className="btn btn-accent md:col-span-2" disabled={busy || !productId}>
-          {busy ? 'Salvando…' : 'Criar promoção'}
-        </button>
+        <div className="flex justify-end gap-2 border-t border-line pt-3 md:col-span-2">
+          <button type="button" className="btn btn-ghost" data-modal-cancel>
+            Cancelar
+          </button>
+          <button className="btn btn-accent" disabled={busy || !productId}>
+            {busy ? 'Salvando…' : 'Criar promoção'}
+          </button>
+        </div>
       </form>
+      </Modal>
+      ) : null}
 
       <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
         {promotions.length === 0 ? (
-          <p className="text-sm text-muted sm:col-span-2 xl:col-span-3">
-            Nenhuma promoção ativa.
-          </p>
+          <div className="rounded-2xl border border-dashed border-line bg-white px-4 py-10 text-center sm:col-span-2 xl:col-span-3">
+            <p className="text-[15px] font-semibold text-ink">Nenhuma promoção ativa</p>
+            <p className="mt-1 text-sm text-muted">
+              Produto em promoção aparece com o selo de desconto e na vitrine Ofertas da semana.
+            </p>
+            <button
+              type="button"
+              className="btn btn-ghost mt-4 h-10 px-4"
+              onClick={() => setCriando(true)}
+            >
+              Criar a primeira promoção
+            </button>
+          </div>
         ) : (
           promotions.map((promo) => {
             const img = mediaUrl(promo.product.images[0]?.url);
