@@ -5,24 +5,43 @@ import { useEffect, useMemo, useState } from 'react';
 import { api } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 import { CabecalhoPagina } from '@/components/admin/Pagina';
+import { LojaAoVivo } from '@/components/templates/LojaAoVivo';
 import { MiniaturaTemplate } from '@/components/templates/MiniaturaTemplate';
-import {
-  precoTexto,
-  RECEITA_BASE,
-  SEGMENTOS,
-  type TemplateItem,
-} from '@/lib/templates';
+import { PreviaTemplate } from '@/components/templates/PreviaTemplate';
+import { precoTexto, SEGMENTOS, type TemplateItem } from '@/lib/templates';
+
+/*
+ * Templates da loja, no padrão da página de Temas da Shopify e de Layouts
+ * da Nuvemshop: o template atual aparece com a loja de verdade (notebook e
+ * celular), a biblioteca fica logo abaixo e cada template abre uma prévia
+ * em tela cheia antes de aplicar.
+ */
 
 type Loja = {
   slug: string;
+  name?: string;
   storeTheme?: string | null;
   accentColor?: string | null;
 };
 
-function seloAcesso(t: TemplateItem) {
-  if (t.acesso === 'pago') return precoTexto(t.precoCentavos) || 'Pago';
-  if (t.acesso === 'plano') return 'Planos maiores';
-  return null;
+type Aba = 'todos' | 'gratis' | 'plano' | 'pago';
+
+const ABAS: { key: Aba; label: string }[] = [
+  { key: 'todos', label: 'Todos' },
+  { key: 'gratis', label: 'Grátis' },
+  { key: 'plano', label: 'Nos planos' },
+  { key: 'pago', label: 'Premium' },
+];
+
+function selo(t: TemplateItem) {
+  if (t.acesso === 'pago')
+    return {
+      texto: precoTexto(t.precoCentavos) || 'Premium',
+      tom: 'bg-[#fff6e0] text-[#8a5a00]',
+    };
+  if (t.acesso === 'plano')
+    return { texto: 'Nos planos', tom: 'bg-[#eef2ff] text-[#3b4cca]' };
+  return { texto: 'Grátis', tom: 'bg-[#e8f6ee] text-[#166534]' };
 }
 
 export default function TemplatesPage() {
@@ -31,7 +50,11 @@ export default function TemplatesPage() {
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
   const [salvando, setSalvando] = useState<string | null>(null);
-  const [filtro, setFiltro] = useState('todos');
+  const [aba, setAba] = useState<Aba>('todos');
+  const [segmento, setSegmento] = useState('todos');
+  const [previa, setPrevia] = useState<TemplateItem | null>(null);
+  // Muda a cada troca de template, para a loja ao vivo recarregar
+  const [versao, setVersao] = useState(0);
 
   useEffect(() => {
     const opts = { token: getToken(), storeSlug: getUser()?.store?.slug };
@@ -52,18 +75,22 @@ export default function TemplatesPage() {
   const emUso = lista.find((t) => t.chave === atual);
   const cor = loja?.accentColor || '#0d3a43';
 
-  // Só mostra os filtros que têm template
-  const filtros = useMemo(
+  const segmentos = useMemo(
     () =>
       SEGMENTOS.filter((s) => lista.some((t) => t.segmentos.includes(s.key))),
     [lista],
   );
-  const visiveis = lista.filter(
-    (t) => filtro === 'todos' || t.segmentos.includes(filtro),
+  const contagem = (a: Aba) =>
+    lista.filter((t) => a === 'todos' || t.acesso === a).length;
+  const biblioteca = lista.filter(
+    (t) =>
+      t.chave !== atual &&
+      (aba === 'todos' || t.acesso === aba) &&
+      (segmento === 'todos' || t.segmentos.includes(segmento)),
   );
 
-  async function usar(chave: string) {
-    setSalvando(chave);
+  async function usar(t: TemplateItem) {
+    setSalvando(t.chave);
     setErro('');
     setAviso('');
     try {
@@ -72,12 +99,12 @@ export default function TemplatesPage() {
         method: 'PATCH',
         token: getToken(),
         storeSlug: getUser()?.store?.slug,
-        body: { storeTheme: chave, storeFont: '', storeCardRatio: '' },
+        body: { storeTheme: t.chave, storeFont: '', storeCardRatio: '' },
       });
       setLoja(nova);
-      setAviso(
-        `Template ${lista.find((t) => t.chave === chave)?.nome} aplicado na sua loja.`,
-      );
+      setVersao((v) => v + 1);
+      setPrevia(null);
+      setAviso(`Pronto: a sua loja agora usa o template ${t.nome}.`);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
       setErro(
@@ -88,12 +115,66 @@ export default function TemplatesPage() {
     }
   }
 
+  /** O botão principal de cada template, conforme o acesso da loja */
+  function BotaoUsar({
+    t,
+    grande = false,
+  }: {
+    t: TemplateItem;
+    grande?: boolean;
+  }) {
+    const tamanho = grande ? 'h-10 px-4 text-[14px]' : 'h-9 px-3 text-[13px]';
+    const bloqueio =
+      t.liberacao && !t.liberacao.liberado ? t.liberacao.precisa : null;
+    if (bloqueio === 'plano') {
+      return (
+        <Link
+          href="/admin/settings/planos"
+          className={`btn btn-accent ${tamanho}`}
+        >
+          Ver planos
+        </Link>
+      );
+    }
+    if (bloqueio === 'compra') {
+      return (
+        <button
+          type="button"
+          className={`btn btn-accent ${tamanho}`}
+          disabled
+          title="Venda de templates em breve"
+        >
+          Em breve
+        </button>
+      );
+    }
+    return (
+      <button
+        type="button"
+        className={`btn btn-accent ${tamanho}`}
+        disabled={salvando !== null}
+        onClick={() => void usar(t)}
+      >
+        {salvando === t.chave
+          ? 'Aplicando…'
+          : grande
+            ? 'Usar este template'
+            : 'Usar'}
+      </button>
+    );
+  }
+
+  const urlLoja = (chave?: string) =>
+    loja
+      ? `/loja/${loja.slug}${chave ? `?tema=${chave}` : `?v=${versao}`}`
+      : '';
+
   return (
     <div className="admin-page max-w-6xl">
       <CabecalhoPagina
         icone="/admin/templates"
         titulo="Templates da loja"
-        descricao="Escolha um template pronto para a sua vitrine. Sua cor e sua logo continuam; o template muda fontes, cartões, banner e fundo."
+        descricao="O visual da sua vitrine. Troque quando quiser: produtos, banners, cor e logo continuam os mesmos."
       />
 
       {erro ? (
@@ -110,170 +191,198 @@ export default function TemplatesPage() {
         </p>
       ) : null}
 
-      {/* Template em uso, sempre à vista */}
-      {loja ? (
-        <section className="flex flex-col gap-4 rounded-2xl border border-line bg-white p-4 sm:flex-row sm:items-center">
-          <div className="w-full shrink-0 overflow-hidden rounded-xl ring-1 ring-line sm:w-52">
-            <MiniaturaTemplate
-              receita={emUso?.receita ?? RECEITA_BASE}
-              cor={cor}
-            />
+      {/* Template atual: a loja de verdade, no computador e no celular */}
+      <section className="overflow-hidden rounded-2xl border border-line bg-white">
+        <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="relative bg-[linear-gradient(160deg,#eef4f5,#e3ecee)] px-5 pb-6 pt-6 sm:px-8 sm:pb-8">
+            {loja ? (
+              <div className="relative mx-auto max-w-[620px] pr-[14%]">
+                <div className="overflow-hidden rounded-t-[10px] border-[6px] border-b-0 border-[#1d2125] bg-[#1d2125] shadow-[0_24px_50px_-30px_rgba(13,58,67,0.6)]">
+                  <div className="flex h-5 items-center gap-1 bg-[#2a2f35] px-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#e0603d]" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#e0b23d]" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#4caf6e]" />
+                  </div>
+                  <LojaAoVivo
+                    key={`pc-${versao}`}
+                    src={urlLoja()}
+                    largura={1280}
+                    altura={800}
+                    titulo="Sua loja no computador"
+                  />
+                </div>
+                <div className="relative -mx-[3%] h-2.5 rounded-b-lg bg-gradient-to-b from-[#cfd5da] to-[#a9b1b8]" />
+                <div className="absolute -bottom-3 right-0 w-[26%] overflow-hidden rounded-[22px] border-[5px] border-[#1d2125] bg-[#1d2125] shadow-[0_24px_40px_-24px_rgba(13,58,67,0.7)]">
+                  <div className="overflow-hidden rounded-[16px]">
+                    <LojaAoVivo
+                      key={`cel-${versao}`}
+                      src={urlLoja()}
+                      largura={390}
+                      altura={780}
+                      titulo="Sua loja no celular"
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="mx-auto aspect-[16/10] max-w-[620px] animate-pulse rounded-lg bg-white/60" />
+            )}
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[13px] font-medium text-muted">
-              Template em uso
-            </p>
-            <h2 className="text-[20px] font-bold leading-tight">
+          <div className="flex flex-col justify-center border-t border-line p-6 lg:border-l lg:border-t-0">
+            <span className="w-fit rounded-full bg-[var(--brand-deep)] px-2.5 py-0.5 text-[12px] font-semibold text-white">
+              Template atual
+            </span>
+            <h2 className="mt-3 font-[family-name:var(--font-brand)] text-[1.6rem] font-800 leading-tight tracking-tight">
               {emUso?.nome ?? 'Essencial'}
             </h2>
+            {emUso?.paraQuem ? (
+              <p className="mt-1 text-[13px] font-semibold text-[var(--brand-deep)]">
+                {emUso.paraQuem}
+              </p>
+            ) : null}
             {emUso?.descricao ? (
-              <p className="mt-1 text-[14px] leading-relaxed text-muted">
+              <p className="mt-2 text-[14px] leading-relaxed text-muted">
                 {emUso.descricao}
               </p>
             ) : null}
-          </div>
-          <div className="flex shrink-0 flex-wrap gap-2">
-            <a
-              href={`/loja/${loja.slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-ghost h-10 px-4 text-[14px]"
-            >
-              Ver minha loja
-            </a>
-            <Link
-              href="/admin/settings"
-              className="btn btn-ghost h-10 px-4 text-[14px]"
-            >
-              Ajustar cores e fonte
-            </Link>
-          </div>
-        </section>
-      ) : null}
-
-      <section>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-[17px] font-bold">
-            Todos os templates{' '}
-            <span className="font-normal text-muted">({lista.length})</span>
-          </h2>
-          <div
-            className="flex flex-wrap gap-1.5"
-            role="group"
-            aria-label="Filtrar por tipo de loja"
-          >
-            {[{ key: 'todos', label: 'Todos' }, ...filtros].map((s) => (
-              <button
-                key={s.key}
-                type="button"
-                aria-pressed={filtro === s.key}
-                onClick={() => setFiltro(s.key)}
-                className={`h-8 rounded-full px-3 text-[13px] font-semibold transition-colors ${
-                  filtro === s.key
-                    ? 'bg-[var(--brand-deep)] text-white'
-                    : 'border border-line bg-white text-ink hover:border-[var(--brand-teal)]'
-                }`}
+            <div className="mt-5 grid gap-2">
+              <Link
+                href="/admin/settings"
+                className="btn btn-accent h-10 text-[14px]"
               >
-                {s.label}
-              </button>
-            ))}
+                Personalizar cores, logo e banner
+              </Link>
+              {loja ? (
+                <a
+                  href={`/loja/${loja.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-ghost h-10 text-[14px]"
+                >
+                  Ver minha loja
+                </a>
+              ) : null}
+            </div>
           </div>
         </div>
+      </section>
 
-        <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {visiveis.map((t) => {
-            const ativo = t.chave === atual;
-            const bloqueio =
-              t.liberacao && !t.liberacao.liberado ? t.liberacao.precisa : null;
-            const selo = seloAcesso(t);
+      {/* Biblioteca */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-[19px] font-bold">Biblioteca de templates</h2>
+          <p className="mt-0.5 text-[14px] text-muted">
+            Abra a prévia para ver a sua loja com o template antes de aplicar.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line">
+          <div
+            className="-mb-px flex gap-1"
+            role="tablist"
+            aria-label="Tipo de acesso"
+          >
+            {ABAS.filter((a) => a.key === 'todos' || contagem(a.key) > 0).map(
+              (a) => (
+                <button
+                  key={a.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={aba === a.key}
+                  onClick={() => setAba(a.key)}
+                  className={`border-b-2 px-3 pb-2.5 pt-1 text-[14px] font-semibold transition-colors ${
+                    aba === a.key
+                      ? 'border-[var(--brand-deep)] text-ink'
+                      : 'border-transparent text-muted hover:text-ink'
+                  }`}
+                >
+                  {a.label}{' '}
+                  <span className="font-normal text-muted">
+                    {contagem(a.key)}
+                  </span>
+                </button>
+              ),
+            )}
+          </div>
+          <label className="mb-2 flex items-center gap-2 text-[13px] text-muted">
+            Tipo de loja
+            <select
+              className="field h-9 w-auto text-[13px]"
+              value={segmento}
+              onChange={(e) => setSegmento(e.target.value)}
+            >
+              <option value="todos">Todos</option>
+              {segmentos.map((s) => (
+                <option key={s.key} value={s.key}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <ul className="grid grid-cols-1 gap-x-5 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
+          {biblioteca.map((t) => {
+            const s = selo(t);
             return (
-              <li
-                key={t.chave}
-                className={`flex flex-col overflow-hidden rounded-2xl bg-white transition-shadow hover:shadow-[0_14px_30px_-22px_rgba(13,58,67,0.55)] ${
-                  ativo ? 'ring-2 ring-[var(--brand-deep)]' : 'ring-1 ring-line'
-                }`}
-              >
-                <div className="relative">
+              <li key={t.chave} className="group flex flex-col">
+                <div className="relative overflow-hidden rounded-xl ring-1 ring-line transition-shadow group-hover:shadow-[0_18px_36px_-24px_rgba(13,58,67,0.55)]">
                   <MiniaturaTemplate receita={t.receita} cor={cor} />
-                  <div className="absolute inset-x-2 top-2 flex justify-between gap-2">
-                    {selo ? (
-                      <span className="rounded-full bg-[#fff6e0] px-2 py-0.5 text-[11px] font-semibold text-[#8a5a00]">
-                        {selo}
-                      </span>
-                    ) : (
-                      <span />
-                    )}
-                    {ativo ? (
-                      <span className="rounded-full bg-[var(--brand-deep)] px-2 py-0.5 text-[11px] font-semibold text-white">
-                        Em uso
-                      </span>
-                    ) : null}
+                  {/* Ações por cima da imagem, como na Nuvemshop */}
+                  <div className="absolute inset-0 flex items-center justify-center gap-2 bg-[#0d3a43]/55 opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100">
+                    <button
+                      type="button"
+                      className="btn h-10 bg-white px-4 text-[14px] text-ink hover:bg-white/90"
+                      onClick={() => setPrevia(t)}
+                    >
+                      Prévia
+                    </button>
+                    <BotaoUsar t={t} />
                   </div>
                 </div>
-                <div className="flex flex-1 flex-col border-t border-line p-3.5">
-                  <h3 className="text-[15px] font-bold">{t.nome}</h3>
-                  <p className="mt-0.5 line-clamp-2 flex-1 text-[12.5px] leading-snug text-muted">
-                    {t.paraQuem}
-                  </p>
-                  <div className="mt-3 flex gap-2">
-                    {loja ? (
-                      <a
-                        href={`/loja/${loja.slug}?tema=${t.chave}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn btn-ghost h-9 flex-1 px-2 text-[13px]"
-                      >
-                        Prévia
-                      </a>
-                    ) : null}
-                    {bloqueio === 'plano' ? (
-                      <Link
-                        href="/admin/settings/planos"
-                        className="btn btn-accent h-9 flex-1 px-2 text-[13px]"
-                      >
-                        Ver planos
-                      </Link>
-                    ) : bloqueio === 'compra' ? (
-                      <button
-                        type="button"
-                        className="btn btn-accent h-9 flex-1 px-2 text-[13px]"
-                        disabled
-                        title="Venda de templates em breve"
-                      >
-                        Em breve
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="btn btn-accent h-9 flex-1 px-2 text-[13px]"
-                        disabled={!loja || ativo || salvando !== null}
-                        onClick={() => void usar(t.chave)}
-                      >
-                        {salvando === t.chave
-                          ? 'Aplicando…'
-                          : ativo
-                            ? 'Em uso'
-                            : 'Usar'}
-                      </button>
-                    )}
+                <div className="mt-3 flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-[15px] font-bold">{t.nome}</h3>
+                    <p className="mt-0.5 line-clamp-1 text-[13px] text-muted">
+                      {t.paraQuem}
+                    </p>
                   </div>
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-[11.5px] font-semibold ${s.tom}`}
+                  >
+                    {s.texto}
+                  </span>
+                </div>
+                {/* No celular não existe "passar o mouse": botões sempre à vista */}
+                <div className="mt-3 flex gap-2 sm:hidden">
+                  <button
+                    type="button"
+                    className="btn btn-ghost h-9 flex-1 text-[13px]"
+                    onClick={() => setPrevia(t)}
+                  >
+                    Prévia
+                  </button>
+                  <BotaoUsar t={t} />
                 </div>
               </li>
             );
           })}
         </ul>
-        {loja && visiveis.length === 0 ? (
-          <p className="mt-4 rounded-2xl border border-dashed border-line bg-white px-4 py-10 text-center text-sm text-muted">
-            Nenhum template para esse tipo de loja ainda.
+        {loja && biblioteca.length === 0 ? (
+          <p className="rounded-2xl border border-dashed border-line bg-white px-4 py-10 text-center text-sm text-muted">
+            Nenhum template com esse filtro.
           </p>
         ) : null}
       </section>
 
-      <p className="text-[13px] text-muted">
-        Trocar de template não apaga nada: produtos, banners e cores ficam como
-        estão. A fonte e o formato da foto passam a seguir o template; dá para
-        ajustar depois em Loja e frete → Aparência.
-      </p>
+      {previa && loja ? (
+        <PreviaTemplate
+          nome={previa.nome}
+          src={urlLoja(previa.chave)}
+          onFechar={() => setPrevia(null)}
+          acao={<BotaoUsar t={previa} grande />}
+        />
+      ) : null}
     </div>
   );
 }
