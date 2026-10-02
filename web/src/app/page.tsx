@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { BrandLogo } from '@/components/BrandLogo';
-import { LandingCta } from '@/components/LandingCta';
 import { SiteHeader } from '@/components/SiteHeader';
 import { StoreDeviceShowcase } from '@/components/StoreDeviceShowcase';
+import { HeroComecar } from '@/components/landing/HeroComecar';
 import {
   AvisoVendeu,
+  CartaoCupom,
+  CartaoFrete,
   Celular,
   CheckoutMock,
   Notebook,
@@ -157,42 +159,59 @@ export default async function HomePage() {
           __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c'),
         }}
       />
-      <SiteHeader solid />
+      <SiteHeader />
 
       {/*
-        Hero sem o corte vertical duro que dividia a tela em dois blocos: agora
-        é uma superfície só, com brilho difuso atrás dos aparelhos e a base
-        arredondada apoiando na seção seguinte. Os aparelhos ganham inclinação
-        em perspectiva, que é o que dá a sensação de profundidade.
+        Hero no padrão Nuvemshop/Shopify: título grande, o cadastro começando
+        ali mesmo (nome da loja + botão num campo só) e, ao lado, a loja
+        rodando no notebook e no celular, com o pedido pago e o frete
+        flutuando em volta: o que o lojista vai ver no dia a dia.
       */}
       <section className="lp-hero relative overflow-hidden bg-[var(--brand-deep)] text-white">
         <div className="lp-hero-glow" aria-hidden />
-        <div className="relative mx-auto flex max-w-[1180px] flex-col items-center gap-6 px-4 pb-14 pt-[4rem] md:flex-row md:gap-8 md:px-6 md:pb-20 md:pt-24 lg:gap-12">
-          <div className="flex flex-1 flex-col justify-center md:max-w-[47%]">
-            <h1 className="max-w-[19ch] font-[family-name:var(--font-brand)] text-[2.3rem] font-800 leading-[1.03] tracking-tight text-balance text-white md:text-[3.3rem]">
+        <div className="relative mx-auto grid max-w-[1180px] grid-cols-1 items-center gap-12 px-4 pb-16 pt-[6.5rem] md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] md:gap-10 md:px-6 md:pb-24 md:pt-[9rem] lg:gap-16">
+          <div>
+            <h1 className="max-w-[16ch] font-[family-name:var(--font-brand)] text-[2.4rem] font-800 leading-[1.02] tracking-[-0.03em] text-balance text-white md:text-[3.5rem] lg:text-[4rem]">
               Sua loja virtual vende 24 horas por dia.{' '}
-              <span className="text-[var(--brand-coral)]">Sem depender do seu atendimento.</span>
+              <span className="text-[var(--brand-coral)]">
+                Sem depender do seu atendimento.
+              </span>
             </h1>
-            <div className="mt-7 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-              <LandingCta href="/criar-conta" label="Criar minha loja grátis" />
-              {wa ? (
-                <a
-                  href={wa}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-center text-[14px] font-semibold text-white/85 underline-offset-4 hover:text-white hover:underline sm:text-left"
-                >
-                  Prefiro falar antes
-                </a>
-              ) : null}
+            <div className="mt-8">
+              <HeroComecar />
             </div>
-            <p className="mt-3 text-[13px] font-medium text-white/70">
-              Comece sem pagar nada · sem cartão de crédito
-            </p>
+            {wa ? (
+              <a
+                href={wa}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-5 inline-flex items-center gap-2 text-[14px] font-semibold text-white/85 underline-offset-4 hover:text-white hover:underline"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden
+                >
+                  <path
+                    d="M4 20l1.3-3.9A8 8 0 1 1 8 19z"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Prefiro falar antes no WhatsApp
+              </a>
+            ) : null}
           </div>
 
-          <div className="lp-hero-devices w-full md:w-[53%]" aria-hidden>
-            <StoreDeviceShowcase />
+          <div className="relative" aria-hidden>
+            <div className="lp-hero-devices">
+              <StoreDeviceShowcase />
+            </div>
+            <CartaoCupom className="lp-flutua absolute -bottom-4 left-0 hidden sm:flex md:-left-6" />
+            <CartaoFrete className="lp-flutua lp-flutua--2 absolute -top-6 right-0 hidden sm:flex md:right-2" />
           </div>
         </div>
       </section>
@@ -206,14 +225,14 @@ export default async function HomePage() {
             </h2>
             <div className="mt-6 max-w-[56ch] space-y-4 text-[1.05rem] leading-relaxed text-[#4a5560]">
               <p>
-                Cada venda depende de você responder, achar o produto e montar
-                o link de pagamento. Passou da sua capacidade de atender, você
+                Cada venda depende de você responder, achar o produto e montar o
+                link de pagamento. Passou da sua capacidade de atender, você
                 para de vender.
               </p>
               <p>
-                Na {BRAND.name}, o cliente vê o produto, escolhe e paga
-                sozinho, de dia, de noite ou no fim de semana. Você só fica
-                sabendo quando o dinheiro já entrou.
+                Na {BRAND.name}, o cliente vê o produto, escolhe e paga sozinho,
+                de dia, de noite ou no fim de semana. Você só fica sabendo
+                quando o dinheiro já entrou.
               </p>
             </div>
           </div>
@@ -241,14 +260,27 @@ export default async function HomePage() {
           {/* A ordem importa aqui, por isso os passos numerados */}
           <ol className="lp-passos mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
             {[
-              ['Cria a conta', 'Nome da loja, seu e-mail e senha. Menos de 2 minutos.'],
-              ['Monta a loja', 'Logo, cor, banner e produtos. A vitrine já sai pronta para o celular.'],
-              ['Você vende', 'Conecta o Mercado Pago e recebe por Pix e cartão. O pedido chega organizado no painel.'],
+              [
+                'Cria a conta',
+                'Nome da loja, seu e-mail e senha. Menos de 2 minutos.',
+              ],
+              [
+                'Monta a loja',
+                'Logo, cor, banner e produtos. A vitrine já sai pronta para o celular.',
+              ],
+              [
+                'Você vende',
+                'Conecta o Mercado Pago e recebe por Pix e cartão. O pedido chega organizado no painel.',
+              ],
             ].map(([titulo, texto], i) => (
               <li key={titulo} className="relative">
                 <span className="lp-passo-num">{i + 1}</span>
-                <h3 className="mt-5 text-[1.15rem] font-bold text-[#171a1f]">{titulo}</h3>
-                <p className="mt-2 max-w-[34ch] text-[15px] leading-relaxed text-[#4a5560]">{texto}</p>
+                <h3 className="mt-5 text-[1.15rem] font-bold text-[#171a1f]">
+                  {titulo}
+                </h3>
+                <p className="mt-2 max-w-[34ch] text-[15px] leading-relaxed text-[#4a5560]">
+                  {texto}
+                </p>
               </li>
             ))}
           </ol>
@@ -264,8 +296,8 @@ export default async function HomePage() {
                 Uma loja com a sua cara, no computador e no celular
               </h2>
               <p className="mt-5 max-w-[50ch] text-[1.05rem] leading-relaxed text-[#4a5560]">
-                Sua logo, sua cor e seus banners. Categorias, busca, favoritos
-                e sacola já vêm prontos, e cada página se ajusta sozinha ao
+                Sua logo, sua cor e seus banners. Categorias, busca, favoritos e
+                sacola já vêm prontos, e cada página se ajusta sozinha ao
                 celular, que é onde a maioria dos clientes compra.
               </p>
               {demoSlug ? (
@@ -311,8 +343,8 @@ export default async function HomePage() {
               <p className="mt-5 max-w-[50ch] text-[1.05rem] leading-relaxed text-[#4a5560]">
                 O cliente vê o frete real das transportadoras e paga por Pix ou
                 cartão em até 12x. O dinheiro vai para a sua conta do Mercado
-                Pago, sem passar pela gente. Com o Melhor Envio, a etiqueta
-                sai do próprio pedido.
+                Pago, sem passar pela gente. Com o Melhor Envio, a etiqueta sai
+                do próprio pedido.
               </p>
             </div>
           </div>
@@ -339,21 +371,51 @@ export default async function HomePage() {
 
           {/* O resto que já vem incluso, em lista (não em cartões) */}
           <div>
-            <h2 className="max-w-[22ch] font-[family-name:var(--font-brand)] text-[1.75rem] font-800 leading-[1.12] tracking-tight text-balance text-[#171a1f] md:text-[2.4rem]">E mais o que uma loja precisa</h2>
+            <h2 className="max-w-[22ch] font-[family-name:var(--font-brand)] text-[1.75rem] font-800 leading-[1.12] tracking-tight text-balance text-[#171a1f] md:text-[2.4rem]">
+              E mais o que uma loja precisa
+            </h2>
             <dl className="mt-10 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
               {[
-                ['Nota fiscal', 'NFC-e emitida direto do pedido, sem planilha paralela.'],
-                ['Domínio próprio', 'Use seudominio.com.br. O registro do domínio é por sua conta.'],
-                ['Cupons e promoções', 'Desconto por cupom, preço promocional e frete grátis acima de um valor.'],
-                ['Compre junto', 'Sugira produtos que combinam e dê desconto para quem leva o conjunto.'],
-                ['Carrinho abandonado', 'Veja quem não pagou e mande um lembrete com a sacola pronta.'],
-                ['Avaliações', 'Clientes avaliam o que compraram, e você aprova antes de aparecer.'],
-                ['Conta do cliente', 'O cliente acompanha os próprios pedidos e o rastreio.'],
-                ['Equipe na loja', 'Mais pessoas no painel, cada uma com o acesso que você liberar.'],
+                [
+                  'Nota fiscal',
+                  'NFC-e emitida direto do pedido, sem planilha paralela.',
+                ],
+                [
+                  'Domínio próprio',
+                  'Use seudominio.com.br. O registro do domínio é por sua conta.',
+                ],
+                [
+                  'Cupons e promoções',
+                  'Desconto por cupom, preço promocional e frete grátis acima de um valor.',
+                ],
+                [
+                  'Compre junto',
+                  'Sugira produtos que combinam e dê desconto para quem leva o conjunto.',
+                ],
+                [
+                  'Carrinho abandonado',
+                  'Veja quem não pagou e mande um lembrete com a sacola pronta.',
+                ],
+                [
+                  'Avaliações',
+                  'Clientes avaliam o que compraram, e você aprova antes de aparecer.',
+                ],
+                [
+                  'Conta do cliente',
+                  'O cliente acompanha os próprios pedidos e o rastreio.',
+                ],
+                [
+                  'Equipe na loja',
+                  'Mais pessoas no painel, cada uma com o acesso que você liberar.',
+                ],
               ].map(([titulo, texto]) => (
                 <div key={titulo} className="border-t border-[#d9dde3] pt-4">
-                  <dt className="text-base font-bold text-[#171a1f]">{titulo}</dt>
-                  <dd className="mt-1.5 text-[15px] leading-relaxed text-[#4a5560]">{texto}</dd>
+                  <dt className="text-base font-bold text-[#171a1f]">
+                    {titulo}
+                  </dt>
+                  <dd className="mt-1.5 text-[15px] leading-relaxed text-[#4a5560]">
+                    {texto}
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -382,7 +444,9 @@ export default async function HomePage() {
             <div className="mt-12 grid gap-x-4 gap-y-7 sm:grid-cols-2 lg:grid-cols-4">
               {plans
                 .filter((plan, _i, all) =>
-                  all.some((p) => p.periodDays < 360) ? plan.periodDays < 360 : true,
+                  all.some((p) => p.periodDays < 360)
+                    ? plan.periodDays < 360
+                    : true,
                 )
                 .map((plan) => {
                   // O que muda entre os planos, com os números reais do banco
@@ -419,12 +483,16 @@ export default async function HomePage() {
                           {plan.badge}
                         </span>
                       ) : null}
-                      <h3 className="text-base font-bold text-[#171a1f]">{plan.name}</h3>
+                      <h3 className="text-base font-bold text-[#171a1f]">
+                        {plan.name}
+                      </h3>
                       <p className="mt-1 text-[1.75rem] font-bold leading-tight tabular-nums text-[#171a1f]">
                         {plan.amount > 0 ? (
                           <>
                             {money(plan.amount)}
-                            <span className="text-sm font-normal text-[#4a5560]">/mês</span>
+                            <span className="text-sm font-normal text-[#4a5560]">
+                              /mês
+                            </span>
                           </>
                         ) : (
                           'Grátis'
@@ -441,7 +509,8 @@ export default async function HomePage() {
                           // Limites e taxa vêm dos números reais acima; o texto livre
                           // do plano não repete (nem contradiz) esses itens
                           ...(plan.features || []).filter(
-                            (t) => !/produto|pessoa|equipe|taxa|por venda/i.test(t),
+                            (t) =>
+                              !/produto|pessoa|equipe|taxa|por venda/i.test(t),
                           ),
                         ].map((f) => (
                           <li key={f} className="flex gap-2">
@@ -500,26 +569,36 @@ export default async function HomePage() {
                     aria-hidden
                     className="shrink-0 text-[#4a5560] transition-transform duration-200 group-open:rotate-45"
                   >
-                    <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                    <path
+                      d="M12 5v14M5 12h14"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                    />
                   </svg>
                 </summary>
-                <p className="-mt-1 max-w-[62ch] pb-5 text-[15px] leading-relaxed text-[#4a5560]">{a}</p>
+                <p className="-mt-1 max-w-[62ch] pb-5 text-[15px] leading-relaxed text-[#4a5560]">
+                  {a}
+                </p>
               </details>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="contato" className="scroll-mt-20 bg-[var(--brand-deep)] text-white">
+      <section
+        id="contato"
+        className="scroll-mt-20 bg-[var(--brand-deep)] text-white"
+      >
         <div className="mx-auto flex max-w-[1180px] flex-col gap-6 px-4 py-16 md:flex-row md:items-end md:justify-between md:gap-10 md:px-6 md:py-20">
           <div className="max-w-xl">
             <h2 className="font-[family-name:var(--font-brand)] text-[1.85rem] font-700 leading-[1.12] md:text-[2.25rem]">
               Não perca mais uma venda. Crie sua loja hoje.
             </h2>
             <p className="mt-3 text-[1.05rem] leading-relaxed text-white/90">
-              Comece sem cartão de crédito. Sua loja pode estar no ar em
-              poucos minutos — quanto antes começar, antes vende. Se preferir
-              conversar antes, também respondemos no WhatsApp.
+              Comece sem cartão de crédito. Sua loja pode estar no ar em poucos
+              minutos — quanto antes começar, antes vende. Se preferir conversar
+              antes, também respondemos no WhatsApp.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -550,7 +629,12 @@ export default async function HomePage() {
           </div>
           <div className="flex flex-wrap gap-x-5 gap-y-2">
             {wa ? (
-              <a href={wa} target="_blank" rel="noopener noreferrer" className="hover:text-white">
+              <a
+                href={wa}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white"
+              >
                 WhatsApp
               </a>
             ) : null}

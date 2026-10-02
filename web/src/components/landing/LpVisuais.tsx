@@ -284,3 +284,83 @@ export function PainelMock() {
     </div>
   );
 }
+
+function Caminhao() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M3 6.5h11v9H3zM14 9.5h3.6l3.4 3.4v2.6h-7"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <circle
+        cx="7"
+        cy="17.5"
+        r="1.8"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <circle
+        cx="17"
+        cy="17.5"
+        r="1.8"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+/** Frete cotado pelo CEP, como o cliente vê no checkout */
+export function CartaoFrete({ className = '' }: { className?: string }) {
+  return (
+    <div
+      className={`flex items-center gap-3 rounded-2xl bg-white/95 py-3 pl-3 pr-4 text-[13px] leading-snug shadow-[0_18px_40px_-16px_rgba(13,58,67,0.5)] ring-1 ring-black/5 backdrop-blur ${className}`}
+    >
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#e8f6ee] text-[var(--ok)]">
+        <Caminhao />
+      </span>
+      <div>
+        <p className="font-bold text-[#171a1f]">Frete calculado pelo CEP</p>
+        <p className="text-[#4a5560]">
+          SEDEX · 2 dias · <strong className="text-[#171a1f]">R$ 38,40</strong>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Etiqueta() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1 1 0 0 1 0 1.4l-7.2 7.2a1 1 0 0 1-1.4 0z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <circle cx="8" cy="8" r="1.4" fill="currentColor" />
+    </svg>
+  );
+}
+
+/** Cupom aplicado na sacola, como o cliente vê */
+export function CartaoCupom({ className = '' }: { className?: string }) {
+  return (
+    <div
+      className={`flex items-center gap-3 rounded-2xl bg-white/95 py-3 pl-3 pr-4 text-[13px] leading-snug shadow-[0_18px_40px_-16px_rgba(13,58,67,0.5)] ring-1 ring-black/5 backdrop-blur ${className}`}
+    >
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#fdecef] text-[var(--accent)]">
+        <Etiqueta />
+      </span>
+      <div>
+        <p className="font-bold text-[#171a1f]">Cupom PRIMEIRA10 aplicado</p>
+        <p className="text-[#4a5560]">
+          Desconto de <strong className="text-[#171a1f]">R$ 18,99</strong> na
+          sacola
+        </p>
+      </div>
+    </div>
+  );
+}

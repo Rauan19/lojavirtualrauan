@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AuthShell } from '@/components/AuthShell';
+import { NOME_LOJA_INICIO } from '@/components/landing/HeroComecar';
 import { api, AuthUser } from '@/lib/api';
 import { getToken, getUser, saveSession } from '@/lib/auth';
 import { clearAllCustomerSessions } from '@/lib/customer-auth';
@@ -80,6 +81,16 @@ export default function CriarContaPage() {
       router.replace('/admin');
       return;
     }
+    // Nome digitado na hero da página inicial
+    try {
+      const nomeInicio = sessionStorage.getItem(NOME_LOJA_INICIO);
+      if (nomeInicio) {
+        setStoreName(nomeInicio);
+        sessionStorage.removeItem(NOME_LOJA_INICIO);
+      }
+    } catch {
+      // sem storage, o campo só começa vazio
+    }
     setReady(true);
   }, [router]);
 
@@ -110,7 +121,8 @@ export default function CriarContaPage() {
       if (!storeName.trim() || !adminName.trim() || !email.trim()) {
         return 'Preencha todos os campos.';
       }
-      if (password.length < 6) return 'A senha precisa de pelo menos 6 caracteres.';
+      if (password.length < 6)
+        return 'A senha precisa de pelo menos 6 caracteres.';
     }
     if (current === 2) {
       const digits = document.replace(/\D/g, '');
@@ -139,40 +151,50 @@ export default function CriarContaPage() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!zipCode || !street || !number.trim() || !neighborhood || !city || !state) {
+    if (
+      !zipCode ||
+      !street ||
+      !number.trim() ||
+      !neighborhood ||
+      !city ||
+      !state
+    ) {
       setError('Complete o endereço.');
       return;
     }
     if (!acceptTerms) {
-      setError('Para criar a loja, aceite os Termos de Uso e a Política de Privacidade.');
+      setError(
+        'Para criar a loja, aceite os Termos de Uso e a Política de Privacidade.',
+      );
       return;
     }
     setLoading(true);
     setError('');
     try {
-      const data = await api<{ accessToken: string; user: AuthUser; slug: string }>(
-        '/stores/signup',
-        {
-          method: 'POST',
-          body: {
-            storeName,
-            adminName,
-            adminEmail: email,
-            adminPassword: password,
-            sellerDocType: docType,
-            sellerDocument: document.replace(/\D/g, ''),
-            phone: phone.replace(/\D/g, ''),
-            zipCode: zipCode.replace(/\D/g, ''),
-            street,
-            number,
-            complement: complement || undefined,
-            neighborhood,
-            city,
-            state,
-            acceptTerms,
-          },
+      const data = await api<{
+        accessToken: string;
+        user: AuthUser;
+        slug: string;
+      }>('/stores/signup', {
+        method: 'POST',
+        body: {
+          storeName,
+          adminName,
+          adminEmail: email,
+          adminPassword: password,
+          sellerDocType: docType,
+          sellerDocument: document.replace(/\D/g, ''),
+          phone: phone.replace(/\D/g, ''),
+          zipCode: zipCode.replace(/\D/g, ''),
+          street,
+          number,
+          complement: complement || undefined,
+          neighborhood,
+          city,
+          state,
+          acceptTerms,
         },
-      );
+      });
       clearAllCustomerSessions();
       saveSession(data.accessToken, data.user);
       router.replace('/admin');
@@ -215,284 +237,319 @@ export default function CriarContaPage() {
         Leva menos de 3 minutos. Sem cartão de crédito.
       </p>
 
-          {/* Indicador de etapas */}
+      {/* Indicador de etapas */}
       <ol className="mb-6 mt-7 flex items-center gap-2 text-[11px] font-medium text-[#4a5560]">
-            {STEPS.map((s, i) => (
-              <li key={s.id} className="flex flex-1 items-center gap-2 last:flex-none">
-                <span
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] transition-colors ${
-                    step === s.id
-                      ? 'border-accent bg-accent text-white'
-                      : step > s.id
+        {STEPS.map((s, i) => (
+          <li
+            key={s.id}
+            className="flex flex-1 items-center gap-2 last:flex-none"
+          >
+            <span
+              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] transition-colors ${
+                step === s.id
+                  ? 'border-accent bg-accent text-white'
+                  : step > s.id
+                    ? 'border-ink bg-ink text-white'
+                    : 'border-line text-muted'
+              }`}
+            >
+              {step > s.id ? '✓' : s.id}
+            </span>
+            <span
+              className={`hidden sm:inline ${step === s.id ? 'text-ink' : ''}`}
+            >
+              {s.label}
+            </span>
+            {i < STEPS.length - 1 ? (
+              <span
+                className={`h-px flex-1 transition-colors ${step > s.id ? 'bg-ink' : 'bg-line'}`}
+                aria-hidden
+              />
+            ) : null}
+          </li>
+        ))}
+      </ol>
+
+      <form onSubmit={onSubmit}>
+        {step === 1 ? (
+          <div className="space-y-3">
+            <div>
+              <label className="label">Nome da loja</label>
+              <input
+                className="field h-11"
+                value={storeName}
+                onChange={(e) => setStoreName(e.target.value)}
+                placeholder="Ex.: Camisetas do João"
+                autoComplete="organization"
+                required
+              />
+            </div>
+            <div>
+              <label className="label">Seu nome</label>
+              <input
+                className="field h-11"
+                value={adminName}
+                onChange={(e) => setAdminName(e.target.value)}
+                autoComplete="name"
+                required
+              />
+            </div>
+            <div>
+              <label className="label">E-mail</label>
+              <input
+                className="field h-11"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                required
+              />
+            </div>
+            <div>
+              <label className="label">Senha</label>
+              <input
+                className="field h-11"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+                minLength={6}
+                required
+              />
+              <p className="mt-1 text-[11px] text-muted">
+                Mínimo 6 caracteres.
+              </p>
+            </div>
+          </div>
+        ) : null}
+
+        {step === 2 ? (
+          <div className="space-y-3">
+            <p className="text-xs text-muted">
+              Precisamos do CPF ou CNPJ pra emitir nota fiscal e receber seus
+              pagamentos.
+            </p>
+            <div>
+              <label className="label">Tipo de documento</label>
+              <div className="flex gap-2">
+                {(['CPF', 'CNPJ'] as const).map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => {
+                      setDocType(type);
+                      setDocument('');
+                    }}
+                    className={`flex-1 border px-3 py-2 text-sm font-semibold transition-colors ${
+                      docType === type
                         ? 'border-ink bg-ink text-white'
-                        : 'border-line text-muted'
-                  }`}
-                >
-                  {step > s.id ? '✓' : s.id}
-                </span>
-                <span className={`hidden sm:inline ${step === s.id ? 'text-ink' : ''}`}>{s.label}</span>
-                {i < STEPS.length - 1 ? (
-                  <span
-                    className={`h-px flex-1 transition-colors ${step > s.id ? 'bg-ink' : 'bg-line'}`}
-                    aria-hidden
-                  />
-                ) : null}
-              </li>
-            ))}
-          </ol>
-
-          <form onSubmit={onSubmit}>
-            {step === 1 ? (
-              <div className="space-y-3">
-                <div>
-                  <label className="label">Nome da loja</label>
-                  <input
-                    className="field h-11"
-                    value={storeName}
-                    onChange={(e) => setStoreName(e.target.value)}
-                    placeholder="Ex.: Camisetas do João"
-                    autoComplete="organization"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="label">Seu nome</label>
-                  <input
-                    className="field h-11"
-                    value={adminName}
-                    onChange={(e) => setAdminName(e.target.value)}
-                    autoComplete="name"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="label">E-mail</label>
-                  <input
-                    className="field h-11"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    autoComplete="email"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="label">Senha</label>
-                  <input
-                    className="field h-11"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete="new-password"
-                    minLength={6}
-                    required
-                  />
-                  <p className="mt-1 text-[11px] text-muted">Mínimo 6 caracteres.</p>
-                </div>
+                        : 'border-line text-ink hover:border-ink/40'
+                    }`}
+                  >
+                    {type === 'CPF' ? 'CPF (pessoa física)' : 'CNPJ (empresa)'}
+                  </button>
+                ))}
               </div>
-            ) : null}
+            </div>
+            <div>
+              <label className="label">{docType}</label>
+              <input
+                className="field h-11"
+                value={document}
+                onChange={(e) =>
+                  setDocument(formatDoc(e.target.value, docType))
+                }
+                placeholder={
+                  docType === 'CPF' ? '000.000.000-00' : '00.000.000/0000-00'
+                }
+                inputMode="numeric"
+                autoComplete="off"
+                required
+              />
+            </div>
+            <div>
+              <label className="label">Telefone / WhatsApp</label>
+              <input
+                className="field h-11"
+                value={phone}
+                onChange={(e) => setPhone(formatPhoneBr(e.target.value))}
+                placeholder="(11) 98888-7777"
+                inputMode="numeric"
+                autoComplete="tel"
+                required
+              />
+            </div>
+          </div>
+        ) : null}
 
-            {step === 2 ? (
-              <div className="space-y-3">
-                <p className="text-xs text-muted">
-                  Precisamos do CPF ou CNPJ pra emitir nota fiscal e receber
-                  seus pagamentos.
+        {step === 3 ? (
+          <div className="space-y-3">
+            <p className="text-xs text-muted">
+              Endereço de onde você despacha os pedidos. Usamos também pra
+              calcular o frete.
+            </p>
+            <div>
+              <label className="label">CEP</label>
+              <input
+                className="field h-11"
+                value={zipCode}
+                onChange={(e) => setZipCode(formatCep(e.target.value))}
+                onBlur={(e) => onCepBlur(e.target.value)}
+                placeholder="00000-000"
+                inputMode="numeric"
+                autoComplete="postal-code"
+                required
+              />
+              {cepLoading ? (
+                <p className="mt-1 text-[11px] text-muted">
+                  Buscando endereço...
                 </p>
-                <div>
-                  <label className="label">Tipo de documento</label>
-                  <div className="flex gap-2">
-                    {(['CPF', 'CNPJ'] as const).map((type) => (
-                      <button
-                        key={type}
-                        type="button"
-                        onClick={() => {
-                          setDocType(type);
-                          setDocument('');
-                        }}
-                        className={`flex-1 border px-3 py-2 text-sm font-semibold transition-colors ${
-                          docType === type
-                            ? 'border-ink bg-ink text-white'
-                            : 'border-line text-ink hover:border-ink/40'
-                        }`}
-                      >
-                        {type === 'CPF' ? 'CPF (pessoa física)' : 'CNPJ (empresa)'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="label">{docType}</label>
-                  <input
-                    className="field h-11"
-                    value={document}
-                    onChange={(e) => setDocument(formatDoc(e.target.value, docType))}
-                    placeholder={docType === 'CPF' ? '000.000.000-00' : '00.000.000/0000-00'}
-                    inputMode="numeric"
-                    autoComplete="off"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="label">Telefone / WhatsApp</label>
-                  <input
-                    className="field h-11"
-                    value={phone}
-                    onChange={(e) => setPhone(formatPhoneBr(e.target.value))}
-                    placeholder="(11) 98888-7777"
-                    inputMode="numeric"
-                    autoComplete="tel"
-                    required
-                  />
-                </div>
-              </div>
-            ) : null}
-
-            {step === 3 ? (
-              <div className="space-y-3">
-                <p className="text-xs text-muted">
-                  Endereço de onde você despacha os pedidos. Usamos também
-                  pra calcular o frete.
-                </p>
-                <div>
-                  <label className="label">CEP</label>
-                  <input
-                    className="field h-11"
-                    value={zipCode}
-                    onChange={(e) => setZipCode(formatCep(e.target.value))}
-                    onBlur={(e) => onCepBlur(e.target.value)}
-                    placeholder="00000-000"
-                    inputMode="numeric"
-                    autoComplete="postal-code"
-                    required
-                  />
-                  {cepLoading ? (
-                    <p className="mt-1 text-[11px] text-muted">Buscando endereço...</p>
-                  ) : null}
-                  {cepError ? (
-                    <p className="mt-1 text-[11px] text-accent">{cepError}</p>
-                  ) : null}
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="col-span-2">
-                    <label className="label">Rua</label>
-                    <input
-                      className="field h-11"
-                      value={street}
-                      onChange={(e) => setStreet(e.target.value)}
-                      autoComplete="address-line1"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="label">Número</label>
-                    <input
-                      className="field h-11"
-                      value={number}
-                      onChange={(e) => setNumber(e.target.value)}
-                      autoComplete="off"
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="label">Complemento (opcional)</label>
-                  <input
-                    className="field h-11"
-                    value={complement}
-                    onChange={(e) => setComplement(e.target.value)}
-                    placeholder="Sala, bloco, referência..."
-                    autoComplete="address-line2"
-                  />
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="col-span-2">
-                    <label className="label">Bairro</label>
-                    <input
-                      className="field h-11"
-                      value={neighborhood}
-                      onChange={(e) => setNeighborhood(e.target.value)}
-                      autoComplete="off"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="label">UF</label>
-                    <input
-                      className="field h-11"
-                      value={state}
-                      onChange={(e) => setState(e.target.value.toUpperCase().slice(0, 2))}
-                      maxLength={2}
-                      autoComplete="address-level1"
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="label">Cidade</label>
-                  <input
-                    className="field h-11"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    autoComplete="address-level2"
-                    required
-                  />
-                </div>
-              </div>
-            ) : null}
-
-            {step === 3 ? (
-              <label htmlFor="accept-terms" className="mt-4 flex items-start gap-2.5 text-sm leading-snug text-muted">
+              ) : null}
+              {cepError ? (
+                <p className="mt-1 text-[11px] text-accent">{cepError}</p>
+              ) : null}
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="col-span-2">
+                <label className="label">Rua</label>
                 <input
-                  id="accept-terms"
-                  type="checkbox"
-                  className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
-                  checked={acceptTerms}
-                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                  className="field h-11"
+                  value={street}
+                  onChange={(e) => setStreet(e.target.value)}
+                  autoComplete="address-line1"
                   required
                 />
-                <span>
-                  Li e aceito os{' '}
-                  <Link href="/termos" target="_blank" className="font-semibold text-ink underline">
-                    Termos de Uso
-                  </Link>{' '}
-                  e a{' '}
-                  <Link href="/privacidade" target="_blank" className="font-semibold text-ink underline">
-                    Política de Privacidade
-                  </Link>
-                  .
-                </span>
-              </label>
-            ) : null}
-
-            {error ? <p role="alert" className="mt-3 text-sm text-accent">{error}</p> : null}
-
-            <div className="mt-5 flex items-center gap-2">
-              {step > 1 ? (
-                <button type="button" onClick={goBack} className="btn btn-ghost py-3.5">
-                  Voltar
-                </button>
-              ) : null}
-              {step < 3 ? (
-                <button
-                  type="button"
-                  onClick={goNext}
-                  className="btn btn-accent btn-bag flex-1 py-3.5"
-                  style={{ '--bag-bg': '#fff' } as React.CSSProperties}
-                >
-                  Continuar
-                </button>
-              ) : (
-                <button
-                  className="btn btn-accent btn-bag flex-1 py-3.5"
-                  style={{ '--bag-bg': '#fff' } as React.CSSProperties}
-                  disabled={loading}
-                >
-                  {loading ? 'Criando sua loja...' : 'Criar minha loja grátis'}
-                </button>
-              )}
+              </div>
+              <div>
+                <label className="label">Número</label>
+                <input
+                  className="field h-11"
+                  value={number}
+                  onChange={(e) => setNumber(e.target.value)}
+                  autoComplete="off"
+                  required
+                />
+              </div>
             </div>
+            <div>
+              <label className="label">Complemento (opcional)</label>
+              <input
+                className="field h-11"
+                value={complement}
+                onChange={(e) => setComplement(e.target.value)}
+                placeholder="Sala, bloco, referência..."
+                autoComplete="address-line2"
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="col-span-2">
+                <label className="label">Bairro</label>
+                <input
+                  className="field h-11"
+                  value={neighborhood}
+                  onChange={(e) => setNeighborhood(e.target.value)}
+                  autoComplete="off"
+                  required
+                />
+              </div>
+              <div>
+                <label className="label">UF</label>
+                <input
+                  className="field h-11"
+                  value={state}
+                  onChange={(e) =>
+                    setState(e.target.value.toUpperCase().slice(0, 2))
+                  }
+                  maxLength={2}
+                  autoComplete="address-level1"
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <label className="label">Cidade</label>
+              <input
+                className="field h-11"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                autoComplete="address-level2"
+                required
+              />
+            </div>
+          </div>
+        ) : null}
 
-          </form>
+        {step === 3 ? (
+          <label
+            htmlFor="accept-terms"
+            className="mt-4 flex items-start gap-2.5 text-sm leading-snug text-muted"
+          >
+            <input
+              id="accept-terms"
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
+              checked={acceptTerms}
+              onChange={(e) => setAcceptTerms(e.target.checked)}
+              required
+            />
+            <span>
+              Li e aceito os{' '}
+              <Link
+                href="/termos"
+                target="_blank"
+                className="font-semibold text-ink underline"
+              >
+                Termos de Uso
+              </Link>{' '}
+              e a{' '}
+              <Link
+                href="/privacidade"
+                target="_blank"
+                className="font-semibold text-ink underline"
+              >
+                Política de Privacidade
+              </Link>
+              .
+            </span>
+          </label>
+        ) : null}
+
+        {error ? (
+          <p role="alert" className="mt-3 text-sm text-accent">
+            {error}
+          </p>
+        ) : null}
+
+        <div className="mt-5 flex items-center gap-2">
+          {step > 1 ? (
+            <button
+              type="button"
+              onClick={goBack}
+              className="btn btn-ghost py-3.5"
+            >
+              Voltar
+            </button>
+          ) : null}
+          {step < 3 ? (
+            <button
+              type="button"
+              onClick={goNext}
+              className="btn btn-accent btn-bag flex-1 py-3.5"
+              style={{ '--bag-bg': '#fff' } as React.CSSProperties}
+            >
+              Continuar
+            </button>
+          ) : (
+            <button
+              className="btn btn-accent btn-bag flex-1 py-3.5"
+              style={{ '--bag-bg': '#fff' } as React.CSSProperties}
+              disabled={loading}
+            >
+              {loading ? 'Criando sua loja...' : 'Criar minha loja grátis'}
+            </button>
+          )}
+        </div>
+      </form>
     </AuthShell>
   );
 }
