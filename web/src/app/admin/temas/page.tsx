@@ -6,7 +6,9 @@ import { getToken, getUser } from '@/lib/auth';
 import { CabecalhoPagina } from '@/components/admin/Pagina';
 import {
   resolveTheme,
+  SEGMENTOS,
   STORE_THEMES,
+  type Segmento,
   type StoreThemeKey,
   type StoreThemeOption,
 } from '@/lib/store-theme';
@@ -18,8 +20,8 @@ type Loja = {
 };
 
 /*
- * Miniatura desenhada do tema: cabeçalho, banner e quatro cartões com as
- * cores e a tipografia de cada um. Dá a ideia do clima sem depender de print.
+ * Miniatura desenhada do tema: cabeçalho, banner e cartões com as cores e a
+ * tipografia de cada um. Dá a ideia do clima sem depender de print.
  */
 function Miniatura({ tema, cor }: { tema: StoreThemeOption; cor: string }) {
   const { fundo, cartao, texto, titulo } = tema.mini;
@@ -30,9 +32,10 @@ function Miniatura({ tema, cor }: { tema: StoreThemeOption; cor: string }) {
         ? 'var(--font-store-impact), Impact, sans-serif'
         : 'var(--font-display), sans-serif';
   const reto = tema.key === 'street';
+  const escuro = tema.key === 'tech';
   return (
     <div
-      className="aspect-[16/11] w-full overflow-hidden"
+      className="flex aspect-[4/3] w-full flex-col overflow-hidden"
       style={{ background: fundo, color: texto }}
       aria-hidden
     >
@@ -42,12 +45,12 @@ function Miniatura({ tema, cor }: { tema: StoreThemeOption; cor: string }) {
         </div>
       ) : null}
       <div
-        className="flex items-center justify-between px-3 py-2"
+        className="flex items-center justify-between px-3 py-1.5"
         style={{
-          borderBottom: `1px solid ${tema.key === 'tech' ? '#263243' : '#0000001a'}`,
+          borderBottom: `1px solid ${escuro ? '#263243' : '#0000001a'}`,
         }}
       >
-        <span className="text-[11px] font-bold" style={{ fontFamily: fonte }}>
+        <span className="text-[10px] font-bold" style={{ fontFamily: fonte }}>
           Sua Loja
         </span>
         <span
@@ -56,28 +59,26 @@ function Miniatura({ tema, cor }: { tema: StoreThemeOption; cor: string }) {
         />
       </div>
       <div
-        className={`mx-auto flex h-[30%] items-center px-3 ${
-          tema.key === 'essencial' || tema.key === 'tech'
-            ? 'mx-2 mt-2 rounded-md'
-            : ''
+        className={`flex h-[30%] shrink-0 items-center px-3 ${
+          tema.key === 'essencial' || escuro ? 'mx-2 mt-2 rounded-md' : ''
         }`}
         style={{ background: cor }}
       >
         <span
-          className="text-[13px] leading-none text-white"
+          className="text-[12px] leading-none text-white"
           style={{
             fontFamily: fonte,
-            textTransform: tema.key === 'street' ? 'uppercase' : undefined,
+            textTransform: reto ? 'uppercase' : undefined,
           }}
         >
           Nova coleção
         </span>
       </div>
-      <div className="grid grid-cols-4 gap-1.5 p-2.5">
+      <div className="grid flex-1 grid-cols-4 gap-1.5 p-2">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i}>
+          <div key={i} className="flex min-h-0 flex-col">
             <div
-              className={`${tema.key === 'boutique' ? 'aspect-[2/3]' : 'aspect-square'} ${
+              className={`min-h-0 flex-1 ${
                 reto
                   ? ''
                   : tema.key === 'boutique'
@@ -85,8 +86,8 @@ function Miniatura({ tema, cor }: { tema: StoreThemeOption; cor: string }) {
                     : 'rounded-[4px]'
               }`}
               style={{
-                background: tema.key === 'tech' ? '#ffffff' : cartao,
-                outline: tema.key === 'tech' ? '1px solid #263243' : undefined,
+                background: escuro ? '#ffffff' : cartao,
+                outline: escuro ? '1px solid #263243' : undefined,
               }}
             />
             <div
@@ -96,8 +97,8 @@ function Miniatura({ tema, cor }: { tema: StoreThemeOption; cor: string }) {
             <div
               className="mt-0.5 h-1 w-1/2 rounded-full"
               style={{
-                background: tema.key === 'tech' ? cor : texto,
-                opacity: tema.key === 'tech' ? 1 : 0.7,
+                background: escuro ? cor : texto,
+                opacity: escuro ? 1 : 0.7,
               }}
             />
           </div>
@@ -112,6 +113,7 @@ export default function TemasPage() {
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
   const [salvando, setSalvando] = useState<StoreThemeKey | null>(null);
+  const [filtro, setFiltro] = useState<Segmento | 'todos'>('todos');
 
   useEffect(() => {
     api<Loja>('/stores/me', {
@@ -125,7 +127,11 @@ export default function TemasPage() {
   }, []);
 
   const atual = resolveTheme(loja?.storeTheme);
+  const temaAtual = STORE_THEMES.find((t) => t.key === atual)!;
   const cor = loja?.accentColor || '#0d3a43';
+  const lista = STORE_THEMES.filter(
+    (t) => filtro === 'todos' || t.segmentos.includes(filtro),
+  );
 
   async function usar(tema: StoreThemeKey) {
     setSalvando(tema);
@@ -143,6 +149,7 @@ export default function TemasPage() {
       setAviso(
         `Tema ${STORE_THEMES.find((t) => t.key === tema)?.nome} aplicado na sua loja.`,
       );
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
       setErro(
         e instanceof Error ? e.message : 'Não foi possível trocar o tema',
@@ -153,11 +160,11 @@ export default function TemasPage() {
   }
 
   return (
-    <div className="admin-page max-w-5xl">
+    <div className="admin-page max-w-6xl">
       <CabecalhoPagina
         icone="/admin/temas"
         titulo="Temas da loja"
-        descricao="Escolha o visual da sua vitrine. A cor e a logo continuam as suas; o tema muda fontes, cartões, banner e fundo. Veja a prévia antes de aplicar."
+        descricao="Escolha o visual da sua vitrine. Sua cor e sua logo continuam; o tema muda fontes, cartões, banner e fundo."
       />
 
       {erro ? (
@@ -174,68 +181,132 @@ export default function TemasPage() {
         </p>
       ) : null}
 
-      <ul className="grid gap-4 sm:grid-cols-2">
-        {STORE_THEMES.map((tema) => {
-          const ativo = loja ? tema.key === atual : false;
-          return (
-            <li
-              key={tema.key}
-              className={`flex flex-col overflow-hidden rounded-2xl bg-white ${
-                ativo
-                  ? 'border-2 border-[var(--brand-deep)] shadow-[0_14px_30px_-22px_rgba(13,58,67,0.6)]'
-                  : 'border border-line'
-              }`}
+      {/* Tema em uso, sempre à vista no topo */}
+      {loja ? (
+        <section className="flex flex-col gap-4 rounded-2xl border border-line bg-white p-4 sm:flex-row sm:items-center">
+          <div className="w-full shrink-0 overflow-hidden rounded-xl ring-1 ring-line sm:w-52">
+            <Miniatura tema={temaAtual} cor={cor} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-medium text-muted">Tema em uso</p>
+            <h2 className="text-[20px] font-bold leading-tight">
+              {temaAtual.nome}
+            </h2>
+            <p className="mt-1 text-[14px] leading-relaxed text-muted">
+              {temaAtual.descricao}
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <a
+              href={`/loja/${loja.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-ghost h-10 px-4 text-[14px]"
             >
-              <Miniatura tema={tema} cor={cor} />
-              <div className="flex flex-1 flex-col border-t border-line p-5">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-[17px] font-bold">{tema.nome}</h2>
+              Ver minha loja
+            </a>
+            <a
+              href="/admin/settings"
+              className="btn btn-ghost h-10 px-4 text-[14px]"
+            >
+              Ajustar cores e fonte
+            </a>
+          </div>
+        </section>
+      ) : null}
+
+      {/* Galeria */}
+      <section>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-[17px] font-bold">Todos os temas</h2>
+          <div
+            className="flex flex-wrap gap-1.5"
+            role="group"
+            aria-label="Filtrar por tipo de loja"
+          >
+            {[{ key: 'todos' as const, label: 'Todos' }, ...SEGMENTOS].map(
+              (s) => (
+                <button
+                  key={s.key}
+                  type="button"
+                  aria-pressed={filtro === s.key}
+                  onClick={() => setFiltro(s.key)}
+                  className={`h-8 rounded-full px-3 text-[13px] font-semibold transition-colors ${
+                    filtro === s.key
+                      ? 'bg-[var(--brand-deep)] text-white'
+                      : 'border border-line bg-white text-ink hover:border-[var(--brand-teal)]'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ),
+            )}
+          </div>
+        </div>
+
+        <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {lista.map((tema) => {
+            const ativo = loja ? tema.key === atual : false;
+            return (
+              <li
+                key={tema.key}
+                className={`flex flex-col overflow-hidden rounded-2xl bg-white transition-shadow hover:shadow-[0_14px_30px_-22px_rgba(13,58,67,0.55)] ${
+                  ativo ? 'ring-2 ring-[var(--brand-deep)]' : 'ring-1 ring-line'
+                }`}
+              >
+                <div className="relative">
+                  <Miniatura tema={tema} cor={cor} />
                   {ativo ? (
-                    <span className="rounded-full bg-[#e9f1f3] px-2 py-0.5 text-[12px] font-semibold text-[var(--brand-deep)]">
+                    <span className="absolute right-2 top-2 rounded-full bg-[var(--brand-deep)] px-2 py-0.5 text-[11px] font-semibold text-white">
                       Em uso
                     </span>
                   ) : null}
                 </div>
-                <p className="mt-0.5 text-[13px] font-semibold text-[var(--brand-deep)]">
-                  {tema.paraQuem}
-                </p>
-                <p className="mt-2 flex-1 text-[14px] leading-relaxed text-muted">
-                  {tema.descricao}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {loja ? (
-                    <a
-                      href={`/loja/${loja.slug}?tema=${tema.key}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-ghost h-10 px-4 text-[14px]"
+                <div className="flex flex-1 flex-col border-t border-line p-3.5">
+                  <h3 className="text-[15px] font-bold">{tema.nome}</h3>
+                  <p className="mt-0.5 line-clamp-2 flex-1 text-[12.5px] leading-snug text-muted">
+                    {tema.paraQuem}
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    {loja ? (
+                      <a
+                        href={`/loja/${loja.slug}?tema=${tema.key}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-ghost h-9 flex-1 px-2 text-[13px]"
+                      >
+                        Prévia
+                      </a>
+                    ) : null}
+                    <button
+                      type="button"
+                      className="btn btn-accent h-9 flex-1 px-2 text-[13px]"
+                      disabled={!loja || ativo || salvando !== null}
+                      onClick={() => void usar(tema.key)}
                     >
-                      Ver prévia
-                    </a>
-                  ) : null}
-                  <button
-                    type="button"
-                    className="btn btn-accent h-10 px-4 text-[14px]"
-                    disabled={!loja || ativo || salvando !== null}
-                    onClick={() => void usar(tema.key)}
-                  >
-                    {salvando === tema.key
-                      ? 'Aplicando…'
-                      : ativo
-                        ? 'Tema atual'
-                        : 'Usar este tema'}
-                  </button>
+                      {salvando === tema.key
+                        ? 'Aplicando…'
+                        : ativo
+                          ? 'Em uso'
+                          : 'Usar'}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+              </li>
+            );
+          })}
+        </ul>
+        {lista.length === 0 ? (
+          <p className="mt-4 rounded-2xl border border-dashed border-line bg-white px-4 py-10 text-center text-sm text-muted">
+            Nenhum tema para esse tipo de loja ainda.
+          </p>
+        ) : null}
+      </section>
 
       <p className="text-[13px] text-muted">
         Trocar de tema não apaga nada: produtos, banners e cores ficam como
-        estão. Fonte e formato da foto voltam ao padrão do tema; dá para ajustar
-        depois em Loja e frete → Aparência.
+        estão. A fonte e o formato da foto passam a seguir o tema; dá para
+        ajustar depois em Loja e frete → Aparência.
       </p>
     </div>
   );

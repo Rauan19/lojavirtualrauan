@@ -106,11 +106,23 @@ export function cardRatioValue(key?: string | null) {
  */
 export type StoreThemeKey = 'essencial' | 'boutique' | 'tech' | 'street';
 
+export type Segmento = 'geral' | 'moda' | 'beleza' | 'eletronicos' | 'esporte';
+
+export const SEGMENTOS: { key: Segmento; label: string }[] = [
+  { key: 'geral', label: 'Loja geral' },
+  { key: 'moda', label: 'Moda' },
+  { key: 'beleza', label: 'Beleza e joias' },
+  { key: 'eletronicos', label: 'Eletrônicos' },
+  { key: 'esporte', label: 'Esporte e streetwear' },
+];
+
 export type StoreThemeOption = {
   key: StoreThemeKey;
   nome: string;
   paraQuem: string;
   descricao: string;
+  /** Filtros da galeria no painel */
+  segmentos: Segmento[];
   /** Miniatura no painel: fundo, cartão, texto e se o título é serifado */
   mini: {
     fundo: string;
@@ -127,6 +139,7 @@ export const STORE_THEMES: StoreThemeOption[] = [
     paraQuem: 'Variedades, perfumaria, loja geral',
     descricao:
       'Limpo e direto: busca em destaque, categorias com foto e cartões leves.',
+    segmentos: ['geral'],
     mini: {
       fundo: '#ffffff',
       cartao: '#f1f2f4',
@@ -140,6 +153,7 @@ export const STORE_THEMES: StoreThemeOption[] = [
     paraQuem: 'Moda, acessórios, beleza, joias',
     descricao:
       'Editorial: banner em tela cheia, títulos com serifa, fotos grandes em pé e muito respiro.',
+    segmentos: ['moda', 'beleza'],
     mini: {
       fundo: '#fbf8f4',
       cartao: '#efe9e2',
@@ -153,6 +167,7 @@ export const STORE_THEMES: StoreThemeOption[] = [
     paraQuem: 'Eletrônicos, celulares, games, informática',
     descricao:
       'Fundo escuro, cartões com contorno e preço em destaque, foto quadrada.',
+    segmentos: ['eletronicos'],
     mini: {
       fundo: '#0b1016',
       cartao: '#151c26',
@@ -166,6 +181,7 @@ export const STORE_THEMES: StoreThemeOption[] = [
     paraQuem: 'Streetwear, suplementos, fitness',
     descricao:
       'Forte: títulos pesados em caixa alta, faixa de avisos em preto e cantos retos.',
+    segmentos: ['esporte', 'moda'],
     mini: {
       fundo: '#ffffff',
       cartao: '#ececec',
