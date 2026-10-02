@@ -47,6 +47,8 @@ type Store = {
   mpOauthConectado?: boolean;
   /** false = conta de vendedor de teste. */
   mpLiveMode?: boolean | null;
+  /** Número da conta do Mercado Pago conectada (aparece no painel do MP) */
+  mpUserId?: string | null;
   freteContaNome?: string | null;
   freteContaEmail?: string | null;
   freteCepOrigem?: string | null;
@@ -1031,7 +1033,9 @@ export default function AdminSettingsPage() {
       });
       const atualizada = await api<Store>('/stores/me', { token, storeSlug });
       setStore(atualizada);
-      setMessage('Mercado Pago desconectado. O checkout fica desligado até conectar de novo.');
+      setMessage(
+        'Mercado Pago desconectado. O checkout fica desligado até conectar de novo. Para conectar outra conta, saia do Mercado Pago neste navegador antes (ou use uma janela anônima).',
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Falha ao desconectar');
     } finally {
@@ -3034,8 +3038,8 @@ export default function AdminSettingsPage() {
           title="Conta que recebe as vendas"
           value={
             store.mpOauthConectado
-              ? `Conectada · as vendas caem nesta conta${
-                  store.mpLiveMode === false ? ' (conta de teste)' : ''
+              ? `Conectada${store.mpUserId ? ` · conta ${store.mpUserId}` : ''} · as vendas caem nesta conta${
+                  store.mpLiveMode === false ? ' (modo de teste)' : ''
                 }`
               : store.mpAccessTokenSet
                 ? 'Recebendo por token colado à mão · conecte para não precisar trocar'
@@ -3056,6 +3060,13 @@ export default function AdminSettingsPage() {
               : conectarMercadoPago());
           }}
         />
+        {!store.mpOauthConectado ? (
+          <p className="px-1 text-[12px] leading-relaxed text-muted">
+            Vai conectar uma conta diferente? Saia do Mercado Pago neste
+            navegador antes (ou use uma janela anônima). Se ele estiver
+            logado, a autorização usa a conta que está aberta, sem perguntar.
+          </p>
+        ) : null}
 
         <SettingsRow
           icon={<IconCartao />}
