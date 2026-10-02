@@ -13,8 +13,6 @@ type StoreBrand = {
   accentColor: string;
 };
 
-type CatalogItem = { id: string; images: { url: string }[] };
-
 function ShieldIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -77,24 +75,12 @@ export function StoreAuthShell({
   children: React.ReactNode;
 }) {
   const [store, setStore] = useState<StoreBrand | null>(null);
-  const [shots, setShots] = useState<string[]>([]);
 
   useEffect(() => {
     api<StoreBrand>(`/stores/public/${slug}`)
       .then(setStore)
       .catch(() => setStore(null));
 
-    // Mosaico com o catálogo real: cada loja ganha uma tela diferente, e o
-    // cliente vê o que está comprando em vez de um fundo decorativo qualquer.
-    api<{ items: CatalogItem[] }>(`/catalog/products?limit=12`, { storeSlug: slug })
-      .then((res) => {
-        const urls = res.items
-          .map((p) => mediaUrl(p.images?.[0]?.url))
-          .filter((u): u is string => Boolean(u))
-          .slice(0, 9);
-        setShots(urls);
-      })
-      .catch(() => setShots([]));
   }, [slug]);
 
   const primary = store?.primaryColor || '#1f2430';
@@ -117,33 +103,16 @@ export function StoreAuthShell({
           '--store-accent-hover': `color-mix(in srgb, ${accent} 86%, #000)`,
           '--store-accent-ink': tintaSobre(accent),
           '--store-accent-text': corDeTexto(accent),
-          background: `color-mix(in srgb, ${primary} 82%, #000)`,
+          // Cor única, a principal da loja; o texto ao lado lê em cima dela
+          background: primary,
+          color: tintaSobre(primary),
         } as React.CSSProperties
       }
     >
-      {shots.length > 0 ? (
-        <div
-          className="pointer-events-none fixed inset-0 grid grid-cols-3 grid-rows-3 opacity-[0.16] mix-blend-luminosity"
-          aria-hidden
-        >
-          {shots.map((src, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={`${src}-${i}`} src={src} alt="" className="h-full w-full object-cover" />
-          ))}
-        </div>
-      ) : null}
-      <div
-        className="pointer-events-none fixed inset-0"
-        style={{
-          background: `radial-gradient(50rem 36rem at 80% 70%, color-mix(in srgb, ${accent} 30%, transparent), transparent 65%)`,
-        }}
-        aria-hidden
-      />
-
-      <div className="relative mx-auto grid min-h-full max-w-[1180px] content-start gap-6 px-4 py-6 text-white md:grid-cols-[minmax(0,440px)_minmax(0,1fr)] md:content-center md:items-center md:gap-16 md:px-8 md:py-10">
+      <div className="relative mx-auto grid min-h-full max-w-[1180px] content-start gap-6 px-4 py-6 md:grid-cols-[minmax(0,440px)_minmax(0,1fr)] md:content-center md:items-center md:gap-16 md:px-8 md:py-10">
         <Link
           href={`/loja/${slug}`}
-          className="inline-flex w-fit items-center gap-1.5 text-sm text-white/80 transition hover:text-white md:col-span-2"
+          className="inline-flex w-fit items-center gap-1.5 text-sm opacity-80 transition hover:opacity-100 md:col-span-2"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path
@@ -182,21 +151,21 @@ export function StoreAuthShell({
           <h2 className="max-w-[15ch] text-[2.6rem] font-extrabold leading-[1.04] tracking-tight text-balance xl:text-[3rem]">
             Sua conta, suas compras.
           </h2>
-          <p className="mt-3 max-w-[36ch] text-[16px] leading-relaxed text-white/85">
+          <p className="mt-3 max-w-[36ch] text-[16px] leading-relaxed opacity-85">
             Acompanhe tudo que você comprou{name ? ` na ${name}` : ''} e finalize a
             próxima em segundos.
           </p>
           <ul className="mt-7 space-y-3">
             {PERKS.map((p) => (
-              <li key={p.text} className="flex items-center gap-3 text-[15px] text-white/90">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15">
+              <li key={p.text} className="flex items-center gap-3 text-[15px] opacity-90">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-current/15">
                   {p.icon}
                 </span>
                 {p.text}
               </li>
             ))}
           </ul>
-          <p className="mt-10 text-[13px] text-white/60">
+          <p className="mt-10 text-[13px] opacity-70">
             {name ? `${name} · ` : ''}Ambiente seguro
           </p>
         </aside>
