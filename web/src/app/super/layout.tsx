@@ -115,7 +115,7 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
               onClick={() => setOpen(false)}
               className={`mx-2 block rounded px-3 py-2 text-sm transition-colors ${
                 active
-                  ? 'bg-ink font-semibold text-white'
+                  ? 'bg-[var(--brand-deep)] font-semibold text-white'
                   : 'text-ink hover:bg-[#eef0f3]'
               }`}
             >
@@ -174,7 +174,7 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
       />
       <aside className={`drawer ${open ? 'open' : ''} md:hidden`}>{side}</aside>
 
-      <main className="min-w-0 p-4 md:p-6">{children}</main>
+      <main className="painel min-w-0 bg-[#f4f6f8] p-4 md:p-6">{children}</main>
     </div>
   );
 }

@@ -332,10 +332,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   key={link.href}
                   href={locked ? '/admin/settings/planos' : link.href}
                   onClick={() => setOpen(false)}
-                  className={`mx-2 flex items-center gap-2 rounded px-3 py-2 text-sm transition-colors ${
+                  className={`mx-2 flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
                     active
-                      ? 'bg-ink font-semibold text-white'
-                      : 'text-ink hover:bg-[#eef0f3]'
+                      ? 'bg-[var(--brand-deep)] font-semibold text-white'
+                      : 'text-ink hover:bg-[#e9f1f3]'
                   }`}
                 >
                   <span>{link.label}</span>
@@ -450,7 +450,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <aside className={`drawer ${open ? 'open' : ''} md:hidden`}>{nav}</aside>
 
       <main
-        className={`min-w-0 bg-[#f6f7f9] p-3 md:p-4 ${
+        className={`painel min-w-0 bg-[#f4f6f8] p-3 md:p-5 ${
           showRestrictionModal ? 'pointer-events-none select-none blur-[2px]' : ''
         }`}
         aria-hidden={showRestrictionModal || undefined}

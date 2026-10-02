@@ -1091,3 +1091,46 @@
   -webkit-mask-image: linear-gradient(#000 62%, transparent);
   mask-image: linear-gradient(#000 62%, transparent);
 }
+
+/* ---------- Painel do lojista e Super Admin (.painel) ------------------- */
+/*
+ * Mesma família do login e do site (padrão Nuvemshop): superfícies brancas
+ * com canto arredondado sobre o cinza do fundo, botões e campos macios e o
+ * turquesa escuro da marca no foco. Feito no tema, sem editar tela a tela.
+ */
+.painel :is(.card, .border.bg-white) {
+  border-radius: 14px;
+}
+
+.painel :is(.card, .border.bg-white):not(:has(> table)) {
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+/* Tabela dentro de um cartão: o canto arredondado precisa cortar as linhas */
+.painel :is(.card, .border.bg-white):has(table) {
+  overflow: hidden;
+}
+
+.painel .btn {
+  border-radius: 10px;
+}
+
+.painel .field {
+  border-radius: 9px;
+}
+
+.painel .field:focus {
+  border-color: var(--brand-deep);
+  box-shadow: 0 0 0 3px rgba(63, 162, 180, 0.22);
+  outline: none;
+}
+
+.painel .btn-ghost:hover {
+  background: #e9f1f3;
+}
+
+/* Capa "sem foto" no painel: não há cor de loja aqui, vale a da Vendira */
+.painel .sem-foto {
+  --store-accent: var(--brand-teal);
+  --store-accent-text: var(--brand-deep);
+}
