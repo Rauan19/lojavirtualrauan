@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { CartDrawer } from '@/components/CartDrawer';
 import { CartProvider, useCart } from '@/components/CartProvider';
 import { InstallmentsBlock } from '@/components/InstallmentsBlock';
@@ -146,6 +146,7 @@ export default function StorefrontPage() {
 }
 
 function StorefrontInner({ slug }: { slug: string }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const cart = useCart();
   const [store, setStore] = useState<Store | null>(null);
@@ -704,6 +705,32 @@ function StorefrontInner({ slug }: { slug: string }) {
                         preset={installmentsById[p.id] ?? null}
                         presetLoading={installmentsLoading}
                       />
+                      {/*
+                        Adicionar rápido (como o "quick add" do Dawn): sempre
+                        visível no celular; no computador aparece ao passar o
+                        mouse ou ao chegar pelo teclado, sem poluir a grade.
+                      */}
+                      <div className="mt-auto pt-2.5 transition-opacity duration-200 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
+                        <button
+                          type="button"
+                          className="btn btn-ghost h-10 w-full px-1 text-[13px]"
+                          onClick={() => {
+                            if (p.hasVariants) {
+                              router.push(`/loja/${slug}/p/${p.slug || p.id}`);
+                              return;
+                            }
+                            cart.add({
+                              productId: p.id,
+                              name: p.name,
+                              price,
+                              image: p.images[0]?.url || null,
+                              installmentsFree: p.installments ?? null,
+                            });
+                          }}
+                        >
+                          {p.hasVariants ? 'Escolher opções' : 'Adicionar à sacola'}
+                        </button>
+                      </div>
                     </div>
                   </article>
                 );
