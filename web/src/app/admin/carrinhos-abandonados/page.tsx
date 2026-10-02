@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
+import { CabecalhoPagina, EstadoVazio, Selo } from '@/components/admin/Pagina';
 
 type Carrinho = {
   id: string;
@@ -102,14 +103,12 @@ export default function CarrinhosAbandonadosPage() {
       : 0;
 
   return (
-    <div className="admin-page max-w-4xl space-y-5">
-      <div>
-        <h1>Carrinhos abandonados</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted">
-          Clientes que chegaram ao pagamento e não pagaram (o pedido expira em
-          1 hora e os itens voltam para o estoque). Últimos 30 dias.
-        </p>
-      </div>
+    <div className="admin-page max-w-5xl">
+      <CabecalhoPagina
+        icone="/admin/carrinhos-abandonados"
+        titulo="Carrinhos abandonados"
+        descricao="Clientes que chegaram ao pagamento e não pagaram (o pedido expira em 1 hora e os itens voltam para o estoque). Últimos 30 dias."
+      />
 
       {erro ? (
         <p role="alert" className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent">
@@ -120,52 +119,56 @@ export default function CarrinhosAbandonadosPage() {
       {dados ? (
         <>
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-black/10 bg-white px-4 py-3 shadow-sm">
-              <p className="text-xs text-muted">Abandonados</p>
-              <p className="text-2xl font-bold">{dados.total}</p>
-            </div>
-            <div className="rounded-2xl border border-black/10 bg-white px-4 py-3 shadow-sm">
-              <p className="text-xs text-muted">Voltaram e compraram</p>
-              <p className="text-2xl font-bold text-[var(--ok)]">
-                {dados.recuperados}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-black/10 bg-white px-4 py-3 shadow-sm">
-              <p className="text-xs text-muted">Recuperação</p>
-              <p className="text-2xl font-bold">{taxa}%</p>
-            </div>
+            {(
+              [
+                ['Abandonados', String(dados.total), ''],
+                ['Voltaram e compraram', String(dados.recuperados), 'text-[var(--ok)]'],
+                ['Recuperação', `${taxa}%`, ''],
+              ] as const
+            ).map(([rotulo, valor, cor]) => (
+              <div key={rotulo} className="rounded-2xl border border-line bg-white px-5 py-4">
+                <p className="text-[13px] text-muted">{rotulo}</p>
+                <p className={`mt-0.5 text-[26px] font-bold leading-tight tabular-nums ${cor}`}>{valor}</p>
+              </div>
+            ))}
           </div>
 
-          <label className="flex items-start gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3 shadow-sm">
-            <input
-              type="checkbox"
-              className="mt-1"
-              checked={dados.emailAutomatico}
-              disabled={salvando}
-              onChange={(e) => void alternarEmail(e.target.checked)}
-            />
+          <label className="flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-line bg-white px-5 py-4">
             <span className="text-sm">
-              <strong>Lembrete automático por e-mail</strong>
-              <span className="block text-muted">
-                Um e-mail só, assim que o pedido expira, com um botão que
-                devolve os itens à sacola do cliente.
+              <strong className="block text-[15px]">Lembrete automático por e-mail</strong>
+              <span className="text-muted">
+                Um e-mail só, assim que o pedido expira, com um botão que devolve
+                os itens à sacola do cliente.
               </span>
+            </span>
+            <span className="relative inline-flex shrink-0">
+              <input
+                type="checkbox"
+                role="switch"
+                className="peer sr-only"
+                checked={dados.emailAutomatico}
+                disabled={salvando}
+                onChange={(e) => void alternarEmail(e.target.checked)}
+              />
+              <span className="h-7 w-12 rounded-full bg-[#d5dade] transition-colors peer-checked:bg-[var(--brand-deep)] peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--brand-teal)] peer-disabled:opacity-60" />
+              <span className="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
             </span>
           </label>
 
           {dados.carrinhos.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-black/15 bg-white px-4 py-8 text-center text-sm text-muted">
-              Nenhum carrinho abandonado nos últimos 30 dias.
-            </p>
+            <div className="rounded-2xl border border-line bg-white">
+              <EstadoVazio
+                icone="/admin/carrinhos-abandonados"
+                titulo="Nenhum carrinho abandonado"
+                texto="Nos últimos 30 dias ninguém deixou de pagar. Quando acontecer, o pedido aparece aqui para você chamar o cliente."
+              />
+            </div>
           ) : (
-            <ul className="space-y-2">
+            <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white">
               {dados.carrinhos.map((c) => {
                 const wa = linkWhatsapp(c, loja);
                 return (
-                  <li
-                    key={c.id}
-                    className="rounded-2xl border border-black/10 bg-white px-4 py-3 shadow-sm"
-                  >
+                  <li key={c.id} className="px-5 py-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="font-semibold">
@@ -184,21 +187,13 @@ export default function CarrinhosAbandonadosPage() {
                             .map((i) => `${i.quantidade}× ${i.nome}`)
                             .join(', ')}
                         </p>
-                        <p className="mt-1.5 flex flex-wrap gap-1.5 text-[11px] font-semibold">
+                        <p className="mt-2 flex flex-wrap gap-1.5">
                           {c.recuperadoNoPedido ? (
-                            <span className="rounded-full bg-[#e3f4ea] px-2 py-0.5 text-[#1b7f45]">
-                              Recuperado · pedido #{c.recuperadoNoPedido}
-                            </span>
+                            <Selo tom="ok">Recuperado · pedido #{c.recuperadoNoPedido}</Selo>
                           ) : null}
-                          <span
-                            className={`rounded-full px-2 py-0.5 ${
-                              c.emailEnviadoEm
-                                ? 'bg-[#eef0f4] text-muted'
-                                : 'bg-[#fff5dc] text-[#7a5200]'
-                            }`}
-                          >
+                          <Selo tom={c.emailEnviadoEm ? 'neutro' : 'alerta'}>
                             {c.emailEnviadoEm ? 'E-mail enviado' : 'E-mail não enviado'}
-                          </span>
+                          </Selo>
                         </p>
                       </div>
                       {!c.recuperadoNoPedido ? (
@@ -208,14 +203,14 @@ export default function CarrinhosAbandonadosPage() {
                               href={wa}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="btn btn-accent text-xs"
+                              className="btn btn-accent h-9 px-3 text-[13px]"
                             >
                               Chamar no WhatsApp
                             </a>
                           ) : null}
                           <button
                             type="button"
-                            className="btn btn-ghost text-xs"
+                            className="btn btn-ghost h-9 px-3 text-[13px]"
                             onClick={() => void copiar(c)}
                           >
                             {copiado === c.id ? 'Link copiado' : 'Copiar link'}

@@ -12,6 +12,7 @@ import {
   pushSuportado,
   registroDoPainel,
 } from '@/lib/avisos';
+import { CabecalhoPagina } from '@/components/admin/Pagina';
 
 type Painel = {
   disponivel: boolean;
@@ -171,15 +172,16 @@ export default function AvisosPage() {
   );
 
   return (
-    <div className="admin-page max-w-2xl space-y-5">
-      <div>
-        <h1>Avisos no celular</h1>
-        <p className="mt-1 text-sm text-muted">
-          Receba &quot;Você vendeu!&quot; na hora em que um pagamento é
-          aprovado, mesmo com o painel fechado. Ligue em cada aparelho que você
-          usa. Grátis, sem instalar app de loja.
-        </p>
-      </div>
+    <div className="admin-page max-w-2xl">
+      <CabecalhoPagina
+        icone="/admin/avisos"
+        titulo="Avisos no celular"
+        descricao={
+          <>
+            Receba &quot;Você vendeu!&quot; na hora em que um pagamento é aprovado, mesmo com o painel fechado. Ligue em cada aparelho que você usa. Grátis, sem instalar app de loja.
+          </>
+        }
+      />
 
       {erro ? (
         <p role="alert" className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent">

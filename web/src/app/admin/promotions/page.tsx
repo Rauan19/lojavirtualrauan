@@ -5,6 +5,7 @@ import { useConfirm } from '@/components/ConfirmDialog';
 import { Modal } from '@/components/Modal';
 import { api, mediaUrl, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
+import { CabecalhoPagina } from '@/components/admin/Pagina';
 
 type Product = {
   id: string;
@@ -46,14 +47,19 @@ export default function AdminPromotionsPage() {
     if (!token) return;
     const [promos, productList] = await Promise.all([
       api<Promotion[]>('/admin/promotions', { token, storeSlug }),
-      api<{ items: Product[] }>('/admin/products?limit=100', { token, storeSlug }),
+      api<{ items: Product[] }>('/admin/products?limit=100', {
+        token,
+        storeSlug,
+      }),
     ]);
     setPromotions(promos);
     setProducts(productList.items);
   }
 
   useEffect(() => {
-    load().catch((err) => setError(err instanceof Error ? err.message : 'Erro'));
+    load().catch((err) =>
+      setError(err instanceof Error ? err.message : 'Erro'),
+    );
   }, []);
 
   useEffect(() => {
@@ -87,7 +93,9 @@ export default function AdminPromotionsPage() {
       setCompareAt('');
       setEndsAt('');
       setProductId('');
-      setMessage('Promoção criada — o preço do produto foi atualizado na vitrine');
+      setMessage(
+        'Promoção criada — o preço do produto foi atualizado na vitrine',
+      );
       setCriando(false);
       await load();
     } catch (err) {
@@ -106,7 +114,11 @@ export default function AdminPromotionsPage() {
     });
     if (!ok) return;
     const { token, storeSlug } = auth();
-    await api(`/admin/promotions/${id}`, { method: 'DELETE', token, storeSlug });
+    await api(`/admin/promotions/${id}`, {
+      method: 'DELETE',
+      token,
+      storeSlug,
+    });
     await load();
   }
 
@@ -115,113 +127,121 @@ export default function AdminPromotionsPage() {
 
   return (
     <div className="admin-page">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1>Promoções</h1>
-          <p className="text-sm text-muted">
-            Oferta com preço “de” / “por” na vitrine.
-          </p>
-        </div>
-        <button
-          type="button"
-          className="btn btn-accent h-10 px-4"
-          onClick={() => {
-            setError('');
-            setCriando(true);
-          }}
-        >
-          Criar promoção
-        </button>
-      </div>
+      <CabecalhoPagina
+        icone="/admin/promotions"
+        titulo="Promoções"
+        descricao={<>Oferta com preço “de” / “por” na vitrine.</>}
+        acoes={
+          <>
+            <button
+              type="button"
+              className="btn btn-accent h-10 px-4"
+              onClick={() => {
+                setError('');
+                setCriando(true);
+              }}
+            >
+              Criar promoção
+            </button>
+          </>
+        }
+      />
 
       {message ? <p className="text-sm text-[var(--ok)]">{message}</p> : null}
-      {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-accent">
+          {error}
+        </p>
+      ) : null}
 
       {criando ? (
-      <Modal
-        title="Nova promoção"
-        hint="O produto aparece na vitrine com o preço de antes riscado e o novo em destaque."
-        erro={error}
-        onClose={() => setCriando(false)}
-        largura="lg"
-      >
-      <form onSubmit={onCreate} className="form-grid md:grid-cols-2">
-        <div className="md:col-span-2">
-          <label className="label">Produto</label>
-          <select
-            className="field"
-            value={productId}
-            onChange={(e) => setProductId(e.target.value)}
-            required
-          >
-            <option value="">Selecione…</option>
-            {available.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} · {money(p.price)}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="label">Preço de (riscado)</label>
-          <input
-            className="field"
-            type="number"
-            step="0.01"
-            min="0"
-            value={compareAt}
-            onChange={(e) => setCompareAt(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label className="label">Preço por (promo)</label>
-          <input
-            className="field"
-            type="number"
-            step="0.01"
-            min="0"
-            value={promoPrice}
-            onChange={(e) => setPromoPrice(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label className="label">Título (opcional)</label>
-          <input
-            className="field"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Ex: Liquidação verão"
-          />
-        </div>
-        <div>
-          <label className="label">Válida até (opcional)</label>
-          <input
-            className="field"
-            type="date"
-            value={endsAt}
-            onChange={(e) => setEndsAt(e.target.value)}
-          />
-        </div>
-        <div className="flex justify-end gap-2 border-t border-line pt-3 md:col-span-2">
-          <button type="button" className="btn btn-ghost" data-modal-cancel>
-            Cancelar
-          </button>
-          <button className="btn btn-accent" disabled={busy || !productId}>
-            {busy ? 'Salvando…' : 'Criar promoção'}
-          </button>
-        </div>
-      </form>
-      </Modal>
+        <Modal
+          title="Nova promoção"
+          hint="O produto aparece na vitrine com o preço de antes riscado e o novo em destaque."
+          erro={error}
+          onClose={() => setCriando(false)}
+          largura="lg"
+        >
+          <form onSubmit={onCreate} className="form-grid md:grid-cols-2">
+            <div className="md:col-span-2">
+              <label className="label">Produto</label>
+              <select
+                className="field"
+                value={productId}
+                onChange={(e) => setProductId(e.target.value)}
+                required
+              >
+                <option value="">Selecione…</option>
+                {available.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} · {money(p.price)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="label">Preço de (riscado)</label>
+              <input
+                className="field"
+                type="number"
+                step="0.01"
+                min="0"
+                value={compareAt}
+                onChange={(e) => setCompareAt(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="label">Preço por (promo)</label>
+              <input
+                className="field"
+                type="number"
+                step="0.01"
+                min="0"
+                value={promoPrice}
+                onChange={(e) => setPromoPrice(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="label">Título (opcional)</label>
+              <input
+                className="field"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Ex: Liquidação verão"
+              />
+            </div>
+            <div>
+              <label className="label">Válida até (opcional)</label>
+              <input
+                className="field"
+                type="date"
+                value={endsAt}
+                onChange={(e) => setEndsAt(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end gap-2 border-t border-line pt-3 md:col-span-2">
+              <button type="button" className="btn btn-ghost" data-modal-cancel>
+                Cancelar
+              </button>
+              <button className="btn btn-accent" disabled={busy || !productId}>
+                {busy ? 'Salvando…' : 'Criar promoção'}
+              </button>
+            </div>
+          </form>
+        </Modal>
       ) : null}
 
       <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
         {promotions.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-line bg-white px-4 py-10 text-center sm:col-span-2 xl:col-span-3">
-            <p className="text-[15px] font-semibold text-ink">Nenhuma promoção ativa</p>
+            <p className="text-[15px] font-semibold text-ink">
+              Nenhuma promoção ativa
+            </p>
             <p className="mt-1 text-sm text-muted">
-              Produto em promoção aparece com o selo de desconto e na vitrine Ofertas da semana.
+              Produto em promoção aparece com o selo de desconto e na vitrine
+              Ofertas da semana.
             </p>
             <button
               type="button"
@@ -236,8 +256,7 @@ export default function AdminPromotionsPage() {
             const img = mediaUrl(promo.product.images[0]?.url);
             const price = Number(promo.product.price);
             const de = Number(promo.product.compareAt || 0);
-            const pct =
-              de > price ? Math.round(((de - price) / de) * 100) : 0;
+            const pct = de > price ? Math.round(((de - price) / de) * 100) : 0;
             return (
               <article key={promo.id} className="card overflow-hidden !p-0">
                 <div className="relative aspect-[4/5] bg-[#eee]">

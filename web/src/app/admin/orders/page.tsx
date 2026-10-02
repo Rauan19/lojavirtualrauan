@@ -18,6 +18,7 @@ import {
   printOrderResult,
   type PrintResult,
 } from '@/lib/print';
+import { CabecalhoPagina } from '@/components/admin/Pagina';
 
 type OrderItem = {
   id: string;
@@ -707,21 +708,20 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="admin-page">
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <h1>Pedidos</h1>
-          <p className="text-sm text-muted">
-            Acompanhe, imprima e atualize o status das suas vendas.
-          </p>
-        </div>
-        <button
-          type="button"
-          className="btn btn-ghost h-10 px-4"
-          onClick={() => setPrinterOpen((v) => !v)}
-        >
-          {printerOpen ? 'Fechar impressora' : 'Impressora e automação'}
-        </button>
-      </div>
+      <CabecalhoPagina
+        icone="/admin/orders"
+        titulo="Pedidos"
+        descricao="Acompanhe, imprima e atualize o status das suas vendas."
+        acoes={
+          <button
+            type="button"
+            className="btn btn-ghost h-10 px-4"
+            onClick={() => setPrinterOpen((v) => !v)}
+          >
+            {printerOpen ? 'Fechar impressora' : 'Impressora e automação'}
+          </button>
+        }
+      />
 
       {/*
         Ações em massa só aparecem com pedidos marcados (padrão Nuvemshop):

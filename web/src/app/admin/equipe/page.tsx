@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 import { Modal } from '@/components/Modal';
 import { useConfirm } from '@/components/ConfirmDialog';
+import { CabecalhoPagina } from '@/components/admin/Pagina';
 
 type Membro = {
   id: string;
@@ -110,23 +111,28 @@ export default function EquipePage() {
   return (
     <div className="admin-page max-w-3xl space-y-5">
       {dialog}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1>Equipe</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted">
+      <CabecalhoPagina
+        icone="/admin/equipe"
+        titulo="Equipe"
+        descricao={
+          <>
             Chame quem ajuda na loja e escolha o que cada pessoa pode ver. Cada
             uma entra com o próprio e-mail e senha. Recebimentos, plano e a
             equipe ficam só com você.
-          </p>
-        </div>
-        <button
-          className="btn btn-accent"
-          disabled={!dados || cheio}
-          onClick={() => setEdicao({ membro: null })}
-        >
-          Convidar pessoa
-        </button>
-      </div>
+          </>
+        }
+        acoes={
+          <>
+            <button
+              className="btn btn-accent"
+              disabled={!dados || cheio}
+              onClick={() => setEdicao({ membro: null })}
+            >
+              Convidar pessoa
+            </button>
+          </>
+        }
+      />
 
       {dados ? (
         <p className="text-sm text-muted">
@@ -158,7 +164,10 @@ export default function EquipePage() {
       ) : null}
 
       {erro ? (
-        <p role="alert" className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent">
+        <p
+          role="alert"
+          className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent"
+        >
           {erro}
         </p>
       ) : null}
@@ -355,7 +364,9 @@ function FormMembro({
           </label>
         )}
         <fieldset>
-          <legend className="text-sm font-semibold">O que a pessoa pode ver</legend>
+          <legend className="text-sm font-semibold">
+            O que a pessoa pode ver
+          </legend>
           <div className="mt-2 space-y-2">
             {areas.map((a) => (
               <label
@@ -382,11 +393,7 @@ function FormMembro({
             Cancelar
           </button>
           <button className="btn btn-accent" disabled={ocupado}>
-            {ocupado
-              ? 'Salvando…'
-              : membro
-                ? 'Salvar'
-                : 'Enviar convite'}
+            {ocupado ? 'Salvando…' : membro ? 'Salvar' : 'Enviar convite'}
           </button>
         </div>
       </form>

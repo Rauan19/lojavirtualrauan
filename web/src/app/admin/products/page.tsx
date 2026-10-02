@@ -16,6 +16,7 @@ import { PaginationBar } from '@/components/PaginationBar';
 import { api, thumbUrl, money } from '@/lib/api';
 import { SemFoto } from '@/components/SemFoto';
 import { getToken, getUser } from '@/lib/auth';
+import { CabecalhoPagina } from '@/components/admin/Pagina';
 
 type ProductVariant = {
   id?: string;
@@ -1206,27 +1207,32 @@ export default function AdminProductsPage() {
 
   return (
     <div className="admin-page">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1>Produtos</h1>
-          <p className="text-sm text-muted">
+      <CabecalhoPagina
+        icone="/admin/products"
+        titulo="Produtos"
+        descricao={
+          <>
             Loja geral · defina tamanho, cor, ml, gramas etc. em cada produto
             {total > 0 ? ` · ${total} cadastrado${total === 1 ? '' : 's'}` : ''}
-          </p>
-        </div>
-        <div className="flex shrink-0 flex-wrap gap-2">
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={() => setImportando(true)}
-          >
-            Importar planilha
-          </button>
-          <button type="button" className="btn btn-accent" onClick={openCreate}>
-            + Criar produto
-          </button>
-        </div>
-      </div>
+          </>
+        }
+        acoes={
+          <>
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => setImportando(true)}
+              >
+                Importar planilha
+              </button>
+              <button type="button" className="btn btn-accent" onClick={openCreate}>
+                + Criar produto
+              </button>
+            </div>
+          </>
+        }
+      />
 
       {importando ? (
         <ImportarPlanilha

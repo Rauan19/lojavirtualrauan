@@ -2,6 +2,7 @@
 
 import { getUser } from '@/lib/auth';
 import { CONTACT, supportWhatsappHref } from '@/lib/contact';
+import { CabecalhoPagina } from '@/components/admin/Pagina';
 
 export default function AdminSuportePage() {
   const user = getUser();
@@ -9,13 +10,15 @@ export default function AdminSuportePage() {
 
   return (
     <div className="admin-page max-w-xl">
-      <div>
-        <h1>Suporte</h1>
-        <p className="text-sm text-muted">
-          Fale com a gente pelo WhatsApp para tirar dúvidas do painel, frete,
-          pagamento ou qualquer problema da loja.
-        </p>
-      </div>
+      <CabecalhoPagina
+        icone="/admin/suporte"
+        titulo="Suporte"
+        descricao={
+          <>
+            Fale com a gente pelo WhatsApp para tirar dúvidas do painel, frete, pagamento ou qualquer problema da loja.
+          </>
+        }
+      />
 
       <div className="card space-y-3 !p-4">
         <p className="text-sm font-bold">Atendimento pelo WhatsApp</p>

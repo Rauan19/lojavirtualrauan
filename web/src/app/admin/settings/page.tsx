@@ -13,6 +13,7 @@ import {
   asCarrierIds,
 } from '@/lib/frete-carriers';
 import { STORE_CARD_RATIOS, STORE_FONTS } from '@/lib/store-theme';
+import { CabecalhoPagina } from '@/components/admin/Pagina';
 
 type Store = {
   id: string;
@@ -137,28 +138,34 @@ function SettingsPanel({
   return (
     <section
       id={id}
-      className="overflow-hidden border border-line bg-white"
+      className={`scroll-mt-4 overflow-hidden rounded-2xl border bg-white transition-shadow ${
+        open ? 'border-[#cfdde1] shadow-[0_8px_24px_-18px_rgba(13,58,67,0.45)]' : 'border-line'
+      }`}
     >
       <button
         type="button"
-        className="flex w-full items-start gap-3 px-4 py-3.5 text-left transition hover:bg-[#fafafa]"
+        className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-[#f8fafb]"
         onClick={onToggle}
         aria-expanded={open}
       >
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold">{title}</p>
-          <p className="mt-0.5 text-xs text-muted">{summary}</p>
+          <p className="text-[15px] font-bold">{title}</p>
+          <p className="mt-0.5 text-[13px] text-muted">{summary}</p>
         </div>
-        {badge ? <div className="shrink-0 pt-0.5">{badge}</div> : null}
-        <span
-          className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center border border-line text-sm font-bold text-muted"
+        {badge ? <div className="shrink-0">{badge}</div> : null}
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
           aria-hidden
+          className={`shrink-0 text-muted transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
         >
-          {open ? '−' : '+'}
-        </span>
+          <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </button>
       {open ? (
-        <div className="border-t border-line px-4 py-4">{children}</div>
+        <div className="border-t border-line px-5 py-5">{children}</div>
       ) : null}
     </section>
   );
@@ -853,12 +860,14 @@ function StatusPill({
 }) {
   return (
     <span
-      className={`inline-flex items-center rounded px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide ${
-        ok
-          ? 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200'
-          : 'bg-amber-50 text-amber-900 ring-1 ring-amber-200'
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[12px] font-semibold ${
+        ok ? 'bg-[#e8f6ee] text-[#166534]' : 'bg-[#fff6e0] text-[#8a5a00]'
       }`}
     >
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${ok ? 'bg-[#1b8f4a]' : 'bg-[#d39a1a]'}`}
+        aria-hidden
+      />
       {ok ? okLabel : badLabel}
     </span>
   );
@@ -1857,13 +1866,16 @@ export default function AdminSettingsPage() {
         </div>
       ) : null}
 
-      <div>
-        <h1>Configurações da loja</h1>
-        <p className="text-sm text-muted">
-          Abra só o que precisa ajustar ·{' '}
-          <strong>/loja/{store.slug}</strong>
-        </p>
-      </div>
+      <CabecalhoPagina
+        icone="/admin/settings"
+        titulo="Configurações da loja"
+        descricao={
+          <>
+            Abra só o que precisa ajustar · endereço da loja{' '}
+            <strong className="text-ink">/loja/{store.slug}</strong>
+          </>
+        }
+      />
 
       {!originReady ? (
         <button

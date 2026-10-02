@@ -1332,3 +1332,39 @@
 .painel table tbody tr:hover {
   background: #f6f9fa;
 }
+
+/* Passo a passo numerado em círculo (instruções no painel) */
+.passos {
+  counter-reset: passo;
+  display: grid;
+  gap: 0.75rem;
+  padding: 0;
+  margin-top: 0.75rem;
+  list-style: none;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.passos > li {
+  counter-increment: passo;
+  position: relative;
+  padding-left: 2.25rem;
+  line-height: 1.5;
+}
+
+.passos > li::before {
+  content: counter(passo);
+  position: absolute;
+  left: 0;
+  top: -0.05rem;
+  display: flex;
+  height: 1.55rem;
+  width: 1.55rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #e9f1f3;
+  color: var(--brand-deep);
+  font-size: 12px;
+  font-weight: 700;
+}

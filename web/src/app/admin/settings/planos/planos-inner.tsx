@@ -7,6 +7,7 @@ import { api, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 import { BRAND } from '@/lib/brand';
 import { ResumoTaxas } from '@/components/TaxaVendira';
+import { CabecalhoPagina } from '@/components/admin/Pagina';
 
 type Plan = {
   id: string;
@@ -667,16 +668,11 @@ export function AdminPlanosInner() {
 
   return (
     <div className="admin-page max-w-5xl space-y-8">
-      <div>
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted">
-          {BRAND.name}
-        </p>
-        <h1 className="mt-1">Assinatura</h1>
-        <p className="mt-1 max-w-xl text-sm text-muted">
-          Mensalidade da sua loja na plataforma. Cobrança recorrente no Mercado
-          Pago — separado do pagamento dos seus clientes.
-        </p>
-      </div>
+      <CabecalhoPagina
+        icone="/admin/settings/planos"
+        titulo="Plano e assinatura"
+        descricao={`Mensalidade da sua loja na ${BRAND.name}, cobrada todo mês pelo Mercado Pago. Separada do dinheiro das suas vendas.`}
+      />
 
       {store?.accessBlocked ||
       store?.status === 'PAST_DUE' ||

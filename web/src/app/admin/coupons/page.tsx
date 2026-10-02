@@ -5,6 +5,7 @@ import { useConfirm } from '@/components/ConfirmDialog';
 import { Modal } from '@/components/Modal';
 import { api, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
+import { CabecalhoPagina } from '@/components/admin/Pagina';
 
 type Coupon = {
   id: string;
@@ -55,7 +56,9 @@ export default function AdminCouponsPage() {
   }
 
   useEffect(() => {
-    load().catch((err) => setError(err instanceof Error ? err.message : 'Erro'));
+    load().catch((err) =>
+      setError(err instanceof Error ? err.message : 'Erro'),
+    );
   }, []);
 
   async function onCreate(e: FormEvent) {
@@ -137,167 +140,180 @@ export default function AdminCouponsPage() {
 
   return (
     <div className="admin-page">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1>Cupons</h1>
-          <p className="text-sm text-muted">
-            Códigos de desconto pro cliente no checkout.
-          </p>
-        </div>
-        <button
-          type="button"
-          className="btn btn-accent h-10 px-4"
-          onClick={() => {
-            setError('');
-            setCriando(true);
-          }}
-        >
-          Criar cupom
-        </button>
-      </div>
+      <CabecalhoPagina
+        icone="/admin/coupons"
+        titulo="Cupons"
+        descricao={<>Códigos de desconto pro cliente no checkout.</>}
+        acoes={
+          <>
+            <button
+              type="button"
+              className="btn btn-accent h-10 px-4"
+              onClick={() => {
+                setError('');
+                setCriando(true);
+              }}
+            >
+              Criar cupom
+            </button>
+          </>
+        }
+      />
 
       {message ? <p className="text-sm text-[var(--ok)]">{message}</p> : null}
-      {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-accent">
+          {error}
+        </p>
+      ) : null}
 
       {criando ? (
-      <Modal
-        title="Novo cupom"
-        hint="O cliente digita o código no checkout para ganhar o desconto."
-        erro={error}
-        onClose={() => setCriando(false)}
-        largura="lg"
-      >
-      <form onSubmit={onCreate} className="form-grid md:grid-cols-2">
-        <div>
-          <label className="label">Código</label>
-          <input
-            className="field uppercase"
-            value={form.code}
-            onChange={(e) => setForm({ ...form, code: e.target.value })}
-            placeholder="EX: BEMVINDO10"
-            required
-          />
-        </div>
-        <div>
-          <label className="label">Tipo</label>
-          <select
-            className="field"
-            value={form.type}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                type: e.target.value as 'PERCENT' | 'FIXED' | 'FREE_SHIPPING',
-                value: e.target.value === 'FREE_SHIPPING' ? '0' : form.value,
-              })
-            }
-          >
-            <option value="PERCENT">Percentual (%)</option>
-            <option value="FIXED">Valor fixo (R$)</option>
-            <option value="FREE_SHIPPING">Frete grátis</option>
-          </select>
-        </div>
-        {form.type !== 'FREE_SHIPPING' ? (
-          <div>
-            <label className="label">
-              {form.type === 'PERCENT' ? 'Percentual' : 'Valor em R$'}
+        <Modal
+          title="Novo cupom"
+          hint="O cliente digita o código no checkout para ganhar o desconto."
+          erro={error}
+          onClose={() => setCriando(false)}
+          largura="lg"
+        >
+          <form onSubmit={onCreate} className="form-grid md:grid-cols-2">
+            <div>
+              <label className="label">Código</label>
+              <input
+                className="field uppercase"
+                value={form.code}
+                onChange={(e) => setForm({ ...form, code: e.target.value })}
+                placeholder="EX: BEMVINDO10"
+                required
+              />
+            </div>
+            <div>
+              <label className="label">Tipo</label>
+              <select
+                className="field"
+                value={form.type}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    type: e.target.value as
+                      'PERCENT' | 'FIXED' | 'FREE_SHIPPING',
+                    value:
+                      e.target.value === 'FREE_SHIPPING' ? '0' : form.value,
+                  })
+                }
+              >
+                <option value="PERCENT">Percentual (%)</option>
+                <option value="FIXED">Valor fixo (R$)</option>
+                <option value="FREE_SHIPPING">Frete grátis</option>
+              </select>
+            </div>
+            {form.type !== 'FREE_SHIPPING' ? (
+              <div>
+                <label className="label">
+                  {form.type === 'PERCENT' ? 'Percentual' : 'Valor em R$'}
+                </label>
+                <input
+                  className="field"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={form.value}
+                  onChange={(e) => setForm({ ...form, value: e.target.value })}
+                  required
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="label">Benefício</label>
+                <p className="field flex items-center text-sm font-semibold text-[var(--ok)]">
+                  Zera o frete no checkout
+                </p>
+              </div>
+            )}
+            <div>
+              <label className="label">Pedido mínimo (opcional)</label>
+              <input
+                className="field"
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.minSubtotal}
+                onChange={(e) =>
+                  setForm({ ...form, minSubtotal: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label className="label">Limite de usos (opcional)</label>
+              <input
+                className="field"
+                type="number"
+                min="1"
+                value={form.maxUses}
+                onChange={(e) => setForm({ ...form, maxUses: e.target.value })}
+              />
+              <p className="mt-1 text-[11px] text-muted">
+                Total somando todos os clientes.
+              </p>
+            </div>
+            <div>
+              <label className="label">Limite por cliente (opcional)</label>
+              <input
+                className="field"
+                type="number"
+                min="1"
+                value={form.maxPerCustomer}
+                onChange={(e) =>
+                  setForm({ ...form, maxPerCustomer: e.target.value })
+                }
+              />
+              <p className="mt-1 text-[11px] text-muted">
+                Sem isso, a mesma pessoa usa o cupom quantas vezes quiser.
+              </p>
+            </div>
+            <div>
+              <label className="label">Validade (opcional)</label>
+              <input
+                className="field"
+                type="date"
+                value={form.endsAt}
+                onChange={(e) => setForm({ ...form, endsAt: e.target.value })}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="label">Descrição (opcional)</label>
+              <input
+                className="field"
+                value={form.description}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
+                placeholder="Ex: Primeira compra"
+              />
+              <p className="mt-1 text-[11px] text-muted">
+                Se marcar &quot;mostrar na vitrine&quot;, esse texto aparece
+                junto com o desconto no banner da loja. Prefira algo curto.
+              </p>
+            </div>
+            <label className="flex items-center gap-2 text-sm md:col-span-2">
+              <input
+                type="checkbox"
+                checked={form.showOnStorefront}
+                onChange={(e) =>
+                  setForm({ ...form, showOnStorefront: e.target.checked })
+                }
+              />
+              Mostrar num banner na vitrine da loja
             </label>
-            <input
-              className="field"
-              type="number"
-              step="0.01"
-              min="0.01"
-              value={form.value}
-              onChange={(e) => setForm({ ...form, value: e.target.value })}
-              required
-            />
-          </div>
-        ) : (
-          <div>
-            <label className="label">Benefício</label>
-            <p className="field flex items-center text-sm font-semibold text-[var(--ok)]">
-              Zera o frete no checkout
-            </p>
-          </div>
-        )}
-        <div>
-          <label className="label">Pedido mínimo (opcional)</label>
-          <input
-            className="field"
-            type="number"
-            step="0.01"
-            min="0"
-            value={form.minSubtotal}
-            onChange={(e) => setForm({ ...form, minSubtotal: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="label">Limite de usos (opcional)</label>
-          <input
-            className="field"
-            type="number"
-            min="1"
-            value={form.maxUses}
-            onChange={(e) => setForm({ ...form, maxUses: e.target.value })}
-          />
-          <p className="mt-1 text-[11px] text-muted">
-            Total somando todos os clientes.
-          </p>
-        </div>
-        <div>
-          <label className="label">Limite por cliente (opcional)</label>
-          <input
-            className="field"
-            type="number"
-            min="1"
-            value={form.maxPerCustomer}
-            onChange={(e) =>
-              setForm({ ...form, maxPerCustomer: e.target.value })
-            }
-          />
-          <p className="mt-1 text-[11px] text-muted">
-            Sem isso, a mesma pessoa usa o cupom quantas vezes quiser.
-          </p>
-        </div>
-        <div>
-          <label className="label">Validade (opcional)</label>
-          <input
-            className="field"
-            type="date"
-            value={form.endsAt}
-            onChange={(e) => setForm({ ...form, endsAt: e.target.value })}
-          />
-        </div>
-        <div className="md:col-span-2">
-          <label className="label">Descrição (opcional)</label>
-          <input
-            className="field"
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder="Ex: Primeira compra"
-          />
-          <p className="mt-1 text-[11px] text-muted">
-            Se marcar &quot;mostrar na vitrine&quot;, esse texto aparece junto com o
-            desconto no banner da loja. Prefira algo curto.
-          </p>
-        </div>
-        <label className="flex items-center gap-2 text-sm md:col-span-2">
-          <input
-            type="checkbox"
-            checked={form.showOnStorefront}
-            onChange={(e) => setForm({ ...form, showOnStorefront: e.target.checked })}
-          />
-          Mostrar num banner na vitrine da loja
-        </label>
-        <div className="flex justify-end gap-2 border-t border-line pt-3 md:col-span-2">
-          <button type="button" className="btn btn-ghost" data-modal-cancel>
-            Cancelar
-          </button>
-          <button className="btn btn-accent" disabled={busy}>
-            {busy ? 'Criando…' : 'Criar cupom'}
-          </button>
-        </div>
-      </form>
-      </Modal>
+            <div className="flex justify-end gap-2 border-t border-line pt-3 md:col-span-2">
+              <button type="button" className="btn btn-ghost" data-modal-cancel>
+                Cancelar
+              </button>
+              <button className="btn btn-accent" disabled={busy}>
+                {busy ? 'Criando…' : 'Criar cupom'}
+              </button>
+            </div>
+          </form>
+        </Modal>
       ) : null}
 
       <div className="card overflow-hidden !p-0">
@@ -306,9 +322,12 @@ export default function AdminCouponsPage() {
         </div>
         {items.length === 0 ? (
           <div className="px-4 py-10 text-center">
-            <p className="text-[15px] font-semibold text-ink">Nenhum cupom ainda</p>
+            <p className="text-[15px] font-semibold text-ink">
+              Nenhum cupom ainda
+            </p>
             <p className="mt-1 text-sm text-muted">
-              Cupom de primeira compra ou de frete grátis ajuda a fechar a venda.
+              Cupom de primeira compra ou de frete grátis ajuda a fechar a
+              venda.
             </p>
             <button
               type="button"
@@ -328,7 +347,9 @@ export default function AdminCouponsPage() {
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <strong className="font-mono text-base">{c.code}</strong>
-                    <span className="text-sm font-semibold text-accent">{label(c)}</span>
+                    <span className="text-sm font-semibold text-accent">
+                      {label(c)}
+                    </span>
                     <span
                       className={`px-1.5 py-0.5 text-[11px] font-bold ${
                         c.active
@@ -376,7 +397,9 @@ export default function AdminCouponsPage() {
                       )
                     }
                   >
-                    {c.showOnStorefront ? 'Tirar da vitrine' : 'Mostrar na vitrine'}
+                    {c.showOnStorefront
+                      ? 'Tirar da vitrine'
+                      : 'Mostrar na vitrine'}
                   </button>
                   <button
                     type="button"

@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { api, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 import { orderStatusLabel } from '@/lib/order-status';
+import { CabecalhoPagina } from '@/components/admin/Pagina';
 
 // Gráficos (recharts) só baixam quando o dono abre o painel: a equipe e o
 // primeiro carregamento não pagam por eles
@@ -155,19 +156,22 @@ function PainelDoDono() {
   return (
     <div className="admin-page">
       <PrimeirosPassos />
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <h1>Painel</h1>
-          <p className="text-sm text-muted">
-            Faturamento e pedidos
-            {rangeLabel ? (
-              <>
-                {' '}
-                · <span className="font-medium text-ink">{rangeLabel}</span>
-              </>
-            ) : null}
-          </p>
-        </div>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <CabecalhoPagina
+          icone="/admin"
+          titulo="Painel"
+          descricao={
+            <>
+              Faturamento e pedidos
+              {rangeLabel ? (
+                <>
+                  {' '}
+                  · <span className="font-medium text-ink">{rangeLabel}</span>
+                </>
+              ) : null}
+            </>
+          }
+        />
         <div className="flex flex-wrap items-center gap-1.5">
           <div className="inline-flex rounded-xl border border-line bg-white p-1" role="group" aria-label="Período">
             {periods.map((p) => {

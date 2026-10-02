@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
+import { CabecalhoPagina } from '@/components/admin/Pagina';
 
 type Resumo = {
   url: string;
@@ -39,16 +40,16 @@ export default function CatalogoPage() {
   }
 
   return (
-    <div className="admin-page max-w-3xl space-y-5">
-      <div>
-        <h1>Google e Instagram</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted">
-          Seus produtos aparecendo no Google Shopping e na aba de compras do
-          Instagram e do Facebook. Você cadastra o endereço abaixo uma vez; eles
-          buscam os produtos sozinhos todo dia, com preço, estoque e fotos
-          atualizados.
-        </p>
-      </div>
+    <div className="admin-page max-w-3xl">
+      <CabecalhoPagina
+        icone="/admin/catalogo"
+        titulo="Google e Instagram"
+        descricao={
+          <>
+            Seus produtos aparecendo no Google Shopping e na aba de compras do Instagram e do Facebook. Você cadastra o endereço abaixo uma vez; eles buscam os produtos sozinhos todo dia, com preço, estoque e fotos atualizados.
+          </>
+        }
+      />
 
       {erro ? (
         <p role="alert" className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent">
@@ -58,7 +59,7 @@ export default function CatalogoPage() {
 
       {dados ? (
         <>
-          <section className="rounded-2xl border border-black/10 bg-white px-5 py-4 shadow-sm">
+          <section className="rounded-2xl border border-line bg-white px-5 py-5">
             <p className="text-sm font-bold">Endereço do seu catálogo</p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <code className="min-w-0 flex-1 break-all rounded border border-line bg-[#f7f8fa] px-3 py-2 text-[13px]">
@@ -85,9 +86,9 @@ export default function CatalogoPage() {
             </p>
           </section>
 
-          <section className="rounded-2xl border border-black/10 bg-white px-5 py-4 shadow-sm">
+          <section className="rounded-2xl border border-line bg-white px-5 py-5">
             <h2 className="text-sm font-bold">Google Shopping</h2>
-            <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-muted">
+            <ol className="mt-2 passos text-sm text-muted">
               <li>
                 Entre no{' '}
                 <a
@@ -114,9 +115,9 @@ export default function CatalogoPage() {
             </p>
           </section>
 
-          <section className="rounded-2xl border border-black/10 bg-white px-5 py-4 shadow-sm">
+          <section className="rounded-2xl border border-line bg-white px-5 py-5">
             <h2 className="text-sm font-bold">Instagram e Facebook</h2>
-            <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-muted">
+            <ol className="mt-2 passos text-sm text-muted">
               <li>
                 Abra o{' '}
                 <a

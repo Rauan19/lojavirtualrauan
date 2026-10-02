@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
+import { CabecalhoPagina } from '@/components/admin/Pagina';
 
 type Linha = {
   productId: string;
@@ -31,15 +32,16 @@ export default function AviseMePage() {
   }, []);
 
   return (
-    <div className="admin-page max-w-3xl space-y-5">
-      <div>
-        <h1>Avise-me quando chegar</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted">
-          Clientes que pediram para ser avisados quando um produto esgotado
-          voltar. Ao repor o estoque, cada um recebe um e-mail (em até 10
-          minutos). Use a lista para decidir o que repor primeiro.
-        </p>
-      </div>
+    <div className="admin-page max-w-3xl">
+      <CabecalhoPagina
+        icone="/admin/avise-me"
+        titulo="Avise-me quando chegar"
+        descricao={
+          <>
+            Clientes que pediram para ser avisados quando um produto esgotado voltar. Ao repor o estoque, cada um recebe um e-mail (em até 10 minutos). Use a lista para decidir o que repor primeiro.
+          </>
+        }
+      />
 
       {erro ? (
         <p role="alert" className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent">
@@ -49,7 +51,7 @@ export default function AviseMePage() {
 
       {dados ? (
         dados.produtos.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-black/15 bg-white px-4 py-8 text-center text-sm text-muted">
+          <p className="rounded-2xl border border-dashed border-line bg-white px-4 py-8 text-center text-sm text-muted">
             Ninguém esperando agora. Quando um produto esgotar, a página dele
             mostra o botão &quot;Avise-me quando chegar&quot;.
           </p>
@@ -59,7 +61,7 @@ export default function AviseMePage() {
               <strong>{dados.totalEsperando}</strong> pessoa
               {dados.totalEsperando === 1 ? '' : 's'} esperando
             </p>
-            <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
+            <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white">
               {dados.produtos.map((p) => (
                 <li
                   key={`${p.productId}-${p.nome}`}
