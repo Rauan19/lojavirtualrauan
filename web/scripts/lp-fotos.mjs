@@ -24,13 +24,7 @@ const SLOTS = [
   ['lp-moda-vestido', 'retrato'],
   ['lp-moda-camisa', 'retrato'],
   ['lp-moda-tenis', 'retrato'],
-  ['lp-moda-bone', 'retrato'],
   ['lp-moda-mochila', 'retrato'],
-  ['lp-moda-tenis-lilas', 'retrato'],
-  ['lp-eletro-celular', 'quadrado'],
-  ['lp-eletro-tv', 'quadrado'],
-  ['lp-eletro-fogao', 'quadrado'],
-  ['lp-eletro-geladeira', 'quadrado'],
 ];
 
 const SIZES = { retrato: [480, 640], quadrado: [480, 480] };

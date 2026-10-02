@@ -4,10 +4,18 @@
  */
 
 const mockupProducts = [
-  { img: '/lp/lp-moda-vestido.webp', name: 'Vestido Floral', price: 'R$ 189,90' },
+  {
+    img: '/lp/lp-moda-vestido.webp',
+    name: 'Vestido Floral',
+    price: 'R$ 189,90',
+  },
   { img: '/lp/lp-moda-camisa.webp', name: 'Camisa Linho', price: 'R$ 149,90' },
   { img: '/lp/lp-moda-tenis.webp', name: 'Tênis Retrô', price: 'R$ 299,90' },
-  { img: '/lp/lp-moda-bone.webp', name: 'Boné Aba Curva', price: 'R$ 79,90' },
+  {
+    img: '/lp/lp-moda-mochila.webp',
+    name: 'Mochila Canvas',
+    price: 'R$ 259,90',
+  },
 ] as const;
 
 export function StorefrontMockup({ className = '' }: { className?: string }) {
@@ -41,7 +49,9 @@ export function StorefrontMockup({ className = '' }: { className?: string }) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={p.img} alt="" className="h-full w-full object-cover" />
             </div>
-            <p className="mt-2 text-[11px] font-semibold text-[#171a1f]">{p.name}</p>
+            <p className="mt-2 text-[11px] font-semibold text-[#171a1f]">
+              {p.name}
+            </p>
             <p className="text-[11px] text-[#4a5560]">{p.price}</p>
           </div>
         ))}

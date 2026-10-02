@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 
 /*
- * Hero da landing: notebook e celular com a vitrine rolando dentro, trocando
- * de loja a cada poucos segundos. Cada loja muda cor, fonte, proporção da
+ * Hero da landing: notebook e celular com a vitrine rolando dentro (com mais
+ * de uma loja na lista, troca a cada poucos segundos). Cada loja muda cor, fonte, proporção da
  * foto e catálogo — que é exatamente o que a plataforma faz quando o lojista
  * escolhe o ramo. Em vez de prometer "sua loja com a sua cara", a hero
  * mostra acontecendo.
@@ -32,33 +32,39 @@ const PERSONAS: Persona[] = [
   {
     name: 'Ateliê Lua',
     domain: 'atelielua.com.br',
-    accent: '#b5485f',
+    accent: '#8e3a4f',
     font: 'var(--font-store-elegant), Georgia, serif',
     ratio: '3 / 4',
     banner: 'Nova coleção de inverno',
-    categories: ['Novidades', 'Feminino', 'Masculino', 'Calçados', 'Acessórios', 'Promoções'],
-    products: [
-      { img: '/lp/lp-moda-vestido.webp', name: 'Vestido Floral Alcinha', price: 'R$ 189,90' },
-      { img: '/lp/lp-moda-camisa.webp', name: 'Camisa Linho Manga Curta', price: 'R$ 149,90' },
-      { img: '/lp/lp-moda-tenis.webp', name: 'Tênis Retrô Sola Caramelo', price: 'R$ 299,90' },
-      { img: '/lp/lp-moda-bone.webp', name: 'Boné Aba Curva Lavado', price: 'R$ 79,90' },
-      { img: '/lp/lp-moda-mochila.webp', name: 'Mochila Canvas Couro', price: 'R$ 259,90' },
-      { img: '/lp/lp-moda-tenis-lilas.webp', name: 'Tênis Leve Feminino', price: 'R$ 219,90' },
+    categories: [
+      'Novidades',
+      'Vestidos',
+      'Camisas',
+      'Calçados',
+      'Mochilas',
+      'Promoções',
     ],
-  },
-  {
-    name: 'Eletro Vale',
-    domain: 'eletrovale.com.br',
-    accent: '#2f6fd0',
-    font: 'var(--font-store-modern), system-ui, sans-serif',
-    ratio: '1 / 1',
-    banner: 'Semana do eletro',
-    categories: ['Celulares', 'TVs', 'Eletrodomésticos', 'Informática', 'Ofertas'],
     products: [
-      { img: '/lp/lp-eletro-celular.webp', name: 'Smartphone 128 GB', price: 'R$ 1.899,00' },
-      { img: '/lp/lp-eletro-tv.webp', name: 'Smart TV 43" HD', price: 'R$ 1.599,00' },
-      { img: '/lp/lp-eletro-geladeira.webp', name: 'Geladeira Frost Free 395L', price: 'R$ 3.299,00' },
-      { img: '/lp/lp-eletro-fogao.webp', name: 'Fogão 4 Bocas Inox', price: 'R$ 899,00' },
+      {
+        img: '/lp/lp-moda-vestido.webp',
+        name: 'Vestido Floral Alcinha',
+        price: 'R$ 189,90',
+      },
+      {
+        img: '/lp/lp-moda-camisa.webp',
+        name: 'Camisa Linho Manga Curta',
+        price: 'R$ 149,90',
+      },
+      {
+        img: '/lp/lp-moda-tenis.webp',
+        name: 'Tênis Retrô Sola Caramelo',
+        price: 'R$ 299,90',
+      },
+      {
+        img: '/lp/lp-moda-mochila.webp',
+        name: 'Mochila Canvas e Couro',
+        price: 'R$ 259,90',
+      },
     ],
   },
 ];
@@ -67,12 +73,20 @@ function ProductCard({ persona, i }: { persona: Persona; i: number }) {
   const p = persona.products[i % persona.products.length];
   return (
     <div>
-      <div className="overflow-hidden bg-[#f2f3f5]" style={{ aspectRatio: persona.ratio }}>
+      <div
+        className="overflow-hidden bg-[#f2f3f5]"
+        style={{ aspectRatio: persona.ratio }}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={p.img} alt="" className="h-full w-full object-cover" />
       </div>
-      <p className="mt-2 truncate text-[13px] leading-snug text-[#171a1f]">{p.name}</p>
-      <p className="mt-0.5 text-[15px] font-bold" style={{ color: persona.accent }}>
+      <p className="mt-2 truncate text-[13px] leading-snug text-[#171a1f]">
+        {p.name}
+      </p>
+      <p
+        className="mt-0.5 text-[15px] font-bold"
+        style={{ color: persona.accent }}
+      >
         {p.price}
       </p>
     </div>
@@ -95,7 +109,9 @@ function StorePage({ persona, mobile }: { persona: Persona; mobile: boolean }) {
         </span>
         <span className="h-9 flex-1 rounded-sm border border-[#e6e8ec] bg-[#f7f8fa]" />
         <span className="h-6 w-6 rounded-full bg-[#f0f1f3]" />
-        {!mobile ? <span className="h-6 w-6 rounded-full bg-[#f0f1f3]" /> : null}
+        {!mobile ? (
+          <span className="h-6 w-6 rounded-full bg-[#f0f1f3]" />
+        ) : null}
       </header>
 
       <nav className="flex gap-5 border-b border-[#e6e8ec] bg-white px-5 py-2.5">
@@ -121,12 +137,18 @@ function StorePage({ persona, mobile }: { persona: Persona; mobile: boolean }) {
         }}
       >
         <div>
-          <p className="text-[19px] font-bold leading-tight text-white">{persona.banner}</p>
-          <p className="mt-1 text-[13px] text-white/80">Frete grátis acima de R$ 199</p>
+          <p className="text-[19px] font-bold leading-tight text-white">
+            {persona.banner}
+          </p>
+          <p className="mt-1 text-[13px] text-white/80">
+            Frete grátis acima de R$ 199
+          </p>
         </div>
       </div>
 
-      <div className={`grid gap-4 px-5 py-5 ${mobile ? 'grid-cols-2' : 'grid-cols-4'}`}>
+      <div
+        className={`grid gap-4 px-5 py-5 ${mobile ? 'grid-cols-2' : 'grid-cols-4'}`}
+      >
         {Array.from({ length: cards }, (_, i) => (
           <ProductCard key={i} persona={persona} i={i} />
         ))}
@@ -220,18 +242,20 @@ export function StoreDeviceShowcase() {
         <Device persona={persona} mobile width={390} slow />
       </div>
 
-      <div className="lp-dots">
-        {PERSONAS.map((p, i) => (
-          <span
-            key={p.name}
-            className="lp-dots-item"
-            style={{
-              background: i === index ? persona.accent : '#c9ced6',
-              width: i === index ? 16 : 6,
-            }}
-          />
-        ))}
-      </div>
+      {PERSONAS.length > 1 ? (
+        <div className="lp-dots">
+          {PERSONAS.map((p, i) => (
+            <span
+              key={p.name}
+              className="lp-dots-item"
+              style={{
+                background: i === index ? persona.accent : '#c9ced6',
+                width: i === index ? 16 : 6,
+              }}
+            />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -7,8 +7,8 @@ import Image from 'next/image';
  * banco.
  */
 
-/** Cor da loja de exemplo dos prints (Perfumaria SDG) */
-const LOJA_COR = '#46305c';
+/** Cor da loja fictícia dos prints (Ateliê Lua) */
+const LOJA_COR = '#8e3a4f';
 
 export function Celular({
   src,
@@ -68,7 +68,12 @@ function Sino() {
         strokeWidth="1.8"
         strokeLinejoin="round"
       />
-      <path d="M10 20a2.2 2.2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path
+        d="M10 20a2.2 2.2 0 0 0 4 0"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -88,7 +93,8 @@ export function AvisoVendeu({ className = '' }: { className?: string }) {
           <span className="text-[11px] text-[#6b7480]">agora</span>
         </p>
         <p className="mt-0.5 text-[#4a5560]">
-          Pedido #1042 · <strong className="text-[#171a1f]">R$ 749,90</strong> no Pix
+          Pedido #1042 · <strong className="text-[#171a1f]">R$ 189,90</strong>{' '}
+          no Pix
         </p>
       </div>
     </div>
@@ -97,8 +103,21 @@ export function AvisoVendeu({ className = '' }: { className?: string }) {
 
 function Check() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden className="shrink-0">
-      <path d="m5 12.5 4.2 4.2L19 7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className="shrink-0"
+    >
+      <path
+        d="m5 12.5 4.2 4.2L19 7"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -107,7 +126,9 @@ function Check() {
 export function CheckoutMock() {
   return (
     <div className="w-full max-w-[25rem] rounded-[20px] bg-white p-5 text-[14px] shadow-[0_30px_60px_-30px_rgba(13,58,67,0.45)] ring-1 ring-black/5">
-      <p className="text-[13px] font-semibold text-[#4a5560]">Entrega para 40015-970</p>
+      <p className="text-[13px] font-semibold text-[#4a5560]">
+        Entrega para 40015-970
+      </p>
       <ul className="mt-2.5 space-y-2">
         {[
           ['PAC', '6 dias úteis', 'R$ 22,90', false],
@@ -125,13 +146,17 @@ export function CheckoutMock() {
                 marcado ? 'border-[#171a1f]' : 'border-[#c5cbd2]'
               }`}
             >
-              {marcado ? <span className="h-1.5 w-1.5 rounded-full bg-[#171a1f]" /> : null}
+              {marcado ? (
+                <span className="h-1.5 w-1.5 rounded-full bg-[#171a1f]" />
+              ) : null}
             </span>
             <span className="flex-1">
               <strong className="font-semibold text-[#171a1f]">{nome}</strong>{' '}
               <span className="text-[#6b7480]">· {prazo}</span>
             </span>
-            <span className="font-semibold tabular-nums text-[#171a1f]">{valor}</span>
+            <span className="font-semibold tabular-nums text-[#171a1f]">
+              {valor}
+            </span>
           </li>
         ))}
       </ul>
@@ -140,7 +165,9 @@ export function CheckoutMock() {
       <div className="mt-2.5 grid grid-cols-2 gap-2">
         <div className="rounded-xl border-2 border-[#171a1f] px-3 py-2.5">
           <p className="font-bold text-[#171a1f]">Pix</p>
-          <p className="text-[12px] font-semibold text-[var(--ok)]">aprovado na hora</p>
+          <p className="text-[12px] font-semibold text-[var(--ok)]">
+            aprovado na hora
+          </p>
         </div>
         <div className="rounded-xl border border-[#e3e6ea] px-3 py-2.5">
           <p className="font-bold text-[#171a1f]">Cartão</p>
@@ -150,7 +177,9 @@ export function CheckoutMock() {
 
       <div className="mt-5 flex items-baseline justify-between border-t border-[#ebedf0] pt-4">
         <span className="text-[#4a5560]">Total</span>
-        <strong className="text-[1.35rem] tabular-nums text-[#171a1f]">R$ 788,30</strong>
+        <strong className="text-[1.35rem] tabular-nums text-[#171a1f]">
+          R$ 228,30
+        </strong>
       </div>
       <div
         className="mt-3 flex h-12 items-center justify-center rounded-xl text-[15px] font-bold text-white"
@@ -169,7 +198,7 @@ export function CheckoutMock() {
 }
 
 const PEDIDOS: [string, string, string, 'ok' | 'envio' | 'espera'][] = [
-  ['#1042', 'Mariana C.', 'R$ 749,90', 'ok'],
+  ['#1042', 'Mariana C.', 'R$ 189,90', 'ok'],
   ['#1041', 'Rafael S.', 'R$ 329,90', 'envio'],
   ['#1040', 'Juliana A.', 'R$ 89,90', 'espera'],
   ['#1039', 'Pedro H.', 'R$ 1.149,80', 'envio'],
@@ -191,20 +220,26 @@ export function PainelMock() {
             className="flex h-7 w-7 items-center justify-center rounded-lg text-[11px] font-bold text-white"
             style={{ background: LOJA_COR }}
           >
-            SDG
+            AL
           </span>
-          <span className="truncate font-semibold text-[#171a1f]">Perfumaria SDG</span>
+          <span className="truncate font-semibold text-[#171a1f]">
+            Ateliê Lua
+          </span>
         </div>
-        {['Início', 'Pedidos', 'Produtos', 'Clientes', 'Cupons', 'Frete'].map((item, i) => (
-          <span
-            key={item}
-            className={`rounded-lg px-2.5 py-1.5 ${
-              i === 1 ? 'bg-[var(--brand-deep)] font-semibold text-white' : 'text-[#4a5560]'
-            }`}
-          >
-            {item}
-          </span>
-        ))}
+        {['Início', 'Pedidos', 'Produtos', 'Clientes', 'Cupons', 'Frete'].map(
+          (item, i) => (
+            <span
+              key={item}
+              className={`rounded-lg px-2.5 py-1.5 ${
+                i === 1
+                  ? 'bg-[var(--brand-deep)] font-semibold text-white'
+                  : 'text-[#4a5560]'
+              }`}
+            >
+              {item}
+            </span>
+          ),
+        )}
       </div>
       <div className="min-w-0 flex-1 p-4 sm:p-5">
         <p className="text-[15px] font-bold text-[#171a1f]">Pedidos</p>
@@ -214,19 +249,32 @@ export function PainelMock() {
             ['Pedidos', '18'],
             ['A enviar', '5'],
           ].map(([rotulo, valor]) => (
-            <div key={rotulo} className="rounded-xl border border-[#e3e6ea] px-2.5 py-2">
+            <div
+              key={rotulo}
+              className="rounded-xl border border-[#e3e6ea] px-2.5 py-2"
+            >
               <p className="truncate text-[11px] text-[#6b7480]">{rotulo}</p>
-              <p className="mt-0.5 truncate text-[15px] font-bold tabular-nums text-[#171a1f]">{valor}</p>
+              <p className="mt-0.5 truncate text-[15px] font-bold tabular-nums text-[#171a1f]">
+                {valor}
+              </p>
             </div>
           ))}
         </div>
         <ul className="mt-3 divide-y divide-[#ebedf0] rounded-xl border border-[#e3e6ea]">
           {PEDIDOS.map(([n, cliente, valor, s]) => (
             <li key={n} className="flex items-center gap-2 px-3 py-2.5">
-              <span className="w-11 shrink-0 font-semibold text-[#171a1f]">{n}</span>
-              <span className="min-w-0 flex-1 truncate text-[#4a5560]">{cliente}</span>
-              <span className="hidden font-semibold tabular-nums text-[#171a1f] min-[420px]:inline">{valor}</span>
-              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS[s][1]}`}>
+              <span className="w-11 shrink-0 font-semibold text-[#171a1f]">
+                {n}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-[#4a5560]">
+                {cliente}
+              </span>
+              <span className="hidden font-semibold tabular-nums text-[#171a1f] min-[420px]:inline">
+                {valor}
+              </span>
+              <span
+                className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS[s][1]}`}
+              >
                 {STATUS[s][0]}
               </span>
             </li>

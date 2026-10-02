@@ -107,20 +107,17 @@ export function getPlans() {
 }
 
 /**
- * Loja usada como "exemplo ao vivo" na landing. Prefere a definida em
- * DEMO_STORE_SLUG; sem ela, cai na loja ativa mais recente. Devolve null
- * quando nao existe nenhuma - melhor esconder o link do que mandar o
- * visitante para um 404.
+ * Loja usada como "exemplo ao vivo" na landing: só a definida em
+ * DEMO_STORE_SLUG, que deve ser uma loja fictícia da plataforma. Não cai
+ * em outra loja de propósito: a primeira loja do banco é a de um cliente,
+ * e a landing não pode divulgar a marca dele. Sem a variável (ou com a loja
+ * fora do ar), devolve null e o link some.
  */
 export async function getDemoStoreSlug(): Promise<string | null> {
   const configured = process.env.DEMO_STORE_SLUG?.trim();
-  if (configured) {
-    const store = await getStore(configured);
-    if (store) return store.slug;
-  }
-
-  const stores = (await getPublicStores()) || [];
-  return stores[0]?.slug || null;
+  if (!configured) return null;
+  const store = await getStore(configured);
+  return store?.slug || null;
 }
 
 export function resolveHost(host: string) {

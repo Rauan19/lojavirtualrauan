@@ -26,7 +26,7 @@ const FOTOS = [
   'public/lp/lp-moda-vestido.webp',
   'public/lp/lp-moda-camisa.webp',
   'public/lp/lp-moda-tenis.webp',
-  'public/lp/lp-moda-bone.webp',
+  'public/lp/lp-moda-mochila.webp',
 ];
 
 const CARD = { x: 700, y: 120, w: 420, h: 400 };

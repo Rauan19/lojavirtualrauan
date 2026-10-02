@@ -220,7 +220,7 @@ export default async function HomePage() {
           <div className="relative mx-auto w-full max-w-[22rem] pb-6 md:max-w-none md:pl-10">
             <div className="lp-halo" aria-hidden />
             <Celular
-              src="/site/loja-celular-produto.webp"
+              src="/site/exemplo-celular-produto.webp"
               alt={`Página de produto de uma loja feita na ${BRAND.name}, aberta no celular`}
               className="relative mx-auto w-[68%] md:w-[58%]"
             />
@@ -282,13 +282,13 @@ export default async function HomePage() {
               <div className="lp-halo" aria-hidden />
               <div className="relative">
                 <Notebook
-                  src="/site/loja-computador-home.webp"
+                  src="/site/exemplo-computador-home.webp"
                   alt={`Página inicial de uma loja feita na ${BRAND.name}, no computador`}
                 />
               </div>
               <div className="absolute -bottom-2 right-0 w-[27%]">
                 <Celular
-                  src="/site/loja-celular-home.webp"
+                  src="/site/exemplo-celular-home.webp"
                   alt="A mesma loja aberta no celular"
                   className="border-[6px]"
                 />
