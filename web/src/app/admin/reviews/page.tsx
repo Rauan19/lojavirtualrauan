@@ -5,6 +5,7 @@ import { useConfirm } from '@/components/ConfirmDialog';
 import { StarRating } from '@/components/StarRating';
 import { api } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
+import { CabecalhoPagina, EstadoVazio, Secao, Selo } from '@/components/admin/Pagina';
 
 type Review = {
   id: string;
@@ -88,70 +89,69 @@ export default function AdminReviewsPage() {
 
   return (
     <div className="admin-page">
-      <div>
-        <h1>Avaliações</h1>
-        <p className="text-sm text-muted">
-          {total} avaliaç{total === 1 ? 'ão' : 'ões'} dos seus produtos. Oculte ou
-          remova o que for spam, ofensivo ou fora de contexto — o resto fica
-          visível na vitrine automaticamente.
-        </p>
-      </div>
+      <CabecalhoPagina
+        icone="/admin/reviews"
+        titulo="Avaliações"
+        descricao={
+          <>
+            {total} avaliaç{total === 1 ? 'ão' : 'ões'} dos seus produtos. Oculte ou
+            remova o que for spam, ofensivo ou fora de contexto; o resto aparece na
+            vitrine automaticamente.
+          </>
+        }
+      />
 
       {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
 
       {loading ? (
         <p className="text-sm text-muted">Carregando…</p>
       ) : reviews.length === 0 ? (
-        <div className="card p-6 text-center text-sm text-muted">
-          Nenhuma avaliação ainda.
-        </div>
+        <Secao semRespiro>
+          <EstadoVazio
+            icone="/admin/reviews"
+            titulo="Nenhuma avaliação ainda"
+            texto="Depois da entrega, o cliente pode avaliar o produto. As avaliações aparecem aqui e na página do produto."
+          />
+        </Secao>
       ) : (
-        <div className="space-y-2">
+        <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white">
           {reviews.map((r) => (
-            <div key={r.id} className={`card !p-3.5 ${r.hidden ? 'opacity-60' : ''}`}>
+            <li key={r.id} className={`px-5 py-4 ${r.hidden ? 'bg-[#fafafa]' : ''}`}>
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <StarRating value={r.rating} size={13} />
-                    <span className="text-sm font-semibold">{r.customer.name}</span>
-                    {r.verifiedPurchase ? (
-                      <span className="border border-[var(--ok)]/30 bg-[var(--ok)]/10 px-1.5 py-0.5 text-[11px] font-semibold text-[var(--ok)]">
-                        Compra verificada
-                      </span>
-                    ) : null}
-                    {r.hidden ? (
-                      <span className="border border-line px-1.5 py-0.5 text-[11px] font-semibold uppercase text-muted">
-                        Oculta
-                      </span>
-                    ) : null}
+                    <span className="text-[15px] font-semibold">{r.customer.name}</span>
+                    {r.verifiedPurchase ? <Selo tom="ok">Compra verificada</Selo> : null}
+                    {r.hidden ? <Selo>Oculta na vitrine</Selo> : null}
                   </div>
-                  <p className="mt-0.5 text-xs text-muted">
+                  <p className="mt-1 text-[13px] text-muted">
                     {r.product.name} · {formatDate(r.createdAt)}
                   </p>
                   {r.comment ? (
-                    <p className="mt-1.5 text-sm leading-relaxed text-[#333]">{r.comment}</p>
+                    <p className={`mt-2 max-w-[70ch] text-[14px] leading-relaxed ${r.hidden ? 'text-muted' : 'text-[#333]'}`}>{r.comment}</p>
                   ) : null}
                 </div>
                 <div className="flex shrink-0 gap-1.5">
                   <button
                     type="button"
-                    className="btn btn-ghost px-2.5 py-1.5 text-xs"
+                    className="btn btn-ghost h-9 px-3 text-[13px]"
                     onClick={() => toggleHidden(r)}
                   >
                     {r.hidden ? 'Reexibir' : 'Ocultar'}
                   </button>
                   <button
                     type="button"
-                    className="btn btn-danger px-2.5 py-1.5 text-xs"
+                    className="btn btn-ghost h-9 px-3 text-[13px] text-[#b42318] hover:!bg-[#fef3f2]"
                     onClick={() => remove(r)}
                   >
                     Excluir
                   </button>
                 </div>
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
       {confirmDialog}
     </div>

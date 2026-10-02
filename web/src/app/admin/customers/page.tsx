@@ -6,6 +6,7 @@ import { PaginationBar } from '@/components/PaginationBar';
 import { api, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 import { StatusBadge } from '@/lib/order-status';
+import { CabecalhoPagina, EstadoVazio, Secao, Selo } from '@/components/admin/Pagina';
 
 type Customer = {
   id: string;
@@ -197,71 +198,102 @@ export default function AdminCustomersPage() {
 
   return (
     <div className="admin-page">
-      <div>
-        <h1>Clientes</h1>
-        <p className="text-sm text-muted">
-          Quem já comprou na sua loja
-          {total > 0 ? ` · ${total} cadastrado${total === 1 ? '' : 's'}` : ''}
-        </p>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        <input
-          className="field max-w-xs"
-          placeholder="Buscar por nome, e-mail ou telefone…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
-        <select
-          className="field w-auto"
-          value={sort}
-          onChange={(e) => setSort(e.target.value)}
-          aria-label="Ordenar por"
-        >
-          <option value="recent">Mais recentes</option>
-          <option value="spent">Quem mais gastou</option>
-          <option value="orders">Quem mais comprou</option>
-          <option value="name">Nome A-Z</option>
-        </select>
-      </div>
+      <CabecalhoPagina
+        icone="/admin/customers"
+        titulo="Clientes"
+        descricao={
+          <>
+            Quem já comprou na sua loja
+            {total > 0 ? ` · ${total} cadastrado${total === 1 ? '' : 's'}` : ''}
+          </>
+        }
+      />
 
       {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
 
+      <Secao
+        semRespiro
+        titulo="Todos os clientes"
+        acoes={
+          <>
+            <label className="relative">
+              <span className="sr-only">Buscar cliente</span>
+              <input
+                className="field h-10 w-[240px] !rounded-full pl-9"
+                placeholder="Nome, e-mail ou telefone…"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"
+              >
+                <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.8" />
+                <path d="m16 16 4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+            </label>
+            <select
+              className="field h-10 w-auto"
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              aria-label="Ordenar por"
+            >
+              <option value="recent">Mais recentes</option>
+              <option value="spent">Quem mais gastou</option>
+              <option value="orders">Quem mais comprou</option>
+              <option value="name">Nome A-Z</option>
+            </select>
+          </>
+        }
+      >
       {loading ? (
-        <p className="text-sm text-muted">Carregando…</p>
+        <p className="px-5 py-10 text-center text-sm text-muted">Carregando…</p>
       ) : items.length === 0 ? (
-        <div className="card py-10 text-center">
-          <p className="text-sm font-medium">
-            {debouncedQ ? 'Nenhum cliente encontrado' : 'Nenhum cliente ainda'}
-          </p>
-          <p className="mt-1 text-xs text-muted">
-            {debouncedQ
+        <EstadoVazio
+          icone="/admin/customers"
+          titulo={debouncedQ ? 'Nenhum cliente encontrado' : 'Nenhum cliente ainda'}
+          texto={
+            debouncedQ
               ? 'Tente outro nome, e-mail ou telefone.'
-              : 'Assim que alguém comprar, aparece aqui.'}
-          </p>
-        </div>
+              : 'Assim que alguém comprar na sua loja, aparece aqui com o histórico de pedidos.'
+          }
+        />
       ) : (
-        <div className="card overflow-x-auto !p-0">
+        <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
-            <thead className="border-b border-line bg-[#fafafa] text-left">
+            <thead className="border-b border-line text-left">
               <tr>
-                <th className="px-3 py-2 font-semibold">Cliente</th>
-                <th className="px-3 py-2 font-semibold">Contato</th>
-                <th className="px-3 py-2 text-right font-semibold">Pedidos</th>
-                <th className="px-3 py-2 text-right font-semibold">Total gasto</th>
-                <th className="px-3 py-2 font-semibold">Última compra</th>
-                <th className="px-3 py-2" />
+                <th className="px-5 py-2">Cliente</th>
+                <th className="px-3 py-2">Contato</th>
+                <th className="px-3 py-2 text-right">Pedidos</th>
+                <th className="px-3 py-2 text-right">Total gasto</th>
+                <th className="px-3 py-2">Última compra</th>
+                <th className="px-5 py-2" />
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
               {items.map((c) => (
                 <tr key={c.id} className="align-middle">
-                  <td className="px-3 py-2.5">
-                    <p className="font-medium">{c.name}</p>
-                    <p className="text-[11px] text-muted">
-                      Desde {formatDate(c.createdAt)}
-                      {c.hasAccount ? '' : ' · sem conta'}
-                    </p>
+                  <td className="px-5 py-2.5">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e9f1f3] text-[13px] font-bold text-[var(--brand-deep)]"
+                        aria-hidden
+                      >
+                        {(c.name || '·').trim().charAt(0).toUpperCase()}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block font-semibold">{c.name}</span>
+                        <span className="mt-0.5 flex items-center gap-1.5 text-[12px] text-muted">
+                          Desde {formatDate(c.createdAt)}
+                          {c.hasAccount ? null : <Selo>sem conta</Selo>}
+                        </span>
+                      </span>
+                    </div>
                   </td>
                   <td className="px-3 py-2.5">
                     <p className="truncate text-xs">{c.email}</p>
@@ -276,13 +308,13 @@ export default function AdminCustomersPage() {
                   <td className="px-3 py-2.5 text-xs text-muted">
                     {formatDate(c.lastOrderAt)}
                   </td>
-                  <td className="px-3 py-2.5 text-right">
+                  <td className="px-5 py-2.5 text-right">
                     <button
                       type="button"
-                      className="btn btn-ghost px-2.5 py-1.5 text-xs"
+                      className="btn btn-ghost h-9 px-3 text-[13px]"
                       onClick={() => openDetail(c.id)}
                     >
-                      Ver
+                      Ver cliente
                     </button>
                   </td>
                 </tr>
@@ -291,6 +323,7 @@ export default function AdminCustomersPage() {
           </table>
         </div>
       )}
+      </Secao>
 
       <PaginationBar
         page={page}
@@ -316,10 +349,10 @@ export default function AdminCustomersPage() {
             if (e.target === e.currentTarget) setDetail(null);
           }}
         >
-          <div className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden border border-line bg-white shadow-xl sm:rounded-md">
-            <div className="flex items-start justify-between gap-3 border-b border-line px-4 py-3">
+          <div className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl sm:rounded-2xl">
+            <div className="flex items-start justify-between gap-3 border-b border-line px-5 py-4">
               <div className="min-w-0">
-                <h2 className="text-base font-bold">{detail.name}</h2>
+                <h2 className="text-lg font-bold">{detail.name}</h2>
                 <p className="truncate text-xs text-muted">
                   {detail.email}
                   {detail.phone ? ` · ${detail.phone}` : ''}
@@ -332,23 +365,25 @@ export default function AdminCustomersPage() {
                 aria-label="Fechar"
                 onClick={() => setDetail(null)}
               >
-                ✕
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
               </button>
             </div>
 
-            <div className="overflow-y-auto px-4 py-3">
-              <div className="grid grid-cols-3 gap-2">
-                <div className="border border-line px-3 py-2">
+            <div className="overflow-y-auto px-5 py-4">
+              <div className="grid grid-cols-3 gap-2.5">
+                <div className="rounded-xl bg-[#f6f8fa] px-3.5 py-3">
                   <p className="label">Pedidos pagos</p>
                   <p className="text-lg font-bold tabular-nums">{detail.paidOrders}</p>
                 </div>
-                <div className="border border-line px-3 py-2">
+                <div className="rounded-xl bg-[#f6f8fa] px-3.5 py-3">
                   <p className="label">Total gasto</p>
                   <p className="text-lg font-bold tabular-nums">
                     {money(detail.totalSpent)}
                   </p>
                 </div>
-                <div className="border border-line px-3 py-2">
+                <div className="rounded-xl bg-[#f6f8fa] px-3.5 py-3">
                   <p className="label">Cliente desde</p>
                   <p className="text-lg font-bold">{formatDate(detail.createdAt)}</p>
                 </div>
@@ -359,7 +394,7 @@ export default function AdminCustomersPage() {
                   <h3 className="text-sm font-bold">Endereços</h3>
                   <ul className="mt-2 space-y-1.5">
                     {detail.addresses.map((a) => (
-                      <li key={a.id} className="border border-line px-3 py-2 text-sm">
+                      <li key={a.id} className="rounded-xl border border-line px-3.5 py-2.5 text-sm">
                         {a.isDefault ? (
                           <span className="mb-0.5 block text-[11px] font-bold uppercase text-[var(--ok)]">
                             Padrão
@@ -383,7 +418,7 @@ export default function AdminCustomersPage() {
                 {detail.orders.length === 0 ? (
                   <p className="mt-2 text-sm text-muted">Nenhum pedido ainda.</p>
                 ) : (
-                  <ul className="mt-2 divide-y divide-line border border-line">
+                  <ul className="mt-2 divide-y divide-line overflow-hidden rounded-xl border border-line">
                     {detail.orders.map((o) => (
                       <li
                         key={o.id}

@@ -5,6 +5,8 @@ import { useConfirm } from '@/components/ConfirmDialog';
 import { useEscapeKey } from '@/lib/modal-guards';
 import { api, mediaUrl } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
+import { Modal } from '@/components/Modal';
+import { CabecalhoPagina, EstadoVazio, Selo } from '@/components/admin/Pagina';
 
 type Category = {
   id: string;
@@ -43,6 +45,7 @@ export default function AdminCategoriesPage() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  const [criando, setCriando] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
   useEscapeKey(editing !== null, () => {
     if (!busy) setEditing(null);
@@ -110,6 +113,7 @@ export default function AdminCategoriesPage() {
       setParentId('');
       setBorderColor('');
       setMessage('Categoria criada');
+      setCriando(false);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar');
@@ -210,21 +214,12 @@ export default function AdminCategoriesPage() {
 
   function row(cat: Category, isChild: boolean) {
     return (
-      <div className="flex flex-wrap items-center justify-between gap-2 border border-line bg-white px-3 py-2.5 text-sm">
-        <div className="flex min-w-0 items-center gap-2.5">
+      <div className={`flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm ${isChild ? 'pl-12 sm:pl-16' : ''}`}>
+        <div className="flex min-w-0 items-center gap-3">
           <div
-            className={`shrink-0 overflow-hidden rounded-full bg-[#f3f3f3] ${
-              isChild ? 'h-8 w-8' : 'h-10 w-10'
+            className={`shrink-0 overflow-hidden rounded-xl bg-[#f1f1f3] ${
+              isChild ? 'h-9 w-9' : 'h-12 w-12'
             }`}
-            style={
-              cat.imageUrl
-                ? {
-                    borderStyle: 'solid',
-                    borderWidth: 1.5,
-                    borderColor: cat.borderColor || 'var(--accent)',
-                  }
-                : undefined
-            }
           >
             {cat.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -236,33 +231,34 @@ export default function AdminCategoriesPage() {
             ) : null}
           </div>
           <div className="min-w-0">
-            <p className={isChild ? 'font-normal' : 'font-medium'}>{cat.name}</p>
+            <p className={isChild ? 'font-medium' : 'text-[15px] font-semibold'}>{cat.name}</p>
             <p className="text-xs text-muted">/{cat.slug}</p>
           </div>
           {!isChild && childrenOf(cat.id).length > 0 ? (
-            <span className="rounded-full bg-[#f3f3f3] px-2 py-0.5 text-[11px] text-muted">
-              {childrenOf(cat.id).length} sub
-            </span>
+            <Selo>
+              {childrenOf(cat.id).length} subcategoria{childrenOf(cat.id).length === 1 ? '' : 's'}
+            </Selo>
           ) : null}
+          {cat.active ? null : <Selo tom="alerta">Oculta</Selo>}
         </div>
         <div className="flex flex-wrap gap-1.5">
           <button
             type="button"
-            className="btn btn-ghost py-1.5 text-xs"
+            className="btn btn-ghost h-9 px-3 text-[13px]"
             onClick={() => toggleActive(cat)}
           >
-            {cat.active ? 'Ativa' : 'Inativa'}
+            {cat.active ? 'Ocultar' : 'Mostrar na loja'}
           </button>
           <button
             type="button"
-            className="btn btn-ghost py-1.5 text-xs"
+            className="btn btn-ghost h-9 px-3 text-[13px]"
             onClick={() => openEdit(cat)}
           >
             Editar
           </button>
           <button
             type="button"
-            className="btn btn-ghost py-1.5 text-xs text-accent"
+            className="btn btn-ghost h-9 px-3 text-[13px] text-[#b42318] hover:!bg-[#fef3f2]"
             onClick={() => removeCategory(cat)}
           >
             Excluir
@@ -273,22 +269,40 @@ export default function AdminCategoriesPage() {
   }
 
   return (
-    <div className="admin-page space-y-4">
-      <div>
-        <h1>Categorias</h1>
-        <p className="text-sm text-muted">
-          Organize a vitrine. Você escolhe a categoria ao criar o produto.
-        </p>
-      </div>
+    <div className="admin-page">
+      <CabecalhoPagina
+        icone="/admin/categories"
+        titulo="Categorias"
+        descricao="Organize a vitrine em departamentos e subcategorias. Categoria com foto aparece em Compre por categoria na loja."
+        acoes={
+          <button
+            type="button"
+            className="btn btn-accent h-10 px-4"
+            onClick={() => {
+              setError('');
+              setCriando(true);
+            }}
+          >
+            Criar categoria
+          </button>
+        }
+      />
 
       {error && !editing ? (
         <p className="text-sm text-accent">{error}</p>
       ) : null}
       {message ? <p className="text-sm text-[var(--ok)]">{message}</p> : null}
 
-      <form onSubmit={onCreate} className="card flex flex-wrap items-end gap-2 !p-4">
-        <div className="min-w-[200px] flex-1">
-          <label className="label">Nova categoria</label>
+      {criando ? (
+      <Modal
+        title="Nova categoria"
+        hint="Com foto, ela aparece em destaque na vitrine (Compre por categoria). Sem foto, fica só no menu."
+        erro={error}
+        onClose={() => setCriando(false)}
+      >
+      <form onSubmit={onCreate} className="form-grid">
+        <div>
+          <label className="label">Nome</label>
           <input
             className="field"
             value={name}
@@ -305,12 +319,12 @@ export default function AdminCategoriesPage() {
             accept="image/*"
             onChange={(e) => setImageFile(e.target.files?.[0] || null)}
           />
-          <p className="mt-1 text-[11px] text-muted">
-            Quadrada, <strong>600 × 600 px</strong>. Aparece recortada em
-            círculo — deixe o produto centralizado. Até 5 MB.
+          <p className="mt-1 text-[12px] text-muted">
+            Quadrada, <strong>600 × 600 px</strong>, até 5 MB. Aparece num bloco
+            quadrado com cantos arredondados; deixe o produto centralizado.
           </p>
         </div>
-        <div className="min-w-[190px]">
+        <div>
           <label className="label">Dentro de</label>
           <select
             className="field"
@@ -326,7 +340,7 @@ export default function AdminCategoriesPage() {
           </select>
         </div>
         <div>
-          <label className="label">Cor do anel</label>
+          <label className="label">Cor do contorno quando selecionada</label>
           <div className="flex items-center gap-1.5">
             <input
               className="field w-14 shrink-0 !px-1"
@@ -347,34 +361,50 @@ export default function AdminCategoriesPage() {
             )}
           </div>
         </div>
-        <button type="submit" className="btn btn-accent" disabled={busy}>
-          {busy ? 'Salvando…' : 'Adicionar'}
-        </button>
+        <div className="flex justify-end gap-2 border-t border-line pt-3">
+          <button type="button" className="btn btn-ghost" data-modal-cancel>
+            Cancelar
+          </button>
+          <button type="submit" className="btn btn-accent" disabled={busy}>
+            {busy ? 'Salvando…' : 'Criar categoria'}
+          </button>
+        </div>
       </form>
-      <p className="text-xs text-muted">
-        Categoria com imagem aparece em destaque na vitrine da loja, estilo
-        prateleira. Sem imagem, some do destaque mas continua no menu normal.
-        Subcategorias aparecem no menu suspenso do departamento, quando o
-        cliente passa o mouse por cima.
-      </p>
+      </Modal>
+      ) : null}
 
-      <ul className="space-y-2">
-        {departments.map((dep) => (
-          <li key={dep.id}>
-            {row(dep, false)}
-            {childrenOf(dep.id).length > 0 ? (
-              <ul className="mt-1 space-y-1 border-l-2 border-line pl-3 sm:pl-5">
-                {childrenOf(dep.id).map((sub) => (
-                  <li key={sub.id}>{row(sub, true)}</li>
-                ))}
-              </ul>
-            ) : null}
-          </li>
-        ))}
-        {orphans.map((cat) => (
-          <li key={cat.id}>{row(cat, false)}</li>
-        ))}
-      </ul>
+      {departments.length + orphans.length === 0 ? (
+        <div className="rounded-2xl border border-line bg-white">
+          <EstadoVazio
+            icone="/admin/categories"
+            titulo="Nenhuma categoria ainda"
+            texto="Crie departamentos como Masculino ou Promoções para o cliente achar os produtos mais rápido."
+            acao={
+              <button type="button" className="btn btn-ghost h-10 px-4" onClick={() => setCriando(true)}>
+                Criar a primeira categoria
+              </button>
+            }
+          />
+        </div>
+      ) : (
+        <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white">
+          {departments.map((dep) => (
+            <li key={dep.id}>
+              {row(dep, false)}
+              {childrenOf(dep.id).length > 0 ? (
+                <ul className="divide-y divide-line border-t border-line bg-[#fbfcfd]">
+                  {childrenOf(dep.id).map((sub) => (
+                    <li key={sub.id}>{row(sub, true)}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </li>
+          ))}
+          {orphans.map((cat) => (
+            <li key={cat.id}>{row(cat, false)}</li>
+          ))}
+        </ul>
+      )}
 
       {editing ? (
         <div
@@ -384,7 +414,7 @@ export default function AdminCategoriesPage() {
         >
           <form
             onSubmit={saveEdit}
-            className="w-full max-w-md border border-line bg-white p-4 shadow-xl sm:rounded-md"
+            className="w-full max-w-md rounded-t-2xl bg-white p-5 shadow-xl sm:rounded-2xl"
           >
             <h2 className="text-base font-bold">Editar categoria</h2>
             <p className="mt-0.5 text-xs text-muted">/{editing.slug}</p>

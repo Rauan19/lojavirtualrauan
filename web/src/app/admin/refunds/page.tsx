@@ -10,6 +10,16 @@ import {
   paymentStatusLabel,
   refundStatusLabel,
 } from '@/lib/order-status';
+import { CabecalhoPagina, EstadoVazio, Selo } from '@/components/admin/Pagina';
+
+/** Cor do selo pelo andamento do reembolso */
+function tomDoReembolso(status?: string | null) {
+  if (!status) return 'neutro' as const;
+  if (status.includes('REJECT')) return 'erro' as const;
+  if (status === 'REQUESTED') return 'alerta' as const;
+  if (status.includes('RETURN')) return 'info' as const;
+  return 'ok' as const;
+}
 
 type RefundOrder = {
   id: string;
@@ -179,64 +189,82 @@ export default function AdminRefundsPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-bold">Reembolsos</h1>
-          <p className="text-sm text-muted">
-            Solicitações do cliente. Ao aprovar, o sistema tenta estornar no
-            Mercado Pago (ou registra localmente se o gateway ainda não estiver
-            ligado).
-          </p>
-        </div>
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={showAll}
-            onChange={(e) => setShowAll(e.target.checked)}
-          />
-          Mostrar histórico
-        </label>
-      </div>
+    <div className="admin-page">
+      <CabecalhoPagina
+        icone="/admin/refunds"
+        titulo="Reembolsos"
+        descricao="Pedidos de devolução e reembolso dos clientes. Ao aprovar, o valor volta para o cliente pelo Mercado Pago."
+        acoes={
+          <div className="inline-flex rounded-xl border border-line bg-white p-1" role="group" aria-label="Mostrar">
+            {(
+              [
+                [false, 'Pendentes'],
+                [true, 'Histórico'],
+              ] as const
+            ).map(([valor, rotulo]) => (
+              <button
+                key={rotulo}
+                type="button"
+                aria-pressed={showAll === valor}
+                className={`h-8 rounded-lg px-3 text-[13px] font-semibold transition-colors ${
+                  showAll === valor
+                    ? 'bg-[var(--brand-deep)] text-white'
+                    : 'text-muted hover:bg-[#f3f5f7] hover:text-ink'
+                }`}
+                onClick={() => setShowAll(valor)}
+              >
+                {rotulo}
+              </button>
+            ))}
+          </div>
+        }
+      />
 
       {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
       {message ? <p className="text-sm text-[var(--ok)]">{message}</p> : null}
 
       <ul className="space-y-3">
         {paged.map((order) => (
-          <li key={order.id} className="card !p-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-sm font-bold">
-                  Pedido #{order.orderNumber} · {money(order.total)}
-                </p>
-                <p className="text-xs text-muted">
+          <li key={order.id} className="rounded-2xl border border-line bg-white p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-[15px] font-bold">
+                    Pedido #{order.orderNumber}
+                  </p>
+                  <span className="text-[15px] font-bold tabular-nums">{money(order.total)}</span>
+                  {refundStatusLabel(order.refundStatus) ? (
+                    <Selo tom={tomDoReembolso(order.refundStatus)}>
+                      {refundStatusLabel(order.refundStatus)}
+                    </Selo>
+                  ) : null}
+                </div>
+                <p className="mt-0.5 text-[13px] text-muted">
                   {order.customerName} · {order.customerEmail}
                 </p>
-                <p className="mt-1 text-sm">
+                <p className="mt-1 text-[13px] text-muted">
                   {orderStatusLabel(order.status)} ·{' '}
                   {paymentStatusLabel(order.paymentStatus)}
                 </p>
-                {refundStatusLabel(order.refundStatus) ? (
-                  <p className="text-xs font-medium">
-                    {refundStatusLabel(order.refundStatus)}
-                  </p>
-                ) : null}
-                {order.refundReasonType ? (
-                  <p className="mt-1 text-xs font-medium">
-                    {MOTIVO_LABEL[order.refundReasonType] ||
-                      order.refundReasonType}
-                    {order.exigeDevolucao ? ' · exige devolução' : ''}
-                  </p>
-                ) : null}
-                {order.refundReason ? (
-                  <p className="mt-0.5 text-xs text-muted">
-                    “{order.refundReason}”
-                  </p>
+                {order.refundReasonType || order.refundReason ? (
+                  <div className="mt-3 rounded-xl bg-[#f6f8fa] px-3.5 py-2.5">
+                    {order.refundReasonType ? (
+                      <p className="text-[13px] font-semibold">
+                        {MOTIVO_LABEL[order.refundReasonType] ||
+                          order.refundReasonType}
+                        {order.exigeDevolucao ? ' · exige devolução' : ''}
+                      </p>
+                    ) : null}
+                    {order.refundReason ? (
+                      <p className="mt-0.5 text-[13px] text-muted">
+                        “{order.refundReason}”
+                      </p>
+                    ) : null}
+                  </div>
                 ) : null}
                 {order.refundReasonType === 'ARREPENDIMENTO' &&
                 order.podeRecusar === false ? (
-                  <p className="mt-1 border-l-2 border-amber-400 bg-amber-50 px-2 py-1 text-[11px] leading-snug text-amber-950">
+                  <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-[12px] leading-snug text-amber-950">
                     Desistência dentro dos 7 dias do recebimento é direito do
                     consumidor (CDC art. 49). Não pode ser recusada.
                   </p>
@@ -254,13 +282,14 @@ export default function AdminRefundsPage() {
                     .join(', ')}
                 </p>
                 {order.mpPaymentId ? (
-                  <p className="text-[11px] text-muted">
-                    MP payment: {order.mpPaymentId}
-                    {order.mpRefundId ? ` · refund: ${order.mpRefundId}` : ''}
+                  <p className="mt-1 text-[11px] text-muted">
+                    Pagamento no Mercado Pago: {order.mpPaymentId}
+                    {order.mpRefundId ? ` · estorno: ${order.mpRefundId}` : ''}
                   </p>
                 ) : (
-                  <p className="text-[11px] text-muted">
-                    Sem payment id MP — não dá para estornar no gateway (pedido seed/offline)
+                  <p className="mt-1 text-[11px] text-muted">
+                    Este pedido não foi pago pelo Mercado Pago: devolva o valor ao
+                    cliente por fora (Pix ou transferência).
                   </p>
                 )}
               </div>
@@ -273,7 +302,7 @@ export default function AdminRefundsPage() {
                     onClick={() => approve(order.id)}
                   >
                     {busyId === order.id
-                      ? '...'
+                      ? 'Aguarde…'
                       : order.exigeDevolucao
                         ? 'Autorizar devolução'
                         : 'Aprovar e estornar'}
@@ -304,7 +333,7 @@ export default function AdminRefundsPage() {
                     onClick={() => confirmarDevolucao(order.id)}
                   >
                     {busyId === order.id
-                      ? '...'
+                      ? 'Aguarde…'
                       : 'Recebi o produto — estornar'}
                   </button>
                 </div>
@@ -313,10 +342,16 @@ export default function AdminRefundsPage() {
           </li>
         ))}
         {items.length === 0 ? (
-          <li className="text-sm text-muted">
-            {showAll
-              ? 'Nenhum reembolso no histórico.'
-              : 'Nenhuma solicitação pendente.'}
+          <li className="rounded-2xl border border-line bg-white">
+            <EstadoVazio
+              icone="/admin/refunds"
+              titulo={showAll ? 'Nenhum reembolso no histórico' : 'Nenhum pedido de reembolso'}
+              texto={
+                showAll
+                  ? 'Reembolsos aprovados ou recusados aparecem aqui.'
+                  : 'Quando um cliente pedir devolução ou reembolso, ele aparece aqui para você aprovar.'
+              }
+            />
           </li>
         ) : null}
       </ul>
