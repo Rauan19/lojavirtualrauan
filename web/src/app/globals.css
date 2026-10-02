@@ -401,20 +401,23 @@
   border-bottom-right-radius: 40px;
 }
 
-/* Brilho difuso atrás dos aparelhos, no lugar do painel cinza chapado. */
+/*
+ * Hero na cor da marca (padrão das plataformas grandes): turquesa escuro
+ * com a turquesa da logo acendendo atrás dos aparelhos e um toque do coral.
+ */
 .lp-hero-glow {
   position: absolute;
   inset: 0;
   background:
     radial-gradient(
-      620px 420px at 78% 30%,
-      color-mix(in srgb, var(--accent) 13%, transparent) 0%,
+      680px 460px at 76% 42%,
+      rgba(63, 162, 180, 0.38) 0%,
       transparent 70%
     ),
     radial-gradient(
-      500px 360px at 96% 84%,
-      color-mix(in srgb, var(--brand-teal) 16%, transparent) 0%,
-      transparent 72%
+      520px 380px at 8% 0%,
+      rgba(234, 94, 109, 0.16) 0%,
+      transparent 70%
     );
 }
 
@@ -1027,22 +1030,11 @@
   }
 }
 
-/* ---------- Hero no mobile: superfície branca --------------------------- */
-
-/*
- * No celular o hero ocupa a tela inteira sozinho, sem os aparelhos ao lado
- * para justificar o fundo cinza. Branco puro: o glow e a curva da base só
- * fazem sentido quando existe a segunda coluna.
- */
+/* ---------- Hero no mobile: mesma cor da marca, curva menor ---------- */
 @media (max-width: 767px) {
   .landing .lp-hero {
-    background: #fff;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-  }
-
-  .landing .lp-hero-glow {
-    display: none;
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
   }
 
   /* Sem isso a faixa fixa do topo aparece como um degrau cinza sobre o branco. */

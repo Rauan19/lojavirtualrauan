@@ -158,15 +158,15 @@ export default async function HomePage() {
         arredondada apoiando na seção seguinte. Os aparelhos ganham inclinação
         em perspectiva, que é o que dá a sensação de profundidade.
       */}
-      <section className="lp-hero relative overflow-hidden bg-[#f7f8fa]">
+      <section className="lp-hero relative overflow-hidden bg-[var(--brand-deep)] text-white">
         <div className="lp-hero-glow" aria-hidden />
         <div className="relative mx-auto flex max-w-[1180px] flex-col items-center gap-6 px-4 pb-14 pt-[4rem] md:flex-row md:gap-8 md:px-6 md:pb-20 md:pt-24 lg:gap-12">
           <div className="flex flex-1 flex-col justify-center md:max-w-[47%]">
-            <h1 className="max-w-[19ch] font-[family-name:var(--font-brand)] text-[2.2rem] font-800 leading-[1.04] tracking-tight text-[#171a1f] md:text-[3.05rem]">
+            <h1 className="max-w-[19ch] font-[family-name:var(--font-brand)] text-[2.3rem] font-800 leading-[1.03] tracking-tight text-balance text-white md:text-[3.3rem]">
               Sua loja virtual vende 24 horas por dia.{' '}
-              <span style={{ color: 'var(--accent)' }}>Sem depender do seu atendimento.</span>
+              <span className="text-[var(--brand-coral)]">Sem depender do seu atendimento.</span>
             </h1>
-            <p className="mt-3.5 max-w-[38ch] text-[15px] leading-relaxed text-[#4a5560] md:mt-4 md:text-[16px]">
+            <p className="mt-4 max-w-[40ch] text-[16px] leading-relaxed text-white/80 md:text-[17px]">
               Catálogo, checkout, Pix, cartão e frete calculado em uma
               plataforma só. O cliente escolhe e paga sozinho, a qualquer hora,
               e o valor cai direto na sua conta.
@@ -178,13 +178,13 @@ export default async function HomePage() {
                   href={wa}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-center text-[13px] font-semibold text-[#4a5560] underline-offset-4 hover:underline sm:text-left"
+                  className="text-center text-[14px] font-semibold text-white/85 underline-offset-4 hover:text-white hover:underline sm:text-left"
                 >
                   Prefiro falar antes
                 </a>
               ) : null}
             </div>
-            <p className="mt-3 text-[12px] font-medium text-[#4a5560]">
+            <p className="mt-3 text-[13px] font-medium text-white/70">
               Comece sem pagar nada · sem cartão de crédito
             </p>
           </div>
@@ -377,7 +377,14 @@ export default async function HomePage() {
                         </p>
                       ) : null}
                       <ul className="mt-4 space-y-2 border-t border-[#ebebeb] pt-4 text-[13px] text-[#171a1f]">
-                        {[...fatos, ...(plan.features || [])].map((f) => (
+                        {[
+                          ...fatos,
+                          // Limites e taxa vêm dos números reais acima; o texto livre
+                          // do plano não repete (nem contradiz) esses itens
+                          ...(plan.features || []).filter(
+                            (t) => !/produto|pessoa|equipe|taxa|por venda/i.test(t),
+                          ),
+                        ].map((f) => (
                           <li key={f} className="flex gap-2">
                             <svg
                               width="16"
@@ -432,7 +439,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="contato" className="scroll-mt-20 bg-accent text-white">
+      <section id="contato" className="scroll-mt-20 bg-[var(--brand-deep)] text-white">
         <div className="mx-auto flex max-w-[1080px] flex-col gap-6 px-4 py-14 md:flex-row md:items-end md:justify-between md:gap-10 md:px-6 md:py-16">
           <div className="max-w-xl">
             <h2 className="font-[family-name:var(--font-brand)] text-[1.85rem] font-700 leading-[1.12] md:text-[2.25rem]">
