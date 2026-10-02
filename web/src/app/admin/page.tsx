@@ -169,18 +169,26 @@ function PainelDoDono() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
-          {periods.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              className={`btn py-1.5 ${
-                !usingSpecificDate && period === p.id ? 'btn-accent' : 'btn-ghost'
-              }`}
-              onClick={() => selectPeriod(p.id)}
-            >
-              {p.label}
-            </button>
-          ))}
+          <div className="inline-flex rounded-xl border border-line bg-white p-1" role="group" aria-label="Período">
+            {periods.map((p) => {
+              const ativo = !usingSpecificDate && period === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  aria-pressed={ativo}
+                  className={`h-8 rounded-lg px-3 text-[13px] font-semibold transition-colors ${
+                    ativo
+                      ? 'bg-[var(--brand-deep)] text-white'
+                      : 'text-muted hover:bg-[#f3f5f7] hover:text-ink'
+                  }`}
+                  onClick={() => selectPeriod(p.id)}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
           <label className="flex items-center gap-1.5 text-xs text-muted">
             <span className="whitespace-nowrap font-semibold uppercase tracking-wide">
               Dia
@@ -233,16 +241,37 @@ function PainelDoDono() {
         <p className="text-muted">Carregando…</p>
       ) : data ? (
         <>
-          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-            {[
-              ['Pedidos', String(data.ordersCount)],
-              ['Pagos', String(data.paidOrders)],
-              ['Faturamento', money(data.revenue)],
-              ['Ticket médio', money(data.ticketMedio)],
-            ].map(([label, value]) => (
-              <article key={label} className="card !p-3">
-                <p className="label !mb-0">{label}</p>
-                <p className="mt-1 text-xl font-bold">{value}</p>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {(
+              [
+                ['Faturamento', money(data.revenue), 'M12 3v18M16.5 7.5c0-1.7-2-3-4.5-3s-4.5 1.3-4.5 3 2 2.6 4.5 3 4.5 1.3 4.5 3-2 3-4.5 3-4.5-1.3-4.5-3', true],
+                ['Pedidos', String(data.ordersCount), 'M6 3.5h12v17l-3-2-3 2-3-2-3 2v-17ZM9 8h6M9 12h6', false],
+                ['Pagos', String(data.paidOrders), 'M20 6 9 17l-5-5', false],
+                ['Ticket médio', money(data.ticketMedio), 'M4 19V5M4 19h16M8 15l3-4 3 2 4-6', false],
+              ] as const
+            ).map(([label, value, icone, destaque]) => (
+              <article
+                key={label}
+                className={`card flex items-center gap-3.5 ${destaque ? '!bg-[var(--brand-deep)] !text-white' : ''}`}
+              >
+                <span
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+                    destaque ? 'bg-white/15' : 'bg-[#e9f1f3] text-[var(--brand-deep)]'
+                  }`}
+                  aria-hidden
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d={icone} />
+                  </svg>
+                </span>
+                <span className="min-w-0">
+                  <span className={`block text-[13px] ${destaque ? 'text-white/75' : 'text-muted'}`}>
+                    {label}
+                  </span>
+                  <span className="block truncate text-[24px] font-bold leading-tight tabular-nums">
+                    {value}
+                  </span>
+                </span>
               </article>
             ))}
           </div>

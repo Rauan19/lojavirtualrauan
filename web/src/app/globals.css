@@ -1268,3 +1268,67 @@
 .menu-loja-atalho:hover {
   background: #f4f5f7;
 }
+
+/* ---------- Páginas do painel (padrão Nuvemshop) ------------------------ */
+/*
+ * Base comum a todas as telas do painel, para não reescrever 18 páginas:
+ * título grande na fonte da marca, descrição mais legível, cartões com
+ * respiro, tabelas com cabeçalho discreto, linhas altas e destaque ao passar
+ * o mouse, e títulos de seção dentro do cartão sem filete pesado.
+ */
+.painel .admin-page {
+  gap: 1.25rem;
+}
+
+.painel .admin-page h1 {
+  font-family: var(--font-brand), var(--font-display), sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.painel .admin-page > div:first-child p.text-muted,
+.painel .admin-page > div:first-child > div > p.text-muted {
+  margin-top: 0.3rem;
+  font-size: 14px;
+}
+
+.painel .admin-page .card {
+  padding: 1.15rem 1.25rem;
+}
+
+.painel .admin-page .card h2 {
+  border-bottom: 0;
+  padding-bottom: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.painel table thead {
+  background: #f8f9fb;
+}
+
+.painel table th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: none;
+  letter-spacing: 0;
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+}
+
+.painel table td {
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+  vertical-align: middle;
+}
+
+.painel table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.painel table tbody tr:hover {
+  background: #f6f9fa;
+}

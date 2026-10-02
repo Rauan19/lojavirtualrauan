@@ -711,53 +711,59 @@ export default function AdminOrdersPage() {
         <div>
           <h1>Pedidos</h1>
           <p className="text-sm text-muted">
-            Ver pedido, seleção em massa, impressão e cancelamento
+            Acompanhe, imprima e atualize o status das suas vendas.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          className="btn btn-ghost h-10 px-4"
+          onClick={() => setPrinterOpen((v) => !v)}
+        >
+          {printerOpen ? 'Fechar impressora' : 'Impressora e automação'}
+        </button>
+      </div>
+
+      {/*
+        Ações em massa só aparecem com pedidos marcados (padrão Nuvemshop):
+        antes ficavam sempre na tela, desativadas e com "(0)".
+      */}
+      {selected.size > 0 ? (
+        <div
+          className="sticky top-2 z-10 flex flex-wrap items-center gap-2 rounded-xl bg-[var(--brand-deep)] px-4 py-2.5 text-white shadow-[0_10px_24px_-12px_rgba(13,58,67,0.6)]"
+          role="region"
+          aria-label="Ações para os pedidos selecionados"
+        >
+          <span className="mr-auto text-sm font-semibold">
+            {selected.size} {selected.size === 1 ? 'pedido selecionado' : 'pedidos selecionados'}
+          </span>
+          <span className="text-[13px] text-white/75">Marcar como:</span>
+          {(
+            [
+              ['PROCESSING', 'Preparando'],
+              ['SHIPPED', 'Enviado'],
+              ['DELIVERED', 'Entregue'],
+            ] as const
+          ).map(([st, rotulo]) => (
+            <button
+              key={st}
+              type="button"
+              className="h-9 rounded-lg bg-white/12 px-3 text-[13px] font-semibold hover:bg-white/20 disabled:opacity-50"
+              disabled={bulkBusy}
+              onClick={() => void bulkStatus(st)}
+            >
+              {rotulo}
+            </button>
+          ))}
           <button
             type="button"
-            className="btn btn-ghost"
-            disabled={selected.size === 0 || bulkBusy}
-            onClick={() => void bulkStatus('PROCESSING')}
-          >
-            Preparando ({selected.size})
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost"
-            disabled={selected.size === 0 || bulkBusy}
-            onClick={() => void bulkStatus('SHIPPED')}
-          >
-            Enviado ({selected.size})
-          </button>
-          <button
-            type="button"
-            className="btn"
-            disabled={selected.size === 0 || bulkBusy}
-            onClick={() => void bulkStatus('DELIVERED')}
-          >
-            Entregue ({selected.size})
-          </button>
-          <button
-            type="button"
-            className="btn btn-accent"
-            disabled={selected.size === 0 || bulkBusy}
+            className="h-9 rounded-lg bg-white px-3 text-[13px] font-semibold text-[var(--brand-deep)] hover:bg-white/90 disabled:opacity-50"
+            disabled={bulkBusy}
             onClick={() => void printSelected()}
           >
-            {bulkBusy
-              ? 'Processando…'
-              : `Imprimir (${selected.size})`}
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={() => setPrinterOpen((v) => !v)}
-          >
-            {printerOpen ? 'Fechar config' : 'Impressora / automação'}
+            {bulkBusy ? 'Processando…' : 'Imprimir'}
           </button>
         </div>
-      </div>
+      ) : null}
 
       {message ? <p className="text-sm text-[var(--ok)]">{message}</p> : null}
       {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
