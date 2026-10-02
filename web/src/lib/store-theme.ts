@@ -7,7 +7,7 @@
 
 export type StoreFontKey =
   'padrao' | 'moderna' | 'amigavel' | 'elegante' | 'impacto';
-export type StoreCardRatioKey = 'retrato' | 'quadrado' | 'alto';
+export type StoreCardRatioKey = 'retrato' | 'quadrado' | 'alto' | 'paisagem';
 
 type FontOption = {
   key: StoreFontKey;
@@ -85,6 +85,12 @@ export const STORE_CARD_RATIOS: RatioOption[] = [
     hint: 'Foto de corpo inteiro — moda editorial',
     value: '2 / 3',
   },
+  {
+    key: 'paisagem',
+    label: 'Paisagem',
+    hint: 'Foto deitada — móveis, decoração, ambientes',
+    value: '4 / 3',
+  },
 ];
 
 export function fontStyle(key?: string | null) {
@@ -98,109 +104,3 @@ export function cardRatioValue(key?: string | null) {
     STORE_CARD_RATIOS.find((r) => r.key === 'retrato')!;
   return found.value;
 }
-
-/*
- * Temas da vitrine. O visual de cada um mora no CSS (globals.css, blocos
- * [data-tema=...]): aqui ficam o nome, para quem serve e as cores da
- * miniatura que aparece no painel.
- */
-export type StoreThemeKey = 'essencial' | 'boutique' | 'tech' | 'street';
-
-export type Segmento = 'geral' | 'moda' | 'beleza' | 'eletronicos' | 'esporte';
-
-export const SEGMENTOS: { key: Segmento; label: string }[] = [
-  { key: 'geral', label: 'Loja geral' },
-  { key: 'moda', label: 'Moda' },
-  { key: 'beleza', label: 'Beleza e joias' },
-  { key: 'eletronicos', label: 'Eletrônicos' },
-  { key: 'esporte', label: 'Esporte e streetwear' },
-];
-
-export type StoreThemeOption = {
-  key: StoreThemeKey;
-  nome: string;
-  paraQuem: string;
-  descricao: string;
-  /** Filtros da galeria no painel */
-  segmentos: Segmento[];
-  /** Miniatura no painel: fundo, cartão, texto e se o título é serifado */
-  mini: {
-    fundo: string;
-    cartao: string;
-    texto: string;
-    titulo: 'serif' | 'sans' | 'impacto';
-  };
-};
-
-export const STORE_THEMES: StoreThemeOption[] = [
-  {
-    key: 'essencial',
-    nome: 'Essencial',
-    paraQuem: 'Variedades, perfumaria, loja geral',
-    descricao:
-      'Limpo e direto: busca em destaque, categorias com foto e cartões leves.',
-    segmentos: ['geral'],
-    mini: {
-      fundo: '#ffffff',
-      cartao: '#f1f2f4',
-      texto: '#171a1f',
-      titulo: 'sans',
-    },
-  },
-  {
-    key: 'boutique',
-    nome: 'Boutique',
-    paraQuem: 'Moda, acessórios, beleza, joias',
-    descricao:
-      'Editorial: banner em tela cheia, títulos com serifa, fotos grandes em pé e muito respiro.',
-    segmentos: ['moda', 'beleza'],
-    mini: {
-      fundo: '#fbf8f4',
-      cartao: '#efe9e2',
-      texto: '#1c1917',
-      titulo: 'serif',
-    },
-  },
-  {
-    key: 'tech',
-    nome: 'Tech',
-    paraQuem: 'Eletrônicos, celulares, games, informática',
-    descricao:
-      'Fundo escuro, cartões com contorno e preço em destaque, foto quadrada.',
-    segmentos: ['eletronicos'],
-    mini: {
-      fundo: '#0b1016',
-      cartao: '#151c26',
-      texto: '#e8edf3',
-      titulo: 'sans',
-    },
-  },
-  {
-    key: 'street',
-    nome: 'Street',
-    paraQuem: 'Streetwear, suplementos, fitness',
-    descricao:
-      'Forte: títulos pesados em caixa alta, faixa de avisos em preto e cantos retos.',
-    segmentos: ['esporte', 'moda'],
-    mini: {
-      fundo: '#ffffff',
-      cartao: '#ececec',
-      texto: '#0a0a0a',
-      titulo: 'impacto',
-    },
-  },
-];
-
-export function resolveTheme(key?: string | null): StoreThemeKey {
-  return (STORE_THEMES.find((t) => t.key === key)?.key ??
-    'essencial') as StoreThemeKey;
-}
-
-/** Fonte e foto que cada tema sugere (igual à API), usado na prévia ?tema= */
-export const THEME_LAYOUT: Partial<
-  Record<StoreThemeKey, { font: StoreFontKey; cardRatio: StoreCardRatioKey }>
-> = {
-  boutique: { font: 'elegante', cardRatio: 'alto' },
-  tech: { font: 'moderna', cardRatio: 'quadrado' },
-  street: { font: 'impacto', cardRatio: 'quadrado' },
-};

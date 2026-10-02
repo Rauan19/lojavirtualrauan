@@ -212,7 +212,7 @@ model Store {
    */
   storeFont        String?
   storeCardRatio   String?
-  /** Tema da vitrine: essencial | boutique | tech | street. Nulo = Essencial. */
+  /** Chave do Template em uso na vitrine. Nulo = Essencial. */
   storeTheme       String?
 
   /**
@@ -242,6 +242,7 @@ model Store {
   updatedAt        DateTime    @updatedAt
 
   users             User[]
+  templateCompras   TemplateCompra[]
   categories        Category[]
   products          Product[]
   orders            Order[]
@@ -784,6 +785,51 @@ model PlatformInvoice {
 }
 
 /** Configuração global da plataforma (singleton id = default). */
+/**
+ * Template pronto da vitrine. A aparência é a receita em `receita` (ver
+ * src/templates/receita.ts); Store.storeTheme guarda a `chave` do template
+ * em uso. Inativo some da galeria do lojista, mas quem já usa continua.
+ *
+ * Venda: `acesso` = gratis | plano | pago. "plano" libera para os planos em
+ * `planos` (ids de PlatformPlan); "pago" é venda única por `precoCentavos`
+ * (e pode vir incluso em algum plano também).
+ */
+model Template {
+  id            String           @id @default(cuid())
+  chave         String           @unique
+  nome          String
+  paraQuem      String
+  descricao     String
+  segmentos     String[]         @default([])
+  receita       Json
+  ativo         Boolean          @default(true)
+  ordem         Int              @default(0)
+  acesso        String           @default("gratis")
+  planos        String[]         @default([])
+  precoCentavos Int?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  compras       TemplateCompra[]
+}
+
+/** Template pago que a loja comprou (ou ganhou de cortesia do Super Admin) */
+model TemplateCompra {
+  id            String   @id @default(cuid())
+  templateId    String
+  storeId       String
+  valorCentavos Int      @default(0)
+  /** compra | cortesia */
+  origem        String   @default("compra")
+  mpPaymentId   String?
+  criadoEm      DateTime @default(now())
+
+  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  store    Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, storeId])
+  @@index([storeId])
+}
+
 model PlatformSettings {
   id                   String   @id @default("default")
   mpAccessToken        String?

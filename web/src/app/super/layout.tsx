@@ -12,6 +12,7 @@ const nav = [
   { href: '/super', label: 'Dashboard', exact: true },
   { href: '/super/lojas', label: 'Lojas' },
   { href: '/super/planos', label: 'Planos' },
+  { href: '/super/templates', label: 'Templates' },
   { href: '/super/comissoes', label: 'Comissões' },
   { href: '/super/mercadopago', label: 'Mercado Pago' },
   { href: '/super/seguranca', label: 'Segurança' },

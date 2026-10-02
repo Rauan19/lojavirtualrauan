@@ -54,7 +54,7 @@ const TRACOS: Record<string, string[]> = {
     'M12 3.5 5 6.5V12c0 4.2 3 7.6 7 8.5 4-.9 7-4.3 7-8.5V6.5l-7-3Z',
     'm9 12 2 2 4-4',
   ],
-  '/admin/temas': ['M4 5.5h16v13H4z', 'M4 9.5h16', 'M9 9.5v9', 'M12.5 13h4.5M12.5 15.5h3'],
+  '/admin/templates': ['M4 5.5h16v13H4z', 'M4 9.5h16', 'M9 9.5v9', 'M12.5 13h4.5M12.5 15.5h3'],
   // Super Admin
   '/super': ['M4 20V10M10 20V4M16 20v-7M21 20H3'],
   '/super/lojas': [
@@ -68,6 +68,7 @@ const TRACOS: Record<string, string[]> = {
     'm3.5 12 8.5 4.5 8.5-4.5',
     'm3.5 16 8.5 4.5 8.5-4.5',
   ],
+  '/super/templates': ['M4 5.5h16v13H4z', 'M4 9.5h16', 'M9 9.5v9', 'M12.5 13h4.5M12.5 15.5h3'],
   '/super/comissoes': [
     'M18 6 6 18',
     'M7.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM16.5 18a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z',

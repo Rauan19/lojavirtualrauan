@@ -35,7 +35,7 @@ type Store = {
   freteModo?: string | null;
   sellerPhone?: string | null;
   storeFont?: string | null;
-  storeTheme?: string | null;
+  template?: import('@/lib/templates').TemplateDaLoja | null;
   storeCardRatio?: string | null;
   analyticsGaId?: string | null;
   analyticsPixelId?: string | null;
@@ -358,7 +358,7 @@ function ProductInner({
         storeSlug={storeSlug}
         sellerPhone={store.sellerPhone}
         storeFont={store.storeFont}
-        storeTheme={store.storeTheme}
+        template={store.template}
         storeCardRatio={store.storeCardRatio}
         analyticsGaId={store.analyticsGaId}
         analyticsPixelId={store.analyticsPixelId}

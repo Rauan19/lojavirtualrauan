@@ -17,11 +17,13 @@ function build(freteSandboxAtual: boolean) {
     encrypt: (v: string | null) => (v ? `cifrado:${v}` : null),
     decryptStore: (v: unknown) => v,
   };
-  // A ordem importa: prisma, config, secrets, billing, platformPlans, planLimits.
+  // A ordem importa: prisma, config, secrets, billing, platformPlans,
+  // planLimits, templates.
   const service = new StoresService(
     prisma as never,
     { get: () => undefined } as never,
     secrets as never,
+    {} as never,
     {} as never,
     {} as never,
     {} as never,

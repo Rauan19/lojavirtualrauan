@@ -22,7 +22,7 @@ type Store = {
   accentColor: string;
   sellerPhone?: string | null;
   storeFont?: string | null;
-  storeTheme?: string | null;
+  template?: import('@/lib/templates').TemplateDaLoja | null;
   storeCardRatio?: string | null;
   analyticsGaId?: string | null;
   analyticsPixelId?: string | null;
@@ -114,7 +114,7 @@ function FavoritosInner({ slug }: { slug: string }) {
         storeSlug={slug}
         sellerPhone={store.sellerPhone}
         storeFont={store.storeFont}
-        storeTheme={store.storeTheme}
+        template={store.template}
         storeCardRatio={store.storeCardRatio}
         analyticsGaId={store.analyticsGaId}
         analyticsPixelId={store.analyticsPixelId}

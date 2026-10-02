@@ -38,7 +38,7 @@ type Store = {
   freteModo?: string;
   sellerPhone?: string | null;
   storeFont?: string | null;
-  storeTheme?: string | null;
+  template?: import('@/lib/templates').TemplateDaLoja | null;
   storeCardRatio?: string | null;
   analyticsGaId?: string | null;
   analyticsPixelId?: string | null;
@@ -126,7 +126,7 @@ function StorefrontSkeleton() {
       <div className="h-[var(--header-h)] animate-pulse border-b border-line bg-[#f3f3f3]" />
       <div className="mx-auto max-w-[1200px] px-3 py-3 md:px-4 md:py-4">
         <div className="mb-3 h-5 w-40 animate-pulse bg-[#ececec] md:mb-4" />
-        <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="grade-produtos grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {Array.from({ length: PAGE_SIZE }).map((_, i) => (
             <ProductCardSkeleton key={i} />
           ))}
@@ -366,7 +366,7 @@ function StorefrontInner({ slug }: { slug: string }) {
         storeSlug={slug}
         sellerPhone={store.sellerPhone}
         storeFont={store.storeFont}
-        storeTheme={store.storeTheme}
+        template={store.template}
         storeCardRatio={store.storeCardRatio}
         analyticsGaId={store.analyticsGaId}
         analyticsPixelId={store.analyticsPixelId}
@@ -594,7 +594,7 @@ function StorefrontInner({ slug }: { slug: string }) {
           </div>
 
           {products.length === 0 && loadingCatalog ? (
-            <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            <div className="grade-produtos grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
               {Array.from({ length: PAGE_SIZE }).map((_, i) => (
                 <ProductCardSkeleton key={i} />
               ))}
@@ -629,7 +629,7 @@ function StorefrontInner({ slug }: { slug: string }) {
             </div>
           ) : (
             <div
-              className={`grid grid-cols-2 gap-x-3 gap-y-6 transition-opacity sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 ${
+              className={`grade-produtos grid grid-cols-2 gap-x-3 gap-y-6 transition-opacity sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 ${
                 loadingCatalog ? 'opacity-50' : 'opacity-100'
               }`}
             >
@@ -724,7 +724,7 @@ function StorefrontInner({ slug }: { slug: string }) {
                         visível no celular; no computador aparece ao passar o
                         mouse ou ao chegar pelo teclado, sem poluir a grade.
                       */}
-                      <div className="mt-auto pt-2.5 transition-opacity duration-200 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
+                      <div className="compra-rapida mt-auto pt-2.5 transition-opacity duration-200 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
                         <button
                           type="button"
                           className="btn btn-ghost h-10 w-full px-1 text-[13px]"

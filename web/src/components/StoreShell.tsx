@@ -6,13 +6,13 @@ import { useCustomer } from '@/components/CustomerProvider';
 import { CookieConsent } from '@/components/CookieConsent';
 import { PaymentBadges } from '@/components/PaymentBadges';
 import { api, mediaUrl, money } from '@/lib/api';
+import { cardRatioValue, fontStyle } from '@/lib/store-theme';
 import {
-  cardRatioValue,
-  fontStyle,
-  resolveTheme,
-  THEME_LAYOUT,
-  type StoreThemeKey,
-} from '@/lib/store-theme';
+  aplicarTemplate,
+  RECEITA_BASE,
+  type TemplateDaLoja,
+  type TemplateReceita,
+} from '@/lib/templates';
 import { sellerWhatsappHref } from '@/lib/contact';
 import { corDeTexto, tintaSobre } from '@/lib/contraste';
 import { FaixaAvisos } from '@/components/FaixaAvisos';
@@ -53,8 +53,8 @@ type Props = {
   tiktokUrl?: string | null;
   storeFont?: string | null;
   storeCardRatio?: string | null;
-  /** Tema da vitrine (essencial, boutique, tech, street) */
-  storeTheme?: string | null;
+  /** Template pronto em uso (receita vinda da API) */
+  template?: TemplateDaLoja | null;
   analyticsGaId?: string | null;
   analyticsPixelId?: string | null;
   cartCount?: number;
@@ -117,7 +117,7 @@ export function StoreShell({
   accentColor,
   storeFont,
   storeCardRatio,
-  storeTheme,
+  template,
   analyticsGaId,
   analyticsPixelId,
   categories = [],
@@ -141,10 +141,14 @@ export function StoreShell({
   avisos,
   children,
 }: Props & { children: React.ReactNode }) {
-  const [temaPrevia, setTemaPrevia] = useState<StoreThemeKey | null>(null);
+  // Prévia pelo painel: /loja/x?tema=chave mostra o template sem salvar
+  const [previa, setPrevia] = useState<TemplateReceita | null>(null);
   useEffect(() => {
-    const t = new URLSearchParams(window.location.search).get('tema');
-    if (t) setTemaPrevia(resolveTheme(t));
+    const chave = new URLSearchParams(window.location.search).get('tema');
+    if (!chave) return;
+    api<{ receita: TemplateReceita }>(`/templates/${encodeURIComponent(chave)}`)
+      .then((t) => setPrevia(t.receita))
+      .catch(() => setPrevia(null));
   }, []);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -274,15 +278,16 @@ export function StoreShell({
     setMegaId(null);
   }
 
-  // Prévia pelo painel: /loja/x?tema=boutique mostra o tema sem salvar
-  const temaFinal: StoreThemeKey = temaPrevia ?? resolveTheme(storeTheme);
-  const previa = temaPrevia ? THEME_LAYOUT[temaPrevia] : undefined;
-  const fonteFinal = temaPrevia ? (previa?.font ?? null) : storeFont;
-  const fotoFinal = temaPrevia ? (previa?.cardRatio ?? null) : storeCardRatio;
+  const receita = previa ?? template?.receita ?? RECEITA_BASE;
+  const visual = aplicarTemplate(receita);
+  // Na prévia vale a fonte e a foto do template; fora dela, a da loja
+  // (a API já resolveu: escolha manual > template > ramo)
+  const fonteFinal = previa ? (previa.fonte ?? storeFont) : storeFont;
+  const fotoFinal = previa ? (previa.foto ?? storeCardRatio) : storeCardRatio;
 
   return (
     <div
-      data-tema={temaFinal}
+      {...visual.attrs}
       className="store-theme loja-ui pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0"
       style={
         {
@@ -299,6 +304,7 @@ export function StoreShell({
           '--store-font': fontStyle(fonteFinal).body,
           '--store-font-display': fontStyle(fonteFinal).display,
           '--store-card-ratio': cardRatioValue(fotoFinal),
+          ...visual.style,
         } as React.CSSProperties
       }
     >

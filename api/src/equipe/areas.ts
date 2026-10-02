@@ -44,6 +44,7 @@ const REGRAS: [RegExp, Acesso, string?][] = [
     ['configuracoes'],
   ],
   [/^\/admin\/shipping(\/|$)/, ['configuracoes']],
+  [/^\/admin\/templates(\/|$)/, ['configuracoes']],
 
   // Só o dono: dinheiro e quem entra na loja
   [/^\/stores\/me\/mercadopago(\/|$)/, 'dono'],

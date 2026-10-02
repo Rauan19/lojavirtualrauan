@@ -58,7 +58,7 @@ export default function PrivacyPolicyPage() {
       logoUrl={mediaUrl(store.logoUrl)}
       primaryColor={store.primaryColor || '#1a1a1a'}
       accentColor={store.accentColor || '#e31c5f'}
-      storeTheme={(store as { storeTheme?: string | null }).storeTheme}
+      template={(store as { template?: import('@/lib/templates').TemplateDaLoja | null }).template}
       search={q}
       onSearch={setQ}
       homeHref={`/loja/${slug}`}

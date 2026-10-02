@@ -1420,32 +1420,101 @@
 }
 
 /* =========================================================================
- * Temas da vitrine ([data-tema] no StoreShell). Mesmas peças em todos os
- * temas; aqui muda só a forma, o fundo e a tipografia. A cor da loja
+ * Templates da vitrine. O template é uma receita (lib/templates.ts) que vira
+ * variáveis --t-* e atributos data-* no StoreShell; aqui está o único CSS que
+ * as lê. Template novo não precisa de CSS novo. A cor da loja
  * (--store-accent) continua mandando nos botões e selos.
  * ========================================================================= */
 
-/* ---------- Boutique: editorial, serifa, banner cheio, muito respiro ----- */
-.store-theme[data-tema='boutique'] {
-  --bg: #fbf8f4;
-  --line: #e7e0d8;
-  background: #fbf8f4;
+/* Fundo, superfícies e cartões de foto */
+.store-theme {
+  background: var(--t-fundo, #fff);
 }
 
-.store-theme[data-tema='boutique'] header,
-.store-theme[data-tema='boutique'] .bg-white {
-  background: #fbf8f4;
+.store-theme :is(header, .bg-white, .drawer) {
+  background-color: var(--t-superficie, #fff);
 }
 
-.store-theme[data-tema='boutique'] h2.store-display {
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  font-size: clamp(26px, 3vw, 36px);
+.store-theme .store-card-media,
+.store-theme .loja-foto,
+.store-theme .group\/cat > span:first-child {
+  border-radius: var(--t-raio-foto, 14px);
+  background-color: var(--t-cartao, #f3f3f3);
 }
 
-/* Banner de ponta a ponta, sem caixa */
+.store-theme .btn {
+  border-radius: var(--t-raio-botao, 10px);
+}
+
+.store-theme .field,
+.store-theme .selo-loja {
+  border-radius: min(var(--t-raio-botao, 10px), 12px);
+}
+
+/* Títulos das seções */
+.store-theme h2.store-display {
+  font-weight: var(--t-titulo-peso, 600);
+}
+
+.store-theme[data-titulo-caixa='alta'] h2.store-display {
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  font-size: clamp(28px, 3.6vw, 44px);
+  line-height: 1;
+}
+
+.store-theme[data-titulo-alinhamento='centro'] h2.store-display {
+  text-align: center;
+  /* nas faixas o título divide a linha com "Ver todos": ocupa o meio */
+  flex: 1;
+}
+
+/* Nome e preço no cartão */
+.store-theme[data-nome-produto='caixa-alta'] .product-card :is(h2, h3) {
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.store-theme[data-preco-cor='sim'] .product-card strong {
+  color: var(--store-accent-text);
+  font-size: 17px;
+}
+
+.store-theme[data-escuro='sim'][data-preco-cor='sim'] .product-card strong {
+  color: var(--store-accent);
+}
+
+.store-theme[data-preco-titulo='sim'] .product-card strong {
+  font-family: var(--store-font-display);
+  font-weight: 400;
+  font-size: 20px;
+}
+
+/* Cartão de produto */
+.store-theme[data-cartao='contorno'] .product-card {
+  border: 1px solid var(--line);
+  border-radius: var(--t-raio-cartao, 14px);
+  background: var(--t-superficie);
+  padding: 8px 8px 12px;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.store-theme[data-cartao='contorno'] .product-card:hover {
+  border-color: var(--store-accent);
+  transform: translateY(-2px);
+}
+
+.store-theme[data-cartao='preenchido'] .product-card {
+  border-radius: var(--t-raio-cartao, 14px);
+  background: var(--t-superficie);
+  padding: 8px 8px 12px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+}
+
+/* Banner de ponta a ponta */
 @media (min-width: 768px) {
-  .store-theme[data-tema='boutique'] .store-promo-marquee {
+  .store-theme[data-banner='cheio'] .store-promo-marquee {
     width: 100%;
     margin-top: 0;
     border-radius: 0;
@@ -1453,108 +1522,8 @@
   }
 }
 
-/* Cartão sem moldura: a foto é o produto */
-.store-theme[data-tema='boutique'] .store-card-media {
-  border-radius: 2px;
-  background: #efe9e2;
-}
-
-.store-theme[data-tema='boutique'] .product-card :is(h2, h3) {
-  font-family: var(--store-font-display);
-  font-size: 15px;
-  font-weight: 500;
-}
-
-.store-theme[data-tema='boutique'] .product-card strong {
-  font-weight: 500;
-}
-
-.store-theme[data-tema='boutique'] .selo-loja {
-  border-radius: 2px;
-  box-shadow: none;
-  letter-spacing: 0.04em;
-}
-
-.store-theme[data-tema='boutique'] .btn {
-  border-radius: 2px;
-  letter-spacing: 0.04em;
-}
-
-/* ---------- Tech: escuro, contorno, foto quadrada ------------------------ */
-.store-theme[data-tema='tech'] {
-  --bg: #0b1016;
-  --surface: #151c26;
-  --ink: #e8edf3;
-  --muted: #98a4b3;
-  --line: #263243;
-  background: #0b1016;
-  color: var(--ink);
-  color-scheme: dark;
-}
-
-.store-theme[data-tema='tech']
-  :is(header, .bg-white, [class*='bg-[#f'], [class*='bg-[#e'], .drawer) {
-  background-color: #11171f;
-}
-
-/* Foto de produto e de categoria fica em fundo branco: produto recortado
-   em fundo escuro some (e a mistura de cor das fotos escurece tudo) */
-.store-theme[data-tema='tech'] .group\/cat > span:first-child,
-.store-theme[data-tema='tech'] .store-card-media {
-  background-color: #ffffff;
-}
-
-.store-theme[data-tema='tech'] .bg-white\/90,
-.store-theme[data-tema='tech'] .bg-white\/95 {
-  background-color: rgba(17, 23, 31, 0.92);
-}
-
-.store-theme[data-tema='tech'] .product-card {
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #151c26;
-  padding: 8px 8px 12px;
-  transition: border-color 0.15s ease, transform 0.15s ease;
-}
-
-.store-theme[data-tema='tech'] .product-card:hover {
-  border-color: var(--store-accent);
-  transform: translateY(-2px);
-}
-
-.store-theme[data-tema='tech'] .store-card-media {
-  border-radius: 10px;
-  background: #ffffff;
-}
-
-/* Preço em destaque na cor da loja */
-.store-theme[data-tema='tech'] .product-card strong {
-  color: var(--store-accent);
-  font-size: 17px;
-}
-
-.store-theme[data-tema='tech'] h2.store-display {
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.store-theme[data-tema='tech'] .field {
-  background: #0f151d;
-  color: var(--ink);
-  border-color: var(--line);
-}
-
-.store-theme[data-tema='tech'] .faixa-avisos {
-  background: var(--store-accent);
-  color: var(--store-accent-ink);
-}
-
-/* ---------- Street: pesado, caixa alta, cantos retos --------------------- */
-.store-theme[data-tema='street'] {
-  --line: #0a0a0a;
-}
-
-.store-theme[data-tema='street'] .faixa-avisos {
+/* Faixa de avisos */
+.store-theme[data-faixa='preta'] .faixa-avisos {
   background: #0a0a0a;
   color: #fff;
   text-transform: uppercase;
@@ -1562,53 +1531,61 @@
   letter-spacing: 0.08em;
 }
 
-.store-theme[data-tema='street'] header {
-  border-bottom: 2px solid #0a0a0a;
+.store-theme[data-faixa='destaque'] .faixa-avisos {
+  background: var(--store-accent);
+  color: var(--store-accent-ink);
 }
 
-.store-theme[data-tema='street'] h2.store-display {
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
-  font-size: clamp(30px, 4vw, 48px);
-  line-height: 1;
-}
-
-.store-theme[data-tema='street'] .store-card-media,
-.store-theme[data-tema='street'] .loja-foto,
-.store-theme[data-tema='street'] .btn,
-.store-theme[data-tema='street'] .field,
-.store-theme[data-tema='street'] .selo-loja {
-  border-radius: 0;
-}
-
-@media (min-width: 768px) {
-  .store-theme[data-tema='street'] .store-promo-marquee {
-    width: 100%;
-    margin-top: 0;
-    border-radius: 0;
+/* Produtos por linha (computador) */
+@media (min-width: 1024px) {
+  .store-theme .grade-produtos {
+    grid-template-columns: repeat(min(var(--t-colunas, 5), 5), minmax(0, 1fr));
   }
 }
 
-.store-theme[data-tema='street'] .product-card :is(h2, h3) {
-  text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+@media (min-width: 1280px) {
+  .store-theme .grade-produtos {
+    grid-template-columns: repeat(var(--t-colunas, 6), minmax(0, 1fr));
+  }
 }
 
-.store-theme[data-tema='street'] .product-card strong {
-  font-family: var(--store-font-display);
-  font-weight: 400;
-  font-size: 20px;
+/* Botão de compra sempre à vista e cheio na cor da loja */
+@media (min-width: 768px) {
+  .store-theme[data-compra='sempre'] .compra-rapida {
+    opacity: 1;
+  }
 }
 
-.store-theme[data-tema='street'] .selo-loja {
-  box-shadow: none;
-  text-transform: uppercase;
+.store-theme[data-compra='sempre'] .compra-rapida .btn {
+  background: var(--store-accent);
+  color: var(--store-accent-ink);
+  border-color: transparent;
 }
 
-.store-theme[data-tema='street'] .btn {
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: 800;
+/* Templates escuros: fundos claros fixos viram superfície escura */
+.store-theme[data-escuro='sim'] {
+  color-scheme: dark;
+  color: var(--ink);
+}
+
+.store-theme[data-escuro='sim']
+  :is([class*='bg-[#f'], [class*='bg-[#e']):not(.store-card-media) {
+  background-color: var(--t-superficie);
+}
+
+.store-theme[data-escuro='sim'] .bg-white\/90,
+.store-theme[data-escuro='sim'] .bg-white\/95 {
+  background-color: color-mix(in srgb, var(--t-superficie) 92%, transparent);
+}
+
+/* Foto de produto fica em fundo branco: produto recortado some no escuro */
+.store-theme[data-escuro='sim'] .store-card-media,
+.store-theme[data-escuro='sim'] .group\/cat > span:first-child {
+  background-color: #ffffff;
+}
+
+.store-theme[data-escuro='sim'] .field {
+  background: color-mix(in srgb, var(--t-superficie) 70%, #000);
+  color: var(--ink);
+  border-color: var(--line);
 }

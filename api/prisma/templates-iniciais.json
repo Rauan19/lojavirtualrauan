@@ -1,0 +1,402 @@
+[
+  {
+    "chave": "essencial",
+    "nome": "Essencial",
+    "paraQuem": "Variedades, perfumaria, loja geral",
+    "descricao": "Limpo e direto: busca em destaque, categorias com foto e cartões leves.",
+    "segmentos": [
+      "geral"
+    ],
+    "config": {},
+    "acesso": "gratis",
+    "ordem": 10
+  },
+  {
+    "chave": "boutique",
+    "nome": "Boutique",
+    "paraQuem": "Moda, acessórios, beleza, joias",
+    "descricao": "Editorial: banner de ponta a ponta, títulos com serifa, fotos altas e muito respiro.",
+    "segmentos": [
+      "moda",
+      "beleza"
+    ],
+    "config": {
+      "fundo": "#fbf8f4",
+      "superficie": "#fbf8f4",
+      "texto": "#1c1917",
+      "textoSuave": "#57534e",
+      "linha": "#e7e0d8",
+      "corCartao": "#efe9e2",
+      "banner": "cheio",
+      "cantos": "retos",
+      "tituloPeso": 500,
+      "fonte": "elegante",
+      "foto": "alto",
+      "colunas": 4
+    },
+    "acesso": "gratis",
+    "ordem": 20
+  },
+  {
+    "chave": "tech",
+    "nome": "Tech",
+    "paraQuem": "Eletrônicos, celulares, games, informática",
+    "descricao": "Fundo escuro, cartões com contorno, preço em destaque e foto quadrada.",
+    "segmentos": [
+      "eletronicos"
+    ],
+    "config": {
+      "fundo": "#0b1016",
+      "superficie": "#11171f",
+      "texto": "#e8edf3",
+      "textoSuave": "#98a4b3",
+      "linha": "#263243",
+      "corCartao": "#151c26",
+      "escuro": true,
+      "faixa": "destaque",
+      "cartao": "contorno",
+      "tituloPeso": 700,
+      "precoNaCor": true,
+      "fonte": "moderna",
+      "foto": "quadrado",
+      "colunas": 5
+    },
+    "acesso": "gratis",
+    "ordem": 30
+  },
+  {
+    "chave": "street",
+    "nome": "Street",
+    "paraQuem": "Streetwear, suplementos, fitness",
+    "descricao": "Títulos pesados em caixa alta, faixa preta, cantos retos e banner de ponta a ponta.",
+    "segmentos": [
+      "esporte",
+      "moda"
+    ],
+    "config": {
+      "linha": "#0a0a0a",
+      "corCartao": "#ececec",
+      "faixa": "preta",
+      "banner": "cheio",
+      "cantos": "retos",
+      "tituloCaixa": "alta",
+      "tituloPeso": 400,
+      "nomeProduto": "caixa-alta",
+      "precoFonteTitulo": true,
+      "fonte": "impacto",
+      "foto": "quadrado",
+      "colunas": 4
+    },
+    "acesso": "gratis",
+    "ordem": 40
+  },
+  {
+    "chave": "mercado",
+    "nome": "Mercado",
+    "paraQuem": "Mercadinho, conveniência, hortifrúti, delivery",
+    "descricao": "Prático e denso: preço grande, botão de comprar sempre à vista e muitos produtos por linha.",
+    "segmentos": [
+      "alimentos",
+      "geral"
+    ],
+    "config": {
+      "fundo": "#f4f6f3",
+      "texto": "#14201a",
+      "textoSuave": "#4b5a52",
+      "linha": "#dfe6e1",
+      "faixa": "destaque",
+      "cartao": "preenchido",
+      "tituloPeso": 700,
+      "precoNaCor": true,
+      "fonte": "amigavel",
+      "foto": "quadrado",
+      "colunas": 6,
+      "compraRapida": "sempre"
+    },
+    "acesso": "gratis",
+    "ordem": 50
+  },
+  {
+    "chave": "pet",
+    "nome": "Pet",
+    "paraQuem": "Pet shop, rações, acessórios para pets",
+    "descricao": "Alegre e arredondado: fundo creme, cantos bem redondos e fonte amigável.",
+    "segmentos": [
+      "pet"
+    ],
+    "config": {
+      "fundo": "#fff8ef",
+      "superficie": "#fffdf9",
+      "texto": "#2b2118",
+      "textoSuave": "#6b5a4a",
+      "linha": "#f0e3d2",
+      "faixa": "destaque",
+      "cartao": "preenchido",
+      "cantos": "redondos",
+      "tituloPeso": 700,
+      "precoNaCor": true,
+      "fonte": "amigavel",
+      "foto": "quadrado",
+      "colunas": 5,
+      "compraRapida": "sempre"
+    },
+    "acesso": "gratis",
+    "ordem": 60
+  },
+  {
+    "chave": "gourmet",
+    "nome": "Gourmet",
+    "paraQuem": "Doces, cafés, comida artesanal, bebidas",
+    "descricao": "Tons quentes, títulos com serifa e fotos quadradas que valorizam o produto.",
+    "segmentos": [
+      "alimentos"
+    ],
+    "config": {
+      "fundo": "#faf5ee",
+      "superficie": "#fffaf3",
+      "texto": "#2a1d14",
+      "textoSuave": "#6e5a49",
+      "linha": "#eadccb",
+      "corCartao": "#f3e9dc",
+      "fonte": "elegante",
+      "foto": "quadrado",
+      "colunas": 4
+    },
+    "acesso": "gratis",
+    "ordem": 70
+  },
+  {
+    "chave": "atelie",
+    "nome": "Ateliê",
+    "paraQuem": "Artesanato, decoração, papelaria, produtos autorais",
+    "descricao": "Minimalista: muito branco, títulos leves e centralizados, poucos produtos por linha.",
+    "segmentos": [
+      "casa",
+      "geral"
+    ],
+    "config": {
+      "texto": "#222222",
+      "textoSuave": "#6b6b6b",
+      "linha": "#ececec",
+      "corCartao": "#f5f5f3",
+      "banner": "cheio",
+      "cantos": "retos",
+      "tituloPeso": 400,
+      "tituloAlinhamento": "centro",
+      "fonte": "moderna",
+      "foto": "retrato",
+      "colunas": 3
+    },
+    "acesso": "gratis",
+    "ordem": 80
+  },
+  {
+    "chave": "beauty",
+    "nome": "Beauty",
+    "paraQuem": "Cosméticos, skincare, perfumaria",
+    "descricao": "Suave e rosado, cartões preenchidos e cantos redondos.",
+    "segmentos": [
+      "beleza"
+    ],
+    "config": {
+      "fundo": "#fff7f8",
+      "superficie": "#fffbfb",
+      "texto": "#2a1a1f",
+      "textoSuave": "#7a5a63",
+      "linha": "#f3dfe3",
+      "faixa": "destaque",
+      "cartao": "preenchido",
+      "cantos": "redondos",
+      "fonte": "moderna",
+      "foto": "quadrado",
+      "colunas": 4
+    },
+    "acesso": "gratis",
+    "ordem": 90
+  },
+  {
+    "chave": "joias",
+    "nome": "Joias",
+    "paraQuem": "Joias, semijoias, relógios, bijuterias",
+    "descricao": "Escuro e sofisticado: serifa fina, títulos centralizados e muito espaço.",
+    "segmentos": [
+      "beleza",
+      "moda"
+    ],
+    "config": {
+      "fundo": "#0e0d0b",
+      "superficie": "#15130f",
+      "texto": "#f3ead8",
+      "textoSuave": "#b3a68c",
+      "linha": "#2c2820",
+      "corCartao": "#1b1914",
+      "escuro": true,
+      "faixa": "preta",
+      "banner": "cheio",
+      "cantos": "retos",
+      "tituloPeso": 500,
+      "tituloAlinhamento": "centro",
+      "fonte": "elegante",
+      "foto": "quadrado",
+      "colunas": 4
+    },
+    "acesso": "gratis",
+    "ordem": 100
+  },
+  {
+    "chave": "kids",
+    "nome": "Kids",
+    "paraQuem": "Infantil, brinquedos, enxoval",
+    "descricao": "Colorido e redondo, cartões em tom pastel e títulos bem marcados.",
+    "segmentos": [
+      "infantil"
+    ],
+    "config": {
+      "fundo": "#fffdf5",
+      "texto": "#1f2240",
+      "textoSuave": "#5b5f86",
+      "linha": "#e9e6ff",
+      "corCartao": "#f3f0ff",
+      "faixa": "destaque",
+      "cartao": "preenchido",
+      "cantos": "redondos",
+      "tituloPeso": 800,
+      "fonte": "amigavel",
+      "foto": "quadrado",
+      "colunas": 4,
+      "compraRapida": "sempre"
+    },
+    "acesso": "gratis",
+    "ordem": 110
+  },
+  {
+    "chave": "casa",
+    "nome": "Casa",
+    "paraQuem": "Móveis, decoração, utilidades domésticas",
+    "descricao": "Tons de areia, fotos em paisagem e banner de ponta a ponta.",
+    "segmentos": [
+      "casa"
+    ],
+    "config": {
+      "fundo": "#f6f2ec",
+      "superficie": "#fbf8f3",
+      "texto": "#2d2a26",
+      "textoSuave": "#6b645b",
+      "linha": "#e4ddd2",
+      "corCartao": "#ece5da",
+      "banner": "cheio",
+      "tituloPeso": 500,
+      "fonte": "moderna",
+      "foto": "paisagem",
+      "colunas": 3
+    },
+    "acesso": "gratis",
+    "ordem": 120
+  },
+  {
+    "chave": "fitness",
+    "nome": "Fitness",
+    "paraQuem": "Academia, suplementos, roupa esportiva",
+    "descricao": "Escuro com detalhes fortes, títulos pesados em caixa alta e preço em destaque.",
+    "segmentos": [
+      "esporte"
+    ],
+    "config": {
+      "fundo": "#0c0c0d",
+      "superficie": "#141416",
+      "texto": "#f5f5f5",
+      "textoSuave": "#a1a1aa",
+      "linha": "#27272a",
+      "corCartao": "#18181b",
+      "escuro": true,
+      "faixa": "destaque",
+      "banner": "cheio",
+      "cartao": "contorno",
+      "cantos": "retos",
+      "tituloCaixa": "alta",
+      "tituloPeso": 400,
+      "nomeProduto": "caixa-alta",
+      "precoNaCor": true,
+      "fonte": "impacto",
+      "foto": "quadrado",
+      "colunas": 4
+    },
+    "acesso": "gratis",
+    "ordem": 130
+  },
+  {
+    "chave": "livraria",
+    "nome": "Livraria",
+    "paraQuem": "Livros, papelaria, cursos",
+    "descricao": "Fundo de papel, serifa clássica e capas em pé.",
+    "segmentos": [
+      "livros"
+    ],
+    "config": {
+      "fundo": "#f7f1e3",
+      "superficie": "#fbf7ec",
+      "texto": "#2b2418",
+      "textoSuave": "#6d6250",
+      "linha": "#e6dcc4",
+      "corCartao": "#efe6d0",
+      "cantos": "retos",
+      "fonte": "elegante",
+      "foto": "alto",
+      "colunas": 5
+    },
+    "acesso": "gratis",
+    "ordem": 140
+  },
+  {
+    "chave": "masculina",
+    "nome": "Moda Masculina",
+    "paraQuem": "Moda masculina, barbearia, acessórios",
+    "descricao": "Grafite e sóbrio: cantos retos, faixa preta e nomes em caixa alta.",
+    "segmentos": [
+      "moda"
+    ],
+    "config": {
+      "fundo": "#f3f4f5",
+      "texto": "#1d2125",
+      "textoSuave": "#555c63",
+      "linha": "#d7dbdf",
+      "corCartao": "#e8eaec",
+      "faixa": "preta",
+      "banner": "cheio",
+      "cantos": "retos",
+      "tituloCaixa": "alta",
+      "tituloPeso": 700,
+      "nomeProduto": "caixa-alta",
+      "fonte": "moderna",
+      "foto": "retrato",
+      "colunas": 4
+    },
+    "acesso": "gratis",
+    "ordem": 150
+  },
+  {
+    "chave": "atacado",
+    "nome": "Atacado",
+    "paraQuem": "Atacado, distribuidora, vendas B2B",
+    "descricao": "Funcional: muitos produtos por linha, preço em destaque e compra rápida à vista.",
+    "segmentos": [
+      "atacado"
+    ],
+    "config": {
+      "fundo": "#f5f6f8",
+      "texto": "#1a1d21",
+      "textoSuave": "#545b64",
+      "linha": "#dde1e6",
+      "faixa": "destaque",
+      "cartao": "contorno",
+      "tituloPeso": 700,
+      "precoNaCor": true,
+      "fonte": "padrao",
+      "foto": "quadrado",
+      "colunas": 6,
+      "compraRapida": "sempre"
+    },
+    "acesso": "gratis",
+    "ordem": 160
+  }
+]

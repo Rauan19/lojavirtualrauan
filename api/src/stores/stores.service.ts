@@ -15,6 +15,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { emailDescartavel } from '../antifraude/email-descartavel';
+import { TemplatesService } from '../templates/templates.service';
 import { consultarCnpj } from '../antifraude/receita';
 import { BillingService } from '../billing/billing.service';
 import { PlatformPlansService } from '../billing/platform-plans.service';
@@ -48,7 +49,6 @@ import {
   isValidCpf,
   onlyDigits,
   resolveStoreLayout,
-  resolveStoreTheme,
 } from './store-type';
 import { TERMS_VERSION } from '../common/legal';
 import { PlanLimitsService } from '../plan-limits/plan-limits.service';
@@ -92,6 +92,7 @@ export class StoresService {
     private readonly billingService: BillingService,
     private readonly platformPlansService: PlatformPlansService,
     private readonly planLimits: PlanLimitsService,
+    private readonly templates: TemplatesService,
   ) {}
 
   /**
@@ -552,11 +553,12 @@ export class StoresService {
     const hasPk = Boolean(store.mpPublicKey?.trim());
     const paymentsEnabled = mode === 'pro' ? hasToken : hasToken && hasPk;
 
+    const template = await this.templates.resolver(store.storeTheme);
     const layout = resolveStoreLayout(
       store.storeType,
       store.storeFont,
       store.storeCardRatio,
-      store.storeTheme,
+      { font: template.receita.fonte, cardRatio: template.receita.foto },
     );
     const padrao = defaultPolicies(store);
 
@@ -576,7 +578,9 @@ export class StoresService {
       // falarem a mesma língua.
       storeFont: layout.font,
       storeCardRatio: layout.cardRatio,
-      storeTheme: resolveStoreTheme(store.storeTheme),
+      // Receita completa do template: a vitrine aplica sem consultar mais nada
+      storeTheme: template.chave,
+      template: { chave: template.chave, receita: template.receita },
       /*
        * A vitrine precisa saber se há medição configurada para decidir se
        * pede consentimento. Sem nenhum id, só roda cookie essencial e o
@@ -638,6 +642,9 @@ export class StoresService {
   }
 
   async updateBranding(storeId: string, dto: UpdateStoreBrandingDto) {
+    if (dto.storeTheme?.trim()) {
+      await this.templates.garantirDisponivel(dto.storeTheme.trim(), storeId);
+    }
     /*
      * O formulário manda o domínio em todo salvamento; só barra quando é um
      * domínio novo. Tirar o domínio (vazio) sempre pode.

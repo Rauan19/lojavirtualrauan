@@ -5,7 +5,6 @@ import {
   IsDateString,
   IsEmail,
   IsEnum,
-  IsIn,
   IsNumber,
   IsObject,
   IsOptional,
@@ -19,7 +18,6 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { SellerDocType, StoreStatus, StoreType } from '@prisma/client';
-import { STORE_THEME_KEYS } from '../store-type';
 
 /**
  * Signup público (sem autenticação). Só os campos que um visitante anônimo
@@ -244,9 +242,10 @@ export class UpdateStoreBrandingDto {
   @IsString()
   storeCardRatio?: string;
 
-  // Tema da vitrine (ver STORE_THEME_KEYS). Vazio volta ao Essencial.
+  // Chave de um template ativo (tabela Template). Vazio volta ao Essencial.
   @IsOptional()
-  @IsIn(['', ...STORE_THEME_KEYS])
+  @IsString()
+  @Matches(/^([a-z0-9][a-z0-9-]{1,38})?$/, { message: 'Template inválido' })
   storeTheme?: string;
 
   // Os dois vão parar dentro de um <script> na vitrine: só o formato do id,
