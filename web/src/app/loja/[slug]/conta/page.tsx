@@ -310,7 +310,7 @@ export default function ContaPage() {
                   <div className="flex flex-wrap items-center gap-1.5">
                     {addr.label ? <p className="font-semibold">{addr.label}</p> : null}
                     {addr.isDefault ? (
-                      <span className="border border-[var(--ok)]/30 bg-[var(--ok)]/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--ok)]">
+                      <span className="border border-[var(--ok)]/30 bg-[var(--ok)]/10 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[var(--ok)]">
                         Padrão
                       </span>
                     ) : null}

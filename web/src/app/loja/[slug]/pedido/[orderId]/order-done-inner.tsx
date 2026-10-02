@@ -182,14 +182,14 @@ export function OrderDoneInner({
           return;
         }
         setPayError(
-          'Checkout Pro sem link de pagamento. Confira o Access Token no admin.',
+          'Não foi possível abrir o pagamento agora. Tente de novo em instantes.',
         );
         return;
       }
 
       if (!pay.publicKey) {
         setPayError(
-          'Public Key do Mercado Pago não configurada. O dono da loja precisa colar Access Token + Public Key em Admin → Configurações.',
+          'Os pagamentos desta loja ainda não estão disponíveis. Fale com a loja para concluir sua compra.',
         );
         return;
       }

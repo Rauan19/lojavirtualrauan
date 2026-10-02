@@ -112,7 +112,7 @@ export function ProductReviews({ storeSlug, productId, idOrSlug }: Props) {
                 <StarRating value={r.rating} size={12} />
                 <span className="text-xs font-semibold">{r.customerName}</span>
                 {r.verifiedPurchase ? (
-                  <span className="border border-[var(--ok)]/30 bg-[var(--ok)]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[var(--ok)]">
+                  <span className="border border-[var(--ok)]/30 bg-[var(--ok)]/10 px-1.5 py-0.5 text-[11px] font-semibold text-[var(--ok)]">
                     Compra verificada
                   </span>
                 ) : null}

@@ -8,6 +8,7 @@ import { PaymentBadges } from '@/components/PaymentBadges';
 import { api, mediaUrl, money } from '@/lib/api';
 import { cardRatioValue, fontStyle } from '@/lib/store-theme';
 import { sellerWhatsappHref } from '@/lib/contact';
+import { corDeTexto, tintaSobre } from '@/lib/contraste';
 
 type Suggestion = {
   id: string;
@@ -237,6 +238,10 @@ export function StoreShell({
         {
           '--store-primary': primaryColor,
           '--store-accent': accentColor,
+          // Texto em cima da cor (branco ou preto) e a cor como texto em fundo
+          // branco, escurecida se for clara demais: qualquer cor fica legível
+          '--store-accent-ink': tintaSobre(accentColor),
+          '--store-accent-text': corDeTexto(accentColor),
           // Hover derivado da própria cor da loja, sem pedir um segundo campo
           // no admin.
           '--store-accent-hover': `color-mix(in srgb, ${accentColor} 86%, #000)`,
@@ -365,7 +370,7 @@ export function StoreShell({
             <BagIcon />
             {cartCount > 0 ? (
               <span
-                className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
+                className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-[var(--store-accent-ink)]"
                 style={{ background: 'var(--store-accent)' }}
               >
                 {cartCount > 99 ? '99+' : cartCount}
@@ -398,8 +403,8 @@ export function StoreShell({
                 onFocus={() => openMega(null)}
                 className={`inline-block whitespace-nowrap border-b-2 px-3 py-2.5 text-[13px] font-medium transition-colors ${
                   !activeCategoryId
-                    ? 'border-[var(--store-accent)] text-[var(--store-accent)]'
-                    : 'border-transparent text-ink hover:text-[var(--store-accent)]'
+                    ? 'border-[var(--store-accent)] text-[var(--store-accent-text)]'
+                    : 'border-transparent text-ink hover:text-[var(--store-accent-text)]'
                 }`}
               >
                 Todos
@@ -414,8 +419,8 @@ export function StoreShell({
                   aria-expanded={megaId === item.id}
                   className={`inline-block whitespace-nowrap border-b-2 px-3 py-2.5 text-[13px] font-medium transition-colors ${
                     activeCategoryId === item.id || megaId === item.id
-                      ? 'border-[var(--store-accent)] text-[var(--store-accent)]'
-                      : 'border-transparent text-ink hover:text-[var(--store-accent)]'
+                      ? 'border-[var(--store-accent)] text-[var(--store-accent-text)]'
+                      : 'border-transparent text-ink hover:text-[var(--store-accent-text)]'
                   }`}
                 >
                   {item.name}
@@ -447,7 +452,7 @@ export function StoreShell({
                           <button
                             type="button"
                             onClick={() => selectCategory(sub.id)}
-                            className="block w-full py-1 text-left text-[13px] text-ink transition-colors hover:text-[var(--store-accent)]"
+                            className="block w-full py-1 text-left text-[13px] text-ink transition-colors hover:text-[var(--store-accent-text)]"
                           >
                             {sub.name}
                           </button>
@@ -458,7 +463,7 @@ export function StoreShell({
                   <button
                     type="button"
                     onClick={() => selectCategory(megaCategory.id)}
-                    className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--store-accent)]"
+                    className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--store-accent-text)]"
                   >
                     Ver tudo em {megaCategory.name}
                     <span aria-hidden>&rarr;</span>
@@ -595,13 +600,13 @@ export function StoreShell({
         ) : null}
 
         <nav className="flex-1 overflow-y-auto py-2">
-          <p className="px-4 pb-1 pt-2 text-[10px] font-bold uppercase tracking-wider text-muted">
+          <p className="px-4 pb-1 pt-2 text-[11px] font-bold uppercase tracking-wider text-muted">
             Categorias
           </p>
           <button
             type="button"
             className={`block w-full border-b border-line px-4 py-3 text-left text-sm font-medium ${
-              !activeCategoryId ? 'text-[var(--store-accent)]' : ''
+              !activeCategoryId ? 'text-[var(--store-accent-text)]' : ''
             }`}
             onClick={() => selectCategory(null)}
           >
@@ -614,7 +619,7 @@ export function StoreShell({
                 <button
                   type="button"
                   className={`block w-full border-b border-line px-4 py-3 text-left text-sm font-medium ${
-                    activeCategoryId === item.id ? 'text-[var(--store-accent)]' : ''
+                    activeCategoryId === item.id ? 'text-[var(--store-accent-text)]' : ''
                   }`}
                   onClick={() => selectCategory(item.id)}
                 >
@@ -625,7 +630,7 @@ export function StoreShell({
                     type="button"
                     key={sub.id}
                     className={`block w-full border-b border-line py-2.5 pl-8 pr-4 text-left text-[13px] text-muted ${
-                      activeCategoryId === sub.id ? 'text-[var(--store-accent)]' : ''
+                      activeCategoryId === sub.id ? 'text-[var(--store-accent-text)]' : ''
                     }`}
                     onClick={() => selectCategory(sub.id)}
                   >
@@ -817,7 +822,7 @@ export function StoreShell({
           <li>
             <Link
               href={homeHref}
-              className="flex h-full flex-col items-center justify-center gap-0.5 text-[10px] font-medium text-ink"
+              className="flex h-full flex-col items-center justify-center gap-0.5 text-[11px] font-medium text-ink"
             >
               <HomeIcon />
               Início
@@ -826,7 +831,7 @@ export function StoreShell({
           <li>
             <button
               type="button"
-              className="flex h-full w-full flex-col items-center justify-center gap-0.5 text-[10px] font-medium text-ink"
+              className="flex h-full w-full flex-col items-center justify-center gap-0.5 text-[11px] font-medium text-ink"
               onClick={() => setSearchOpen((v) => !v)}
             >
               <SearchIcon />
@@ -837,7 +842,7 @@ export function StoreShell({
             {storeSlug ? (
               <Link
                 href={`/loja/${storeSlug}/favoritos`}
-                className="flex h-full w-full flex-col items-center justify-center gap-0.5 text-[10px] font-medium text-ink"
+                className="flex h-full w-full flex-col items-center justify-center gap-0.5 text-[11px] font-medium text-ink"
               >
                 <HeartIcon />
                 Favoritos
@@ -851,7 +856,7 @@ export function StoreShell({
                   ? pedidosHref
                   : `${contaHref}/entrar?next=${encodeURIComponent(pedidosHref)}`
               }
-              className="flex h-full max-w-full flex-col items-center justify-center gap-0.5 px-0.5 text-[10px] font-medium text-ink"
+              className="flex h-full max-w-full flex-col items-center justify-center gap-0.5 px-0.5 text-[11px] font-medium text-ink"
             >
               <OrdersIcon />
               <span className="max-w-full truncate">Compras</span>
@@ -860,14 +865,14 @@ export function StoreShell({
           <li>
             <button
               type="button"
-              className="relative flex h-full w-full flex-col items-center justify-center gap-0.5 text-[10px] font-medium text-ink"
+              className="relative flex h-full w-full flex-col items-center justify-center gap-0.5 text-[11px] font-medium text-ink"
               onClick={onOpenCart}
             >
               <span className="relative">
                 <BagIcon />
                 {cartCount > 0 ? (
                   <span
-                    className="absolute -right-2 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full px-0.5 text-[9px] font-bold text-white"
+                    className="absolute -right-2 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full px-0.5 text-[10px] font-bold text-[var(--store-accent-ink)]"
                     style={{ background: 'var(--store-accent)' }}
                   >
                     {cartCount > 99 ? '99+' : cartCount}

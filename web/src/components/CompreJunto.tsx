@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { api, mediaUrl, money } from '@/lib/api';
 import type { CartItem } from '@/lib/cart';
+import { SemFoto } from '@/components/SemFoto';
 
 type Sugestao = {
   id: string;
@@ -51,9 +52,9 @@ export function CompreJunto({
         if (!vivo) return;
         setItens(r.items);
         setPct(r.descontoPct ?? 0);
-        setMarcados(
-          new Set(r.items.filter((i) => !i.hasVariants).map((i) => i.id)),
-        );
+        // Só a primeira sugestão já marcada: marcar tudo soa como empurrar
+        const primeira = r.items.find((i) => !i.hasVariants);
+        setMarcados(new Set(primeira ? [primeira.id] : []));
       })
       .catch(() => vivo && setItens([]));
     return () => {
@@ -176,7 +177,7 @@ export function CompreJunto({
         </p>
         <button
           type="button"
-          className="btn btn-accent h-11"
+          className="btn btn-ghost h-11"
           onClick={adicionar}
           disabled={escolhidos.length === 0}
         >
@@ -193,7 +194,9 @@ function Miniatura({ src, alt }: { src?: string; alt: string }) {
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img loading="lazy" decoding="async" src={src} alt={alt} className="h-full w-full object-cover" />
-      ) : null}
+      ) : (
+        <SemFoto nome={alt} variante="mini" />
+      )}
     </span>
   );
 }

@@ -13,11 +13,12 @@ import { StoreShell } from '@/components/StoreShell';
 import { StarRating } from '@/components/StarRating';
 import { WishlistButton } from '@/components/WishlistButton';
 import { api, mediaUrl, thumbUrl, money } from '@/lib/api';
-import { addToCart } from '@/lib/cart';
+import { precoNoPix } from '@/lib/pix';
 import {
   fetchInstallmentsBatch,
   type InstallmentsResponse,
 } from '@/lib/installments';
+import { SemFoto } from '@/components/SemFoto';
 
 type Store = {
   id: string;
@@ -31,6 +32,7 @@ type Store = {
   marqueeEnabled?: boolean;
   marqueeImages?: string[] | null;
   freteGratisAcima?: string | number | null;
+  pixDiscountPercent?: number | null;
   freteModo?: string;
   sellerPhone?: string | null;
   storeFont?: string | null;
@@ -486,8 +488,8 @@ function StorefrontInner({ slug }: { slug: string }) {
                 ) : (
                   <>
                     <span className="drop-shadow-sm">Frete grátis</span>
-                    <span className="store-free-ship-value inline-flex items-baseline gap-1 rounded-md bg-white px-2.5 py-1 text-[var(--store-accent)] shadow-sm">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider opacity-80">
+                    <span className="store-free-ship-value inline-flex items-baseline gap-1 rounded-md bg-white px-2.5 py-1 text-[var(--store-accent-text)] shadow-sm">
+                      <span className="text-[11px] font-semibold uppercase tracking-wider opacity-80">
                         acima de
                       </span>
                       <span className="text-base font-extrabold tabular-nums tracking-tight md:text-lg">
@@ -528,13 +530,18 @@ function StorefrontInner({ slug }: { slug: string }) {
               title="Ofertas da semana"
               query="onSale=true"
               seeAllHref={`/loja/${slug}?onSale=true`}
+              pixPercent={store.pixDiscountPercent}
             />
-            <ProductShelf
-              storeSlug={slug}
-              storeName={store.name}
-              title="Novidades"
-              query="sort=newest"
-            />
+            {/* Catálogo pequeno: Novidades repetiria o grid inteiro logo abaixo */}
+            {total >= 8 ? (
+              <ProductShelf
+                storeSlug={slug}
+                storeName={store.name}
+                title="Novidades"
+                query="sort=newest"
+                pixPercent={store.pixDiscountPercent}
+              />
+            ) : null}
           </>
         ) : null}
 
@@ -555,7 +562,7 @@ function StorefrontInner({ slug }: { slug: string }) {
               <div className="relative" ref={priceRef}>
                 <button
                   type="button"
-                  className="btn btn-ghost px-2.5 py-1.5 text-[11px]"
+                  className="btn btn-ghost h-10 px-3 text-[13px]"
                   onClick={() => setPriceOpen((v) => !v)}
                 >
                   Filtros
@@ -643,7 +650,7 @@ function StorefrontInner({ slug }: { slug: string }) {
               </div>
 
               <select
-                className="field h-8 w-auto rounded-none py-0 pr-6 text-[11px]"
+                className="field h-10 w-auto rounded-none py-0 pr-7 text-[13px]"
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
                 aria-label="Ordenar por"
@@ -719,31 +726,31 @@ function StorefrontInner({ slug }: { slug: string }) {
                           className="product-card-img h-full w-full object-cover"
                         />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-[11px] text-muted">
-                          Sem imagem
-                        </div>
+                        <SemFoto nome={p.name} />
                       )}
                       {discount ? (
                         <span
-                          className="absolute left-2 top-2 px-1.5 py-0.5 text-[10px] font-bold text-white"
+                          className="absolute left-2 top-2 px-1.5 py-0.5 text-[11px] font-bold text-[var(--store-accent-ink)]"
                           style={{ background: 'var(--store-accent)' }}
                         >
                           -{discount}%
                         </span>
                       ) : null}
                       {p.stock != null && p.stock > 0 && p.stock <= 5 ? (
-                        <span className="absolute bottom-2 left-2 bg-black/70 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                        <span
+                          className={`absolute left-2 bg-black/75 px-1.5 py-0.5 text-[11px] font-semibold text-white ${discount ? 'top-9' : 'top-2'}`}
+                        >
                           Só {p.stock} un.
                         </span>
                       ) : null}
                       <WishlistButton
                         storeSlug={slug}
                         productId={p.id}
-                        className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm"
+                        className="absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-sm"
                       />
                     </Link>
                     <div className="flex flex-1 flex-col space-y-1 pt-2.5">
-                      <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-muted">
+                      <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-muted">
                         {p.brand || store.name}
                       </p>
                       <Link href={href}>
@@ -767,6 +774,11 @@ function StorefrontInner({ slug }: { slug: string }) {
                           {money(price)}
                         </strong>
                       </div>
+                      {store.pixDiscountPercent ? (
+                        <p className="text-[12px] font-semibold text-[var(--ok)]">
+                          {money(precoNoPix(price, store.pixDiscountPercent))} no Pix
+                        </p>
+                      ) : null}
                       <InstallmentsBlock
                         amount={price}
                         storeSlug={slug}
@@ -775,10 +787,10 @@ function StorefrontInner({ slug }: { slug: string }) {
                         preset={installmentsById[p.id] ?? null}
                         presetLoading={installmentsLoading}
                       />
-                      <div className="mt-auto grid grid-cols-2 gap-1.5 pt-2.5">
+                      <div className="mt-auto pt-2.5">
                         <button
                           type="button"
-                          className="btn btn-ghost h-10 px-1 text-[11px]"
+                          className="btn btn-ghost h-10 w-full px-1 text-[13px]"
                           onClick={() => {
                             if (p.hasVariants) {
                               router.push(`/loja/${slug}/p/${p.slug || p.id}`);
@@ -793,27 +805,7 @@ function StorefrontInner({ slug }: { slug: string }) {
                             });
                           }}
                         >
-                          {p.hasVariants ? 'Opções' : 'Adicionar'}
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-accent h-10 px-1 text-[11px]"
-                          onClick={() => {
-                            if (p.hasVariants) {
-                              router.push(`/loja/${slug}/p/${p.slug || p.id}`);
-                              return;
-                            }
-                            addToCart(slug, {
-                              productId: p.id,
-                              name: p.name,
-                              price,
-                              image: p.images[0]?.url || null,
-                              installmentsFree: p.installments ?? null,
-                            });
-                            router.push(`/loja/${slug}/checkout`);
-                          }}
-                        >
-                          Comprar
+                          {p.hasVariants ? 'Escolher opções' : 'Adicionar à sacola'}
                         </button>
                       </div>
                     </div>
@@ -836,7 +828,10 @@ function StorefrontInner({ slug }: { slug: string }) {
           />
         </div>
       </StoreShell>
-      <CartDrawer checkoutHref={`/loja/${slug}/checkout`} accentColor={store.accentColor} />
+      <CartDrawer checkoutHref={`/loja/${slug}/checkout`} accentColor={store.accentColor}
+        freteGratisAcima={store.freteGratisAcima}
+        pixPercent={store.pixDiscountPercent}
+      />
     </>
   );
 }

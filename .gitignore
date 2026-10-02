@@ -24,3 +24,6 @@ api/.windsurf/
 # com caminhos absolutos. O launch.json ao lado fica versionado — ele so diz
 # como subir o dev server, e serve para qualquer um.
 .claude/settings.local.json
+
+# Registros locais da skill de design (impeccable)
+.impeccable/

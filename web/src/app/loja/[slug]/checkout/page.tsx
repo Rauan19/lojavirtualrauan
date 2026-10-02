@@ -20,6 +20,7 @@ import {
   formatDeliveryDaysHint,
   formatDeliveryEstimate,
 } from '@/lib/shipping-display';
+import { SemFoto } from '@/components/SemFoto';
 
 type Store = {
   name: string;
@@ -512,7 +513,7 @@ function CheckoutInner({ slug }: { slug: string }) {
     try {
       if (store && store.paymentsEnabled === false) {
         throw new Error(
-          'Esta loja ainda não configurou o Mercado Pago. Peça ao dono para colar Access Token + Public Key em Admin → Configurações.',
+          'Os pagamentos desta loja ainda não estão disponíveis. Fale com a loja para concluir sua compra.',
         );
       }
 
@@ -611,7 +612,7 @@ function CheckoutInner({ slug }: { slug: string }) {
           : pay.initPoint || pay.sandboxInitPoint;
         if (!url) {
           throw new Error(
-            'Mercado Pago não retornou link de pagamento. Confira o Access Token no admin.',
+            'Não foi possível abrir o pagamento agora. Tente de novo em instantes.',
           );
         }
         cart.clear();
@@ -620,7 +621,7 @@ function CheckoutInner({ slug }: { slug: string }) {
       }
 
       throw new Error(
-        'Não foi possível abrir o checkout do Mercado Pago. Confira Access Token e Public Key no admin da loja.',
+        'Não foi possível abrir o pagamento agora. Tente de novo em instantes.',
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao finalizar');
@@ -761,7 +762,7 @@ function CheckoutInner({ slug }: { slug: string }) {
                           />
                           <span>
                             {addr.isDefault ? (
-                              <span className="mb-0.5 block text-[10px] font-bold uppercase text-[var(--ok)]">
+                              <span className="mb-0.5 block text-[11px] font-bold uppercase text-[var(--ok)]">
                                 Padrão
                               </span>
                             ) : null}
@@ -1260,9 +1261,8 @@ function CheckoutInner({ slug }: { slug: string }) {
                   </p>
                   {store.paymentsEnabled === false ? (
                     <p className="border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
-                      Pagamento ainda não configurado nesta loja. O dono precisa
-                      salvar Access Token + Public Key do Mercado Pago em Admin →
-                      Configurações.
+                      Os pagamentos desta loja ainda não estão disponíveis. Fale com
+                      a loja para concluir sua compra.
                     </p>
                   ) : null}
                   {/*
@@ -1350,7 +1350,9 @@ function CheckoutInner({ slug }: { slug: string }) {
                     {img ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img loading="lazy" decoding="async" src={img} alt="" className="h-full w-full object-cover" />
-                    ) : null}
+                    ) : (
+                      <SemFoto nome={item.name} variante="mini" />
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{item.name}</p>

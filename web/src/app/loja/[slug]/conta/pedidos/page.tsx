@@ -245,7 +245,7 @@ export default function MeusPedidosPage() {
                         ) : null}
                       </div>
                     ) : (
-                      <div className="flex h-16 w-16 items-center justify-center rounded bg-zinc-100 text-[10px] font-medium text-muted">
+                      <div className="flex h-16 w-16 items-center justify-center rounded bg-zinc-100 text-[11px] font-medium text-muted">
                         Sem foto
                       </div>
                     )}

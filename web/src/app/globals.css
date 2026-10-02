@@ -124,7 +124,7 @@
    */
   .btn-accent {
     background: var(--store-accent, var(--accent));
-    color: #fff;
+    color: var(--store-accent-ink, #fff);
   }
 
   .btn-accent:hover {
@@ -619,6 +619,63 @@
 /* Proporção da foto do produto: 1/1 para eletrônico, 3/4 ou 2/3 para moda. */
 .store-card-media {
   aspect-ratio: var(--store-card-ratio, 3 / 4);
+}
+
+/*
+ * Produto sem foto (SemFoto.tsx): capa tipográfica na cor da loja. A cor
+ * entra bem diluída no fundo e a inicial gigante dá textura sem competir
+ * com o nome. Tamanhos em cqi: acompanham a largura do cartão.
+ */
+.sem-foto {
+  background: color-mix(in srgb, var(--store-accent, #111) 9%, #fff);
+  color: var(--store-accent-text, #111);
+  font-family: var(--store-font-display, var(--store-font, inherit));
+}
+
+.sem-foto-capa {
+  position: absolute;
+  inset: 0;
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  /* % do padding é relativo à largura do próprio cartão */
+  padding: 9% 9% 10%;
+}
+
+.sem-foto-inicial {
+  position: absolute;
+  top: -0.12em;
+  right: -0.04em;
+  font-size: 82cqi;
+  font-weight: 700;
+  line-height: 1;
+  color: color-mix(in srgb, var(--store-accent, #111) 16%, #fff);
+  user-select: none;
+}
+
+.sem-foto-nome {
+  position: relative;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+  font-size: clamp(14px, 10.5cqi, 34px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.sem-foto-mini {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  font-weight: 700;
 }
 
 .no-scrollbar {

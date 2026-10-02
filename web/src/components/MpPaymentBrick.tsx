@@ -274,7 +274,7 @@ export function MpPaymentBrick({
 
       const safeAmount = normalizeAmount(amount);
       if (!publicKey?.trim()) {
-        throw new Error('Public Key do Mercado Pago ausente');
+        throw new Error('Os pagamentos desta loja ainda não estão disponíveis. Fale com a loja para concluir sua compra.');
       }
       if (safeAmount == null) {
         throw new Error(`Valor inválido para pagamento (R$ ${String(amount)})`);
@@ -366,11 +366,11 @@ export function MpPaymentBrick({
       try {
         const safeAmount = normalizeAmount(amount);
         if (!publicKey?.trim()) {
-          throw new Error('Public Key do Mercado Pago ausente');
+          throw new Error('Os pagamentos desta loja ainda não estão disponíveis. Fale com a loja para concluir sua compra.');
         }
         if (looksLikeAccessTokenAsPublicKey(publicKey)) {
           throw new Error(
-            'A Public Key salva parece um Access Token. No Admin → Configurações → Pagamento, cole a Public Key (formato APP_USR-uuid ou TEST-uuid) do painel Mercado Pago — não o Access Token.',
+            'Os pagamentos desta loja ainda não estão disponíveis. Fale com a loja para concluir sua compra.',
           );
         }
         if (safeAmount == null) {
@@ -422,7 +422,7 @@ export function MpPaymentBrick({
             return;
           }
           const msg =
-            'Checkout não carregou a tempo. Confira se Public Key e Access Token são do mesmo ambiente (teste ou produção) e tente de novo.';
+            'O pagamento demorou para carregar. Confira sua internet e tente de novo.';
           setLoadError(msg);
           onErrorRef.current?.(msg);
         }, 12000);
@@ -462,12 +462,11 @@ export function MpPaymentBrick({
       ) : null}
       {loadError ? (
         <div className="border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900">
-          <p className="font-semibold">Falha ao abrir o checkout</p>
+          <p className="font-semibold">Não conseguimos abrir o pagamento</p>
           <p className="mt-1 break-words text-xs">{loadError}</p>
           <p className="mt-2 text-[11px] text-rose-800/80">
-            Public Key e Access Token precisam ser do mesmo ambiente (ambos
-            teste ou ambos produção). Depois recarregue ou clique em tentar de
-            novo.
+            Seu carrinho continua salvo. Tente de novo; se não funcionar, fale
+            com a loja.
           </p>
           <button
             type="button"

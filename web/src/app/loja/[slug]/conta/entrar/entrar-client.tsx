@@ -25,6 +25,8 @@ export default function ContaEntrarPage() {
   const [busy, setBusy] = useState(false);
 
   const next = resolveAfterLogin(params.slug, search.get('next'));
+  // Veio do "Finalizar compra": o objetivo é pagar, não "fazer login"
+  const vindoDaCompra = next.includes('/checkout');
 
   useEffect(() => {
     if (!loading && customer) {
@@ -49,8 +51,12 @@ export default function ContaEntrarPage() {
   return (
     <StoreAuthShell
       slug={params.slug}
-      title="Bem-vindo de volta"
-      subtitle="Login do comprador nesta loja (não é o painel do dono)."
+      title={vindoDaCompra ? 'Falta pouco para finalizar' : 'Bem-vindo de volta'}
+      subtitle={
+        vindoDaCompra
+          ? 'Entre para receber o pedido e acompanhar a entrega. Seus itens continuam na sacola.'
+          : 'Entre para ver seus pedidos, endereços e favoritos.'
+      }
     >
       <form onSubmit={onSubmit} className="space-y-4">
         {error ? (

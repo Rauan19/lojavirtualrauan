@@ -273,7 +273,7 @@ export default function PedidoDetalhePage() {
                       className="h-14 w-14 shrink-0 rounded object-cover"
                     />
                   ) : (
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded bg-zinc-100 text-[10px] text-muted">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded bg-zinc-100 text-[11px] text-muted">
                       Sem foto
                     </div>
                   )}

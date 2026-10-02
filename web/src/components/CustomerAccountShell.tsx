@@ -95,7 +95,7 @@ export function CustomerAccountShell({ storeSlug, children }: Props) {
                 href={item.href}
                 className={`block border-b border-line px-4 py-3 text-sm font-medium ${
                   active
-                    ? 'bg-[#fafafa] text-[var(--store-accent,#e11d48)]'
+                    ? 'bg-[#fafafa] text-[var(--store-accent-text,#e11d48)]'
                     : ''
                 }`}
                 onClick={() => setDrawerOpen(false)}

@@ -89,14 +89,13 @@ export function InstallmentsBlock({
     return (
       <div className={className}>
         {freeMax >= 2 ? (
-          <p className="text-[10px] font-semibold text-[var(--ok)]">
-            à vista ou {freeMax}x sem juros
+          <p className="text-[12px] text-muted">
+            ou <strong className="font-semibold text-ink">{freeMax}x</strong>{' '}
+            sem juros
           </p>
         ) : headline.cardLine ? (
-          <p className="text-[10px] text-muted">à vista ou cartão c/ juros</p>
-        ) : (
-          <p className="text-[10px] text-muted">à vista</p>
-        )}
+          <p className="text-[12px] text-muted">ou parcelado no cartão</p>
+        ) : null}
       </div>
     );
   }
@@ -107,9 +106,7 @@ export function InstallmentsBlock({
         <p className="text-xs text-muted">Consultando parcelas…</p>
       ) : (
         <>
-          {headline.cashLine ? (
-            <p className="text-sm font-semibold text-ink">{headline.cashLine}</p>
-          ) : null}
+          {/* "À vista R$ X" repetia o preço logo acima: fica só o cartão */}
           {headline.cardLine ? (
             <p
               className={`mt-0.5 text-sm font-semibold ${
@@ -122,10 +119,6 @@ export function InstallmentsBlock({
           {headline.cardExtraLine ? (
             <p className="mt-0.5 text-sm text-muted">{headline.cardExtraLine}</p>
           ) : null}
-          <p className="mt-1 text-xs text-muted">
-            No pagamento, escolha o cartão e as parcelas no checkout do Mercado
-            Pago.
-          </p>
         </>
       )}
     </div>

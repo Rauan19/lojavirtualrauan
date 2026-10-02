@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { thumbUrl, money } from '@/lib/api';
 import { useCart } from '@/components/CartProvider';
 import { cartLineKey } from '@/lib/cart';
+import { SemFoto } from '@/components/SemFoto';
+import { corDeTexto, tintaSobre } from '@/lib/contraste';
+import { precoNoPix } from '@/lib/pix';
 
 function MinusIcon() {
   return (
@@ -56,18 +59,30 @@ function EmptyBagIcon() {
 export function CartDrawer({
   checkoutHref,
   accentColor,
+  freteGratisAcima,
+  pixPercent,
 }: {
   checkoutHref: string;
   accentColor?: string | null;
+  /** Frete grátis a partir deste valor (configuração da loja) */
+  freteGratisAcima?: string | number | null;
+  /** Desconto da loja no Pix (%) */
+  pixPercent?: number | null;
 }) {
   const { items, open, setOpen, updateQty, remove, subtotal, count } = useCart();
 
   if (!open) return null;
 
+  const limiteFrete = Number(freteGratisAcima) || 0;
+  const faltaFrete = Math.max(0, limiteFrete - subtotal);
+  const progressoFrete = limiteFrete > 0 ? Math.min(1, subtotal / limiteFrete) : 0;
+
   const themeVars = accentColor
     ? ({
         '--store-accent': accentColor,
         '--store-accent-hover': `color-mix(in srgb, ${accentColor} 86%, #000)`,
+        '--store-accent-ink': tintaSobre(accentColor),
+        '--store-accent-text': corDeTexto(accentColor),
       } as React.CSSProperties)
     : undefined;
 
@@ -120,14 +135,16 @@ export function CartDrawer({
                       {img ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img loading="lazy" decoding="async" src={img} alt="" className="h-full w-full object-cover" />
-                      ) : null}
+                      ) : (
+                        <SemFoto nome={item.name} variante="mini" />
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <p className="truncate text-sm font-medium">{item.name}</p>
                         <button
                           type="button"
-                          className="icon-btn -mr-1.5 -mt-1 h-7 w-7 shrink-0 text-muted hover:text-accent"
+                          className="icon-btn -mr-2 -mt-2 h-10 w-10 shrink-0 text-muted hover:text-accent"
                           aria-label="Remover item"
                           onClick={() => remove(item.productId, item.variantId)}
                         >
@@ -141,7 +158,7 @@ export function CartDrawer({
                         <div className="inline-flex items-center border border-line">
                           <button
                             type="button"
-                            className="flex h-7 w-7 items-center justify-center text-ink hover:bg-[#f7f8fa]"
+                            className="flex h-9 w-9 items-center justify-center text-ink hover:bg-[#f7f8fa]"
                             aria-label="Diminuir quantidade"
                             onClick={() =>
                               updateQty(item.productId, item.quantity - 1, item.variantId)
@@ -149,12 +166,12 @@ export function CartDrawer({
                           >
                             <MinusIcon />
                           </button>
-                          <span className="w-7 text-center text-sm tabular-nums">
+                          <span className="w-8 text-center text-sm tabular-nums">
                             {item.quantity}
                           </span>
                           <button
                             type="button"
-                            className="flex h-7 w-7 items-center justify-center text-ink hover:bg-[#f7f8fa]"
+                            className="flex h-9 w-9 items-center justify-center text-ink hover:bg-[#f7f8fa]"
                             aria-label="Aumentar quantidade"
                             onClick={() =>
                               updateQty(item.productId, item.quantity + 1, item.variantId)
@@ -176,22 +193,63 @@ export function CartDrawer({
         </div>
 
         <div className="border-t border-line p-4">
-          <div className="mb-3 flex justify-between text-sm">
+          {items.length > 0 && limiteFrete > 0 ? (
+            <div className="mb-4">
+              <p className="mb-1.5 text-[13px]">
+                {faltaFrete > 0 ? (
+                  <>
+                    Faltam <strong>{money(faltaFrete)}</strong> para{' '}
+                    <strong>frete grátis</strong>
+                  </>
+                ) : (
+                  <strong className="text-[var(--ok)]">
+                    Você ganhou frete grátis
+                  </strong>
+                )}
+              </p>
+              <div
+                className="h-1.5 overflow-hidden rounded-full bg-[#eceef1]"
+                role="progressbar"
+                aria-label="Progresso até o frete grátis"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(progressoFrete * 100)}
+              >
+                <div
+                  className="h-full origin-left rounded-full bg-[var(--store-accent,#111)] transition-transform duration-500 ease-out"
+                  style={{ transform: `scaleX(${progressoFrete})` }}
+                />
+              </div>
+            </div>
+          ) : null}
+          <div className="flex justify-between text-sm">
             <span className="text-muted">Subtotal</span>
-            <strong className="text-base">{money(subtotal)}</strong>
+            <strong className="text-base tabular-nums">{money(subtotal)}</strong>
           </div>
+          {items.length > 0 && pixPercent ? (
+            <div className="mt-0.5 flex justify-between text-[13px] text-[var(--ok)]">
+              <span>No Pix</span>
+              <strong className="tabular-nums">
+                {money(precoNoPix(subtotal, pixPercent))}
+              </strong>
+            </div>
+          ) : null}
           {items.length > 0 ? (
             <>
               <Link
                 href={checkoutHref}
-                className="btn btn-accent btn-block py-2.5"
+                className="btn btn-accent btn-block mt-3 h-12 text-[15px]"
                 onClick={() => setOpen(false)}
               >
                 Finalizar compra
               </Link>
-              <p className="mt-2 text-center text-[11px] text-muted">
-                Frete e prazo calculados no checkout
-              </p>
+              <button
+                type="button"
+                className="mt-1 h-10 w-full text-[13px] text-muted underline-offset-2 hover:text-ink hover:underline"
+                onClick={() => setOpen(false)}
+              >
+                Continuar comprando
+              </button>
             </>
           ) : (
             <button type="button" className="btn btn-ghost btn-block" onClick={() => setOpen(false)}>

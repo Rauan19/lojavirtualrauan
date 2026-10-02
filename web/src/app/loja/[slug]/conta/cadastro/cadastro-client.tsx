@@ -28,6 +28,7 @@ export default function ContaCadastroPage() {
   const [touchedConfirm, setTouchedConfirm] = useState(false);
 
   const next = resolveAfterLogin(params.slug, search.get('next'));
+  const vindoDaCompra = next.includes('/checkout');
 
   const mismatch = useMemo(
     () =>
@@ -74,8 +75,12 @@ export default function ContaCadastroPage() {
   return (
     <StoreAuthShell
       slug={params.slug}
-      title="Criar sua conta"
-      subtitle="Cadastre-se para comprar mais rápido e guardar seus endereços."
+      title={vindoDaCompra ? 'Crie sua conta e finalize' : 'Criar sua conta'}
+      subtitle={
+        vindoDaCompra
+          ? 'Leva menos de um minuto. Seus itens continuam na sacola.'
+          : 'Cadastre-se para comprar mais rápido e guardar seus endereços.'
+      }
     >
       <form onSubmit={onSubmit} className="space-y-2.5">
         {error ? (

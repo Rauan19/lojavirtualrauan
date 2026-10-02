@@ -7,7 +7,8 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { CodigoProduto } from '@/components/CodigoProduto';
 import { CartProvider, useCart } from '@/components/CartProvider';
 import { InstallmentsBlock } from '@/components/InstallmentsBlock';
-import { PaymentBadges } from '@/components/PaymentBadges';
+import { CalcularFrete } from '@/components/CalcularFrete';
+import { GarantiasCompra } from '@/components/GarantiasCompra';
 import { ProductReviews } from '@/components/ProductReviews';
 import { StarRating } from '@/components/StarRating';
 import { StoreShell } from '@/components/StoreShell';
@@ -19,6 +20,7 @@ import { pctTexto, precoNoPix } from '@/lib/pix';
 import { AviseMe } from '@/components/AviseMe';
 import { CompreJunto } from '@/components/CompreJunto';
 import { getRecentlyViewed, pushRecentlyViewed, type RecentProduct } from '@/lib/recently-viewed';
+import { SemFoto } from '@/components/SemFoto';
 
 type Store = {
   name: string;
@@ -28,6 +30,7 @@ type Store = {
   accentColor: string;
   /** Desconto no Pix (0 = sem) */
   pixDiscountPercent?: number;
+  freteGratisAcima?: string | number | null;
   sellerPhone?: string | null;
   storeFont?: string | null;
   storeCardRatio?: string | null;
@@ -107,6 +110,19 @@ function ProductInner({
   const [selected, setSelected] = useState<Record<string, string>>({});
   const [variantHint, setVariantHint] = useState('');
   const [related, setRelated] = useState<RelatedProduct[]>([]);
+  // Barra de compra fixa no celular quando os botões saem da tela
+  const [ctaEl, setCtaEl] = useState<HTMLDivElement | null>(null);
+  const [ctaVisivel, setCtaVisivel] = useState(true);
+
+  useEffect(() => {
+    if (!ctaEl || typeof IntersectionObserver === 'undefined') return;
+    const obs = new IntersectionObserver(
+      ([e]) => setCtaVisivel(e.isIntersecting || e.boundingClientRect.top > 0),
+      { threshold: 0 },
+    );
+    obs.observe(ctaEl);
+    return () => obs.disconnect();
+  }, [ctaEl]);
   const [recent, setRecent] = useState<RecentProduct[]>([]);
   const [shared, setShared] = useState(false);
   const [zoomOpen, setZoomOpen] = useState(false);
@@ -397,13 +413,11 @@ function ProductInner({
                     />
                   </button>
                 ) : (
-                  <div className="flex h-full items-center justify-center text-sm text-muted">
-                    Sem imagem
-                  </div>
+                  <SemFoto nome={product.name} />
                 )}
                 {discount ? (
                   <span
-                    className="absolute left-2 top-2 px-1.5 py-0.5 text-xs font-bold text-white"
+                    className="absolute left-2 top-2 px-1.5 py-0.5 text-xs font-bold text-[var(--store-accent-ink)]"
                     style={{ background: 'var(--store-accent)' }}
                   >
                     -{discount}%
@@ -471,10 +485,6 @@ function ProductInner({
               <h1 className="mt-1 text-[22px] font-bold leading-tight md:text-[28px]">
                 {product.name}
               </h1>
-              <CodigoProduto
-                className="mt-1.5"
-                codigo={selectedVariant?.sku || product.sku}
-              />
 
               {product.rating && product.rating.count > 0 ? (
                 <a href="#avaliacoes" className="mt-2 flex items-center gap-1.5">
@@ -494,7 +504,7 @@ function ProductInner({
                 </strong>
                 {discount ? (
                   <span
-                    className="rounded px-1.5 py-0.5 text-[12px] font-bold text-white"
+                    className="rounded px-1.5 py-0.5 text-[12px] font-bold text-[var(--store-accent-ink)]"
                     style={{ background: 'var(--store-accent)' }}
                   >
                     -{discount}%
@@ -600,7 +610,7 @@ function ProductInner({
                 <p className="mt-1 text-sm text-accent">{variantHint}</p>
               ) : null}
 
-              <div className="mt-5 grid gap-2 sm:grid-cols-2">
+              <div ref={setCtaEl} className="mt-5 grid gap-2 sm:grid-cols-2">
                 <button
                   type="button"
                   className="btn btn-ghost h-12 text-[14px]"
@@ -626,6 +636,24 @@ function ProductInner({
                   Comprar agora
                 </button>
               </div>
+
+              {!esgotado ? (
+                <CalcularFrete
+                  storeSlug={storeSlug}
+                  item={{
+                    productId: product.id,
+                    variantId: selectedVariant?.id,
+                    price,
+                  }}
+                />
+              ) : null}
+
+              <GarantiasCompra
+                storeSlug={storeSlug}
+                freteGratisAcima={
+                  store?.freteGratisAcima ? Number(store.freteGratisAcima) : null
+                }
+              />
 
               {esgotado ? (
                 <AviseMe
@@ -705,17 +733,19 @@ function ProductInner({
                 </button>
               </div>
 
-              <PaymentBadges className="mt-4" />
-
               <div className="mt-6 border-t border-line pt-4">
-                <h2 className="text-sm font-bold">Descrição</h2>
                 {product.description?.trim() ? (
-                  <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-[#333]">
-                    {product.description}
-                  </p>
-                ) : (
-                  <p className="mt-2 text-sm text-muted">Sem descrição cadastrada.</p>
-                )}
+                  <>
+                    <h2 className="text-sm font-bold">Descrição</h2>
+                    <p className="mt-2 max-w-[65ch] whitespace-pre-wrap text-sm leading-relaxed text-[#333]">
+                      {product.description}
+                    </p>
+                  </>
+                ) : null}
+                <CodigoProduto
+                  className={product.description?.trim() ? 'mt-3' : ''}
+                  codigo={selectedVariant?.sku || product.sku}
+                />
               </div>
 
               <div id="avaliacoes">
@@ -750,8 +780,42 @@ function ProductInner({
             </section>
           ) : null}
         </div>
+        {!ctaVisivel && !esgotado ? (
+          <div className="fixed inset-x-0 bottom-[calc(56px+env(safe-area-inset-bottom))] z-30 border-t border-line bg-white/95 px-3 py-2 shadow-[0_-6px_18px_rgba(0,0,0,0.08)] backdrop-blur md:hidden">
+            <div className="flex items-center gap-3">
+              <div className="min-w-0 flex-1 leading-tight">
+                <p className="truncate text-[12px] text-muted">{product.name}</p>
+                <p className="text-[15px] font-bold">
+                  {money(price)}
+                  {store?.pixDiscountPercent ? (
+                    <span className="ml-1.5 text-[12px] font-semibold text-[var(--ok)]">
+                      {money(precoNoPix(price, store.pixDiscountPercent))} no Pix
+                    </span>
+                  ) : null}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn btn-accent h-11 shrink-0 px-4 text-[14px]"
+                onClick={() => {
+                  if (hasVariants && !selectedVariant) {
+                    ctaEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                  }
+                  const item = buildCartItem();
+                  if (item) cart.add(item);
+                }}
+              >
+                {hasVariants && !selectedVariant ? 'Escolher opções' : 'Adicionar à sacola'}
+              </button>
+            </div>
+          </div>
+        ) : null}
       </StoreShell>
-      <CartDrawer checkoutHref={`/loja/${storeSlug}/checkout`} accentColor={store.accentColor} />
+      <CartDrawer checkoutHref={`/loja/${storeSlug}/checkout`} accentColor={store.accentColor}
+        freteGratisAcima={store.freteGratisAcima}
+        pixPercent={store.pixDiscountPercent}
+      />
 
       {zoomOpen && currentUrl ? (
         <div
@@ -826,11 +890,13 @@ function RelatedCard({
   const img = mediaUrl(product.images[0]?.url);
   return (
     <Link href={`/loja/${storeSlug}/p/${product.slug || product.id}`} className="flex flex-col">
-      <div className="store-card-media overflow-hidden bg-[#f3f3f3]">
+      <div className="relative store-card-media overflow-hidden bg-[#f3f3f3]">
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img loading="lazy" decoding="async" src={img} alt={product.name} className="h-full w-full object-cover" />
-        ) : null}
+        ) : (
+          <SemFoto nome={product.name} />
+        )}
       </div>
       <h3 className="mt-1.5 line-clamp-2 text-[12px] leading-snug">{product.name}</h3>
       <strong className="mt-0.5 text-[13px]">{money(Number(product.price))}</strong>

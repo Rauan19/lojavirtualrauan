@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { StarRating } from '@/components/StarRating';
 import { api, thumbUrl, money } from '@/lib/api';
+import { precoNoPix } from '@/lib/pix';
+import { SemFoto } from '@/components/SemFoto';
 
 export type ShelfProduct = {
   id: string;
@@ -26,6 +28,8 @@ type Props = {
   seeAllHref?: string;
   storeName: string;
   limit?: number;
+  /** Desconto da loja no Pix (%): mostra o preço no Pix no cartão */
+  pixPercent?: number | null;
 };
 
 function Arrow({ dir }: { dir: 'left' | 'right' }) {
@@ -53,6 +57,7 @@ export function ProductShelf({
   seeAllHref,
   storeName,
   limit = 12,
+  pixPercent,
 }: Props) {
   const [items, setItems] = useState<ShelfProduct[] | null>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -99,7 +104,7 @@ export function ProductShelf({
             {seeAllHref ? (
               <Link
                 href={seeAllHref}
-                className="text-[13px] font-semibold text-[var(--store-accent)] underline-offset-4 hover:underline"
+                className="text-[13px] font-semibold text-[var(--store-accent-text)] underline-offset-4 hover:underline"
               >
                 Ver todos
               </Link>
@@ -169,10 +174,12 @@ export function ProductShelf({
                         alt={p.name}
                         className="product-card-img h-full w-full object-cover"
                       />
-                    ) : null}
+                    ) : (
+                      <SemFoto nome={p.name} />
+                    )}
                     {off ? (
                       <span
-                        className="absolute left-2 top-2 px-1.5 py-0.5 text-[10px] font-bold text-white"
+                        className="absolute left-2 top-2 px-1.5 py-0.5 text-[11px] font-bold text-[var(--store-accent-ink)]"
                         style={{ background: 'var(--store-accent)' }}
                       >
                         -{off}%
@@ -180,7 +187,7 @@ export function ProductShelf({
                     ) : null}
                   </div>
 
-                  <p className="mt-2 truncate text-[10px] font-semibold uppercase tracking-wide text-muted">
+                  <p className="mt-2 truncate text-[11px] font-semibold uppercase tracking-wide text-muted">
                     {p.brand || storeName}
                   </p>
                   <h3 className="line-clamp-2 min-h-[2.4em] text-[13px] font-medium leading-snug text-ink">
@@ -200,9 +207,15 @@ export function ProductShelf({
                     ) : null}
                     <strong className="text-[15px] font-bold text-ink">{money(price)}</strong>
                   </div>
+                  {pixPercent ? (
+                    <p className="text-[12px] font-semibold text-[var(--ok)]">
+                      {money(precoNoPix(price, pixPercent))} no Pix
+                    </p>
+                  ) : null}
                   {p.installments && p.installments >= 2 ? (
-                    <p className="text-[11px] font-semibold text-[var(--ok)]">
-                      {p.installments}x sem juros
+                    <p className="text-[12px] text-muted">
+                      ou <strong className="font-semibold text-ink">{p.installments}x</strong>{' '}
+                      sem juros
                     </p>
                   ) : null}
                 </Link>

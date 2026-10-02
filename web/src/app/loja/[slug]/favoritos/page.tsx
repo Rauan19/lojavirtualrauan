@@ -13,6 +13,8 @@ import { fetchFavoritesOnce, invalidateFavoritesCache } from '@/lib/favorites';
 import { getWishlist } from '@/lib/wishlist';
 
 type Store = {
+  freteGratisAcima?: string | number | null;
+  pixDiscountPercent?: number | null;
   name: string;
   slug: string;
   logoUrl?: string | null;
@@ -163,7 +165,10 @@ function FavoritosInner({ slug }: { slug: string }) {
           )}
         </div>
       </StoreShell>
-      <CartDrawer checkoutHref={`/loja/${slug}/checkout`} accentColor={store.accentColor} />
+      <CartDrawer checkoutHref={`/loja/${slug}/checkout`} accentColor={store.accentColor}
+        freteGratisAcima={store.freteGratisAcima}
+        pixPercent={store.pixDiscountPercent}
+      />
     </>
   );
 }
