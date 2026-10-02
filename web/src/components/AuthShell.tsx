@@ -38,17 +38,13 @@ type Props = {
 export function AuthShell({ headline, subhead, perks, footNote, children }: Props) {
   return (
     <main className="auth-stage min-h-screen text-white">
-      <div className="mx-auto grid min-h-screen max-w-[1240px] content-start gap-6 px-4 py-8 md:grid-cols-[minmax(0,440px)_minmax(0,1fr)] md:content-center md:items-center md:gap-14 md:px-8 md:py-10 lg:gap-20">
-        {/* No celular o título vem antes do cartão, no fundo da marca */}
-        <p className="max-w-[18ch] font-[family-name:var(--font-brand)] text-[1.75rem] font-800 leading-[1.08] tracking-tight text-balance md:hidden">
-          {headline}
-        </p>
-        <section className="auth-card w-full rounded-[22px] bg-white p-6 text-ink shadow-[0_30px_70px_-30px_rgba(4,24,29,0.65)] sm:p-9">
-          <Link href="/" className="mb-7 inline-block" aria-label="Vendira, página inicial">
-            <BrandLogo height={40} priority />
+      <div className="mx-auto grid min-h-screen max-w-[1180px] content-start gap-6 px-3 py-4 sm:px-4 sm:py-8 md:grid-cols-[minmax(0,400px)_minmax(0,1fr)] md:content-center md:items-center md:gap-14 md:px-8 md:py-8 lg:gap-20">
+        <section className="auth-card w-full rounded-[20px] bg-white p-5 text-ink shadow-[0_30px_70px_-30px_rgba(4,24,29,0.65)] sm:p-7">
+          <Link href="/" className="mb-5 inline-block" aria-label="Vendira, página inicial">
+            <BrandLogo height={32} priority />
           </Link>
           {children}
-          <p className="mt-7 border-t border-[#eceef1] pt-5 text-[13px] text-[#4a5560]">
+          <p className="mt-5 border-t border-[#eceef1] pt-4 text-[13px] text-[#4a5560]">
             {footNote}
           </p>
         </section>

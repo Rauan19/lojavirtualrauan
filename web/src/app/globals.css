@@ -899,11 +899,12 @@
     var(--brand-deep);
 }
 
+/* Compacto como Nuvemshop/Shopify: o cadastro inteiro cabe numa tela */
 .auth-card .field {
-  height: 46px;
-  border-radius: 12px;
+  height: 42px;
+  border-radius: 10px;
   border-color: #cfd5dc;
-  padding: 0 0.85rem;
+  padding: 0 0.8rem;
   font-size: 15px;
 }
 
@@ -913,14 +914,19 @@
 }
 
 .auth-card .btn {
-  min-height: 46px;
+  min-height: 44px;
   border-radius: 999px;
   font-size: 15px;
 }
 
+/* Rótulo em frase normal, não em caixa alta: lê mais rápido */
 .auth-card .label {
-  font-size: 12px;
-  letter-spacing: 0.02em;
+  margin-bottom: 0.3rem;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #2b3138;
 }
 
 .auth-proof {

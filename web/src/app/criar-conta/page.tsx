@@ -230,15 +230,15 @@ export default function CriarContaPage() {
         </>
       }
     >
-      <h2 className="font-[family-name:var(--font-brand)] text-[1.7rem] font-800 leading-tight tracking-tight text-[#171a1f]">
+      <h2 className="font-[family-name:var(--font-brand)] text-[1.45rem] font-800 leading-tight tracking-tight text-[#171a1f]">
         Criar minha loja
       </h2>
-      <p className="mt-1.5 text-[15px] text-[#4a5560]">
+      <p className="mt-1 text-[14px] text-[#4a5560]">
         Leva menos de 3 minutos. Sem cartão de crédito.
       </p>
 
       {/* Indicador de etapas */}
-      <ol className="mb-6 mt-7 flex items-center gap-2 text-[11px] font-medium text-[#4a5560]">
+      <ol className="mb-5 mt-5 flex items-center gap-2 text-[12px] font-medium text-[#4a5560]">
         {STEPS.map((s, i) => (
           <li
             key={s.id}
@@ -276,7 +276,7 @@ export default function CriarContaPage() {
             <div>
               <label className="label">Nome da loja</label>
               <input
-                className="field h-11"
+                className="field"
                 value={storeName}
                 onChange={(e) => setStoreName(e.target.value)}
                 placeholder="Ex.: Camisetas do João"
@@ -287,7 +287,7 @@ export default function CriarContaPage() {
             <div>
               <label className="label">Seu nome</label>
               <input
-                className="field h-11"
+                className="field"
                 value={adminName}
                 onChange={(e) => setAdminName(e.target.value)}
                 autoComplete="name"
@@ -297,7 +297,7 @@ export default function CriarContaPage() {
             <div>
               <label className="label">E-mail</label>
               <input
-                className="field h-11"
+                className="field"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -308,7 +308,7 @@ export default function CriarContaPage() {
             <div>
               <label className="label">Senha</label>
               <input
-                className="field h-11"
+                className="field"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -354,7 +354,7 @@ export default function CriarContaPage() {
             <div>
               <label className="label">{docType}</label>
               <input
-                className="field h-11"
+                className="field"
                 value={document}
                 onChange={(e) =>
                   setDocument(formatDoc(e.target.value, docType))
@@ -370,7 +370,7 @@ export default function CriarContaPage() {
             <div>
               <label className="label">Telefone / WhatsApp</label>
               <input
-                className="field h-11"
+                className="field"
                 value={phone}
                 onChange={(e) => setPhone(formatPhoneBr(e.target.value))}
                 placeholder="(11) 98888-7777"
@@ -391,7 +391,7 @@ export default function CriarContaPage() {
             <div>
               <label className="label">CEP</label>
               <input
-                className="field h-11"
+                className="field"
                 value={zipCode}
                 onChange={(e) => setZipCode(formatCep(e.target.value))}
                 onBlur={(e) => onCepBlur(e.target.value)}
@@ -413,7 +413,7 @@ export default function CriarContaPage() {
               <div className="col-span-2">
                 <label className="label">Rua</label>
                 <input
-                  className="field h-11"
+                  className="field"
                   value={street}
                   onChange={(e) => setStreet(e.target.value)}
                   autoComplete="address-line1"
@@ -423,7 +423,7 @@ export default function CriarContaPage() {
               <div>
                 <label className="label">Número</label>
                 <input
-                  className="field h-11"
+                  className="field"
                   value={number}
                   onChange={(e) => setNumber(e.target.value)}
                   autoComplete="off"
@@ -434,7 +434,7 @@ export default function CriarContaPage() {
             <div>
               <label className="label">Complemento (opcional)</label>
               <input
-                className="field h-11"
+                className="field"
                 value={complement}
                 onChange={(e) => setComplement(e.target.value)}
                 placeholder="Sala, bloco, referência..."
@@ -445,7 +445,7 @@ export default function CriarContaPage() {
               <div className="col-span-2">
                 <label className="label">Bairro</label>
                 <input
-                  className="field h-11"
+                  className="field"
                   value={neighborhood}
                   onChange={(e) => setNeighborhood(e.target.value)}
                   autoComplete="off"
@@ -455,7 +455,7 @@ export default function CriarContaPage() {
               <div>
                 <label className="label">UF</label>
                 <input
-                  className="field h-11"
+                  className="field"
                   value={state}
                   onChange={(e) =>
                     setState(e.target.value.toUpperCase().slice(0, 2))
@@ -469,7 +469,7 @@ export default function CriarContaPage() {
             <div>
               <label className="label">Cidade</label>
               <input
-                className="field h-11"
+                className="field"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 autoComplete="address-level2"

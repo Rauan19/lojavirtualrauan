@@ -161,7 +161,7 @@ export default function LoginPage() {
     >
       {desafio ? (
         <form onSubmit={onSubmitCodigo}>
-          <h2 className="font-[family-name:var(--font-brand)] text-[1.7rem] font-800 leading-tight tracking-tight text-[#171a1f]">
+          <h2 className="font-[family-name:var(--font-brand)] text-[1.45rem] font-800 leading-tight tracking-tight text-[#171a1f]">
             Verificação em duas etapas
           </h2>
           <p className="mt-1.5 text-[15px] text-[#4a5560]">
@@ -240,7 +240,7 @@ export default function LoginPage() {
         </form>
       ) : (
       <form onSubmit={onSubmit}>
-        <h2 className="font-[family-name:var(--font-brand)] text-[1.7rem] font-800 leading-tight tracking-tight text-[#171a1f]">
+        <h2 className="font-[family-name:var(--font-brand)] text-[1.45rem] font-800 leading-tight tracking-tight text-[#171a1f]">
           Entrar
         </h2>
         <p className="mt-1.5 text-[15px] text-[#4a5560]">
