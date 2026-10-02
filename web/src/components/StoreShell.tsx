@@ -779,163 +779,172 @@ export function StoreShell({
 
       {children}
 
-      <footer className="mt-10 border-t border-line bg-[#fafafa] pb-2 md:pb-0">
-        <div className="mx-auto max-w-[1200px] px-4 py-9">
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <p className="mb-3 text-xs font-bold uppercase tracking-wider">
-                Institucional
+      {/*
+        Rodapé no padrão do tema Dawn (Shopify): bloco da marca com redes e
+        atendimento, colunas de links com título em frase normal, e na base
+        as formas de pagamento e a linha legal com as políticas.
+      */}
+      <footer className="rodape-loja mt-14 border-t border-line">
+        <div className="mx-auto max-w-[1200px] px-4 pb-8 pt-12 md:pt-14">
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-12">
+            {/* Marca */}
+            <div className="max-w-[320px]">
+              <Link href={homeHref} className="inline-block">
+                {logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={logoUrl}
+                    alt={storeName}
+                    className="h-12 max-w-[200px] object-contain object-left"
+                  />
+                ) : (
+                  <span
+                    className="store-display text-[22px] font-bold"
+                    style={{ color: 'var(--store-primary)' }}
+                  >
+                    {storeName}
+                  </span>
+                )}
+              </Link>
+              <p className="mt-4 text-[14px] leading-relaxed text-muted">
+                Compra segura, frete calculado pelo seu CEP e nota fiscal em
+                todo pedido.
+                {sellerCity && sellerState
+                  ? ` Enviamos de ${sellerCity}/${sellerState}.`
+                  : ''}
               </p>
-              <ul className="space-y-2 text-sm text-muted">
-                {storeSlug ? (
-                  <>
-                    <li>
-                      <Link
-                        href={`/loja/${storeSlug}/politicas/termos`}
-                        className="hover:text-ink"
-                      >
-                        Termos de uso
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href={`/loja/${storeSlug}/politicas/trocas`}
-                        className="hover:text-ink"
-                      >
-                        Trocas e devoluções
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href={`/loja/${storeSlug}/politicas/privacidade`}
-                        className="hover:text-ink"
-                      >
-                        Política de privacidade
-                      </Link>
-                    </li>
-                  </>
-                ) : null}
-              </ul>
-            </div>
-
-            <div>
-              <p className="mb-3 text-xs font-bold uppercase tracking-wider">
-                Minha conta
-              </p>
-              <ul className="space-y-2 text-sm text-muted">
-                {storeSlug ? (
-                  <>
-                    <li>
-                      <Link href={pedidosHref} className="hover:text-ink">
-                        Meus pedidos
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href={contaHref} className="hover:text-ink">
-                        Dados e endereços
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href={`/loja/${storeSlug}/favoritos`}
-                        className="hover:text-ink"
-                      >
-                        Favoritos
-                      </Link>
-                    </li>
-                  </>
-                ) : null}
-              </ul>
-            </div>
-
-            <div>
-              <p className="mb-3 text-xs font-bold uppercase tracking-wider">
-                Atendimento
-              </p>
-              <ul className="space-y-2 text-sm text-muted">
-                <li>
-                  {helpWa ? (
+              {helpWa ? (
+                <a
+                  href={helpWa}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-ghost mt-5 h-10 gap-2 px-4 text-[14px]"
+                >
+                  <WhatsappIcon />
+                  Falar no WhatsApp
+                </a>
+              ) : null}
+              {instagramUrl || facebookUrl || tiktokUrl ? (
+                <div className="mt-5 flex items-center gap-1">
+                  {instagramUrl ? (
                     <a
-                      href={helpWa}
+                      href={instagramUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 hover:text-ink"
+                      aria-label="Instagram da loja"
+                      className="rodape-social"
                     >
-                      <WhatsappIcon />
-                      Falar no WhatsApp
+                      <InstagramIcon />
                     </a>
-                  ) : (
-                    'Atendimento pelos canais da loja'
-                  )}
-                </li>
-                <li>Frete e prazo calculados pelo seu CEP</li>
-                <li>Nota fiscal em todo pedido</li>
-              </ul>
-            </div>
-
-            <div>
-              <p className="mb-3 text-xs font-bold uppercase tracking-wider">
-                Formas de pagamento
-              </p>
-              <PaymentBadges />
-
-              {instagramUrl || facebookUrl || tiktokUrl ? (
-                <>
-                  <p className="mb-2 mt-5 text-xs font-bold uppercase tracking-wider">
-                    Siga a loja
-                  </p>
-                  <div className="flex items-center gap-2">
-                    {instagramUrl ? (
-                      <a
-                        href={instagramUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Instagram"
-                        className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition hover:border-ink hover:text-ink"
-                      >
-                        <InstagramIcon />
-                      </a>
-                    ) : null}
-                    {facebookUrl ? (
-                      <a
-                        href={facebookUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Facebook"
-                        className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition hover:border-ink hover:text-ink"
-                      >
-                        <FacebookIcon />
-                      </a>
-                    ) : null}
-                    {tiktokUrl ? (
-                      <a
-                        href={tiktokUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="TikTok"
-                        className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition hover:border-ink hover:text-ink"
-                      >
-                        <TiktokIcon />
-                      </a>
-                    ) : null}
-                  </div>
-                </>
+                  ) : null}
+                  {facebookUrl ? (
+                    <a
+                      href={facebookUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Facebook da loja"
+                      className="rodape-social"
+                    >
+                      <FacebookIcon />
+                    </a>
+                  ) : null}
+                  {tiktokUrl ? (
+                    <a
+                      href={tiktokUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="TikTok da loja"
+                      className="rodape-social"
+                    >
+                      <TiktokIcon />
+                    </a>
+                  ) : null}
+                </div>
               ) : null}
             </div>
+
+            {/* Links rápidos: as categorias da loja */}
+            {navItems.length > 0 ? (
+              <nav aria-label="Categorias">
+                <h2 className="rodape-titulo">Categorias</h2>
+                <ul className="rodape-lista">
+                  {navItems.slice(0, 6).map((c) => (
+                    <li key={c.id}>
+                      {onSelectCategory ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            selectCategory(c.id);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                        >
+                          {c.name}
+                        </button>
+                      ) : (
+                        <Link href={homeHref}>{c.name}</Link>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            ) : null}
+
+            {storeSlug ? (
+              <nav aria-label="Ajuda">
+                <h2 className="rodape-titulo">Ajuda</h2>
+                <ul className="rodape-lista">
+                  <li>
+                    <Link href={`/loja/${storeSlug}/politicas/trocas`}>
+                      Trocas e devoluções
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={`/loja/${storeSlug}/politicas/privacidade`}>
+                      Política de privacidade
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={`/loja/${storeSlug}/politicas/termos`}>
+                      Termos de uso
+                    </Link>
+                  </li>
+                </ul>
+              </nav>
+            ) : null}
+
+            {storeSlug ? (
+              <nav aria-label="Minha conta">
+                <h2 className="rodape-titulo">Minha conta</h2>
+                <ul className="rodape-lista">
+                  <li>
+                    <Link href={pedidosHref}>Meus pedidos</Link>
+                  </li>
+                  <li>
+                    <Link href={contaHref}>Dados e endereços</Link>
+                  </li>
+                  <li>
+                    <Link href={`/loja/${storeSlug}/favoritos`}>Favoritos</Link>
+                  </li>
+                </ul>
+              </nav>
+            ) : null}
           </div>
 
-          {/* Assinatura legal: razão social e CNPJ são exigidos na vitrine */}
-          <div className="mt-8 flex flex-col gap-2 border-t border-line pt-5 text-[12px] leading-relaxed text-muted sm:flex-row sm:items-center sm:justify-between">
-            <p>
-              {legalName || storeName}
+          {/* Base: pagamentos e linha legal (razão social e CNPJ são exigidos) */}
+          <div className="mt-12 border-t border-line pt-6">
+            <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between">
+              <PaymentBadges />
+              <p className="flex items-center gap-1.5 text-[12px] text-muted">
+                <LockIcon />
+                Compra segura · seus dados protegidos
+              </p>
+            </div>
+            <p className="mt-5 text-center text-[12px] leading-relaxed text-muted md:text-left">
+              © {new Date().getFullYear()}, {legalName || storeName}
               {sellerDocument ? ` · CNPJ ${formatCnpj(sellerDocument)}` : ''}
               {sellerCity && sellerState
                 ? ` · ${sellerCity}/${sellerState}`
                 : ''}
-            </p>
-            <p className="flex items-center gap-1.5">
-              <LockIcon />
-              Compra segura · seus dados protegidos
             </p>
           </div>
         </div>

@@ -1589,3 +1589,50 @@
   color: var(--ink);
   border-color: var(--line);
 }
+
+/* ---------- Vitrine: rodapé no padrão Dawn ------------------------------ */
+.rodape-loja {
+  background: var(--t-superficie, #fff);
+}
+
+.rodape-titulo {
+  margin-bottom: 1rem;
+  font-family: var(--store-font-display, var(--store-font));
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.rodape-lista {
+  display: grid;
+  gap: 0.65rem;
+  font-size: 14px;
+}
+
+.rodape-lista :is(a, button) {
+  color: var(--muted);
+  text-align: left;
+  text-underline-offset: 4px;
+  transition: color 0.15s ease;
+}
+
+.rodape-lista :is(a, button):hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+.rodape-social {
+  display: flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: var(--muted);
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.rodape-social:hover {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+}
