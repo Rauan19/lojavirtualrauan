@@ -3,6 +3,13 @@ import { BrandLogo } from '@/components/BrandLogo';
 import { LandingCta } from '@/components/LandingCta';
 import { SiteHeader } from '@/components/SiteHeader';
 import { StoreDeviceShowcase } from '@/components/StoreDeviceShowcase';
+import {
+  AvisoVendeu,
+  Celular,
+  CheckoutMock,
+  Notebook,
+  PainelMock,
+} from '@/components/landing/LpVisuais';
 import { BRAND } from '@/lib/brand';
 import { CONTACT, whatsappHref } from '@/lib/contact';
 import { getDemoStoreSlug, getPlans, siteUrl } from '@/lib/seo';
@@ -190,117 +197,174 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="border-b border-[#d9dde3] bg-white">
-        <div className="mx-auto max-w-[1080px] px-4 py-14 md:px-6 md:py-20">
-          <h2 className="max-w-[20ch] font-[family-name:var(--font-brand)] text-[1.7rem] font-700 leading-[1.15] text-[#171a1f] md:text-[2.1rem]">
-            No WhatsApp, você só vende o que dá tempo de atender.
-          </h2>
-          <div className="mt-6 max-w-[62ch] space-y-4 text-[1.05rem] leading-relaxed text-[#4a5560]">
-            <p>
-              Cada venda depende de você responder, achar o produto, montar
-              o link de pagamento. Isso trava um teto: passou da sua
-              capacidade de atender, você para de vender. Não importa quanto
-              esforço você coloque.
-            </p>
-            <p>
-              Na {BRAND.name}, o cliente vê o produto, escolhe e paga
-              sozinho, de dia, de noite ou fim de semana, sem precisar de
-              você na conversa. Você vende mais, escala sem contratar mais
-              gente, e o pagamento cai direto na sua conta.
-            </p>
+      {/* O problema, com a resposta ao lado: o pedido chegando no celular */}
+      <section className="overflow-hidden bg-white">
+        <div className="mx-auto grid max-w-[1180px] items-center gap-12 px-4 py-16 md:grid-cols-[1.05fr_1fr] md:gap-16 md:px-6 md:py-24">
+          <div>
+            <h2 className="max-w-[18ch] font-[family-name:var(--font-brand)] text-[1.75rem] font-800 leading-[1.12] tracking-tight text-balance text-[#171a1f] md:text-[2.4rem]">
+              No WhatsApp, você só vende o que dá tempo de atender.
+            </h2>
+            <div className="mt-6 max-w-[56ch] space-y-4 text-[1.05rem] leading-relaxed text-[#4a5560]">
+              <p>
+                Cada venda depende de você responder, achar o produto e montar
+                o link de pagamento. Passou da sua capacidade de atender, você
+                para de vender.
+              </p>
+              <p>
+                Na {BRAND.name}, o cliente vê o produto, escolhe e paga
+                sozinho, de dia, de noite ou no fim de semana. Você só fica
+                sabendo quando o dinheiro já entrou.
+              </p>
+            </div>
+          </div>
+          <div className="relative mx-auto w-full max-w-[22rem] pb-6 md:max-w-none md:pl-10">
+            <div className="lp-halo" aria-hidden />
+            <Celular
+              src="/site/loja-celular-produto.webp"
+              alt={`Página de produto de uma loja feita na ${BRAND.name}, aberta no celular`}
+              className="relative mx-auto w-[68%] md:w-[58%]"
+            />
+            <AvisoVendeu className="absolute bottom-0 left-0 md:-left-2 md:bottom-12" />
           </div>
         </div>
       </section>
 
-      <section id="como-funciona" className="scroll-mt-20 border-b border-[#d9dde3] bg-[#f7f8fa]">
-        <div className="mx-auto max-w-[1080px] px-4 py-14 md:px-6 md:py-20">
-          <h2 className="font-[family-name:var(--font-brand)] text-[1.7rem] font-700 leading-[1.15] text-[#171a1f] md:text-[2.1rem]">
+      <section id="como-funciona" className="scroll-mt-20 bg-[#f7f8fa]">
+        <div className="mx-auto max-w-[1180px] px-4 py-16 md:px-6 md:py-24">
+          <h2 className="max-w-[22ch] font-[family-name:var(--font-brand)] text-[1.75rem] font-800 leading-[1.12] tracking-tight text-balance text-[#171a1f] md:text-[2.4rem]">
             Do cadastro à primeira venda, hoje mesmo
           </h2>
-          <p className="mt-3 max-w-[48ch] text-[1.05rem] leading-relaxed text-[#4a5560]">
-            Cria a conta, monta a vitrine com sua marca e já sai vendendo.
-            Sem esperar aprovação, sem precisar de ninguém — leva minutos.
+          <p className="mt-4 max-w-[52ch] text-[1.05rem] leading-relaxed text-[#4a5560]">
+            Sem esperar aprovação e sem precisar de ninguém. Leva minutos.
           </p>
 
-          <div className="mt-10 grid gap-8 border-t border-[#d9dde3] pt-8 md:grid-cols-3 md:gap-10">
-            <div>
-              <h3 className="text-base font-bold text-[#171a1f]">Cria a conta</h3>
-              <p className="mt-2 text-[15px] leading-relaxed text-[#4a5560]">
-                Nome da loja, seu e-mail e senha. Menos de 2 minutos.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-[#171a1f]">Monta a loja</h3>
-              <p className="mt-2 text-[15px] leading-relaxed text-[#4a5560]">
-                Logo, cores e produtos. Vitrine e painel prontos pra usar.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-[#171a1f]">Você vende</h3>
-              <p className="mt-2 text-[15px] leading-relaxed text-[#4a5560]">
-                Pix e cartão. Pedido organizado no painel.
-              </p>
-            </div>
-          </div>
+          {/* A ordem importa aqui, por isso os passos numerados */}
+          <ol className="lp-passos mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
+            {[
+              ['Cria a conta', 'Nome da loja, seu e-mail e senha. Menos de 2 minutos.'],
+              ['Monta a loja', 'Logo, cor, banner e produtos. A vitrine já sai pronta para o celular.'],
+              ['Você vende', 'Conecta o Mercado Pago e recebe por Pix e cartão. O pedido chega organizado no painel.'],
+            ].map(([titulo, texto], i) => (
+              <li key={titulo} className="relative">
+                <span className="lp-passo-num">{i + 1}</span>
+                <h3 className="mt-5 text-[1.15rem] font-bold text-[#171a1f]">{titulo}</h3>
+                <p className="mt-2 max-w-[34ch] text-[15px] leading-relaxed text-[#4a5560]">{texto}</p>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
-      <section id="o-que-inclui" className="scroll-mt-20 border-b border-[#d9dde3] bg-white">
-        <div className="mx-auto max-w-[1080px] px-4 py-14 md:px-6 md:py-20">
-          <div className="md:flex md:items-end md:justify-between md:gap-10">
-            <h2 className="max-w-[20ch] font-[family-name:var(--font-brand)] text-[1.7rem] font-700 leading-[1.15] text-[#171a1f] md:text-[2.1rem]">
-              Tudo que sua loja precisa, já incluso
-            </h2>
-            {demoSlug ? (
-              <Link
-                href={`/loja/${demoSlug}`}
-                className="mt-4 inline-block text-[15px] font-semibold text-accent underline-offset-4 hover:underline md:mt-0"
-              >
-                Abrir exemplo ao vivo
-              </Link>
-            ) : null}
+      <section id="o-que-inclui" className="scroll-mt-20 bg-white">
+        <div className="mx-auto max-w-[1180px] space-y-24 px-4 py-16 md:space-y-32 md:px-6 md:py-24">
+          {/* Vitrine */}
+          <div className="grid items-center gap-12 md:grid-cols-[1fr_1.15fr] md:gap-16">
+            <div>
+              <h2 className="max-w-[18ch] font-[family-name:var(--font-brand)] text-[1.75rem] font-800 leading-[1.12] tracking-tight text-balance text-[#171a1f] md:text-[2.4rem]">
+                Uma loja com a sua cara, no computador e no celular
+              </h2>
+              <p className="mt-5 max-w-[50ch] text-[1.05rem] leading-relaxed text-[#4a5560]">
+                Sua logo, sua cor e seus banners. Categorias, busca, favoritos
+                e sacola já vêm prontos, e cada página se ajusta sozinha ao
+                celular, que é onde a maioria dos clientes compra.
+              </p>
+              {demoSlug ? (
+                <Link
+                  href={`/loja/${demoSlug}`}
+                  className="mt-6 inline-flex items-center gap-1.5 text-[15px] font-semibold text-accent underline-offset-4 hover:underline"
+                >
+                  Ver uma loja de exemplo
+                  <span aria-hidden>→</span>
+                </Link>
+              ) : null}
+            </div>
+            <div className="relative pb-10 pr-6 md:pr-12">
+              <div className="lp-halo" aria-hidden />
+              <div className="relative">
+                <Notebook
+                  src="/site/loja-computador-home.webp"
+                  alt={`Página inicial de uma loja feita na ${BRAND.name}, no computador`}
+                />
+              </div>
+              <div className="absolute -bottom-2 right-0 w-[27%]">
+                <Celular
+                  src="/site/loja-celular-home.webp"
+                  alt="A mesma loja aberta no celular"
+                  className="border-[6px]"
+                />
+              </div>
+            </div>
           </div>
 
-          <dl className="mt-10 grid gap-x-12 gap-y-8 md:grid-cols-2">
-            {[
-              [
-                'Pagamento direto na sua conta',
-                'Pix, cartão e boleto direto na sua própria loja. O dinheiro não passa pela gente.',
-              ],
-              [
-                'Frete calculado e etiqueta pronta',
-                'Cliente vê o frete real no checkout. Com Melhor Envio, você compra e emite a etiqueta sem sair do painel.',
-              ],
-              [
-                'Nota fiscal integrada',
-                'NFC-e emitida direto do pedido, sem planilha paralela.',
-              ],
-              [
-                'Domínio próprio',
-                'Use seudominio.com.br na sua loja. O registro do domínio é por sua conta.',
-              ],
-              [
-                'Conta do cliente em segundos',
-                'Cadastro simples de nome, e-mail e senha. Depois disso, o cliente acompanha os próprios pedidos.',
-              ],
-              [
-                'Painel completo',
-                'Produtos, cupons, promoções, pedidos e clientes em um lugar só.',
-              ],
-            ].map(([title, text]) => (
-              <div key={title} className="border-t border-[#d9dde3] pt-4">
-                <dt className="text-base font-bold text-[#171a1f]">{title}</dt>
-                <dd className="mt-1.5 text-[15px] leading-relaxed text-[#4a5560]">{text}</dd>
+          {/* Checkout */}
+          <div className="grid items-center gap-12 md:grid-cols-[1.1fr_1fr] md:gap-16">
+            <div className="relative order-2 flex justify-center md:order-1">
+              <div className="lp-halo" aria-hidden />
+              <div className="relative w-full max-w-[25rem]">
+                <CheckoutMock />
               </div>
-            ))}
-          </dl>
+            </div>
+            <div className="order-1 md:order-2">
+              <h2 className="max-w-[18ch] font-[family-name:var(--font-brand)] text-[1.75rem] font-800 leading-[1.12] tracking-tight text-balance text-[#171a1f] md:text-[2.4rem]">
+                Frete pelo CEP e pagamento direto na sua conta
+              </h2>
+              <p className="mt-5 max-w-[50ch] text-[1.05rem] leading-relaxed text-[#4a5560]">
+                O cliente vê o frete real das transportadoras e paga por Pix ou
+                cartão em até 12x. O dinheiro vai para a sua conta do Mercado
+                Pago, sem passar pela gente. Com o Melhor Envio, a etiqueta
+                sai do próprio pedido.
+              </p>
+            </div>
+          </div>
+
+          {/* Painel */}
+          <div className="grid items-center gap-12 md:grid-cols-[1fr_1.15fr] md:gap-16">
+            <div>
+              <h2 className="max-w-[18ch] font-[family-name:var(--font-brand)] text-[1.75rem] font-800 leading-[1.12] tracking-tight text-balance text-[#171a1f] md:text-[2.4rem]">
+                Um painel para cuidar de tudo, até pelo celular
+              </h2>
+              <p className="mt-5 max-w-[50ch] text-[1.05rem] leading-relaxed text-[#4a5560]">
+                Pedidos, produtos, clientes, cupons e frete no mesmo lugar.
+                Chame sua equipe com acesso só ao que cada um precisa, e receba
+                um aviso no celular a cada venda.
+              </p>
+            </div>
+            <div className="relative">
+              <div className="lp-halo" aria-hidden />
+              <div className="relative">
+                <PainelMock />
+              </div>
+            </div>
+          </div>
+
+          {/* O resto que já vem incluso, em lista (não em cartões) */}
+          <div>
+            <h2 className="max-w-[22ch] font-[family-name:var(--font-brand)] text-[1.75rem] font-800 leading-[1.12] tracking-tight text-balance text-[#171a1f] md:text-[2.4rem]">E mais o que uma loja precisa</h2>
+            <dl className="mt-10 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                ['Nota fiscal', 'NFC-e emitida direto do pedido, sem planilha paralela.'],
+                ['Domínio próprio', 'Use seudominio.com.br. O registro do domínio é por sua conta.'],
+                ['Cupons e promoções', 'Desconto por cupom, preço promocional e frete grátis acima de um valor.'],
+                ['Compre junto', 'Sugira produtos que combinam e dê desconto para quem leva o conjunto.'],
+                ['Carrinho abandonado', 'Veja quem não pagou e mande um lembrete com a sacola pronta.'],
+                ['Avaliações', 'Clientes avaliam o que compraram, e você aprova antes de aparecer.'],
+                ['Conta do cliente', 'O cliente acompanha os próprios pedidos e o rastreio.'],
+                ['Equipe na loja', 'Mais pessoas no painel, cada uma com o acesso que você liberar.'],
+              ].map(([titulo, texto]) => (
+                <div key={titulo} className="border-t border-[#d9dde3] pt-4">
+                  <dt className="text-base font-bold text-[#171a1f]">{titulo}</dt>
+                  <dd className="mt-1.5 text-[15px] leading-relaxed text-[#4a5560]">{texto}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
         </div>
       </section>
 
       {plans.length > 0 ? (
-        <section id="planos" className="scroll-mt-20 border-b border-[#d9dde3] bg-[#f7f8fa]">
-          <div className="mx-auto max-w-[1080px] px-4 py-14 md:px-6 md:py-20">
-            <h2 className="font-[family-name:var(--font-brand)] text-[1.7rem] font-700 leading-[1.15] text-[#171a1f] md:text-[2.1rem]">
+        <section id="planos" className="scroll-mt-20 bg-[#f7f8fa]">
+          <div className="mx-auto max-w-[1180px] px-4 py-16 md:px-6 md:py-24">
+            <h2 className="font-[family-name:var(--font-brand)] text-[1.75rem] font-800 leading-[1.12] tracking-tight text-balance text-[#171a1f] md:text-[2.4rem]">
               Comece de graça. Sem pegadinha, sem cartão.
             </h2>
             <p className="mt-3 max-w-[48ch] text-[1.05rem] leading-relaxed text-[#4a5560]">
@@ -338,7 +402,7 @@ export default async function HomePage() {
                   return (
                     <div
                       key={plan.id}
-                      className={`relative flex flex-col bg-white p-5 ${
+                      className={`relative flex flex-col rounded-[18px] bg-white p-5 ${
                         plan.highlight
                           ? 'border-2 border-[#171a1f] shadow-[0_18px_40px_-24px_rgba(23,26,31,0.45)]'
                           : 'border border-[#d9dde3]'
@@ -346,7 +410,7 @@ export default async function HomePage() {
                     >
                       {plan.badge ? (
                         <span
-                          className={`absolute -top-3 left-5 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide ${
+                          className={`absolute -top-3 left-5 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ${
                             plan.highlight
                               ? 'bg-[#171a1f] text-white'
                               : 'border border-[#d9dde3] bg-white text-[#4a5560]'
@@ -417,25 +481,37 @@ export default async function HomePage() {
         </section>
       ) : null}
 
-      <section id="faq" className="scroll-mt-20 border-b border-[#d9dde3] bg-white">
-        <div className="mx-auto max-w-[1080px] px-4 py-14 md:px-6 md:py-20">
-          <h2 className="font-[family-name:var(--font-brand)] text-[1.7rem] font-700 leading-[1.15] text-[#171a1f] md:text-[2.1rem]">
+      <section id="faq" className="scroll-mt-20 bg-white">
+        <div className="mx-auto grid max-w-[1180px] gap-8 px-4 py-16 md:grid-cols-[1fr_1.7fr] md:gap-16 md:px-6 md:py-24">
+          <h2 className="font-[family-name:var(--font-brand)] text-[1.75rem] font-800 leading-[1.12] tracking-tight text-balance text-[#171a1f] md:text-[2.4rem]">
             Perguntas antes de criar a loja
           </h2>
 
-          <dl className="mt-10 grid gap-x-12 gap-y-8 md:grid-cols-2">
+          <div className="divide-y divide-[#d9dde3] border-y border-[#d9dde3]">
             {faq.map(([q, a]) => (
-              <div key={q} className="border-t border-[#d9dde3] pt-4">
-                <dt className="text-base font-bold text-[#171a1f]">{q}</dt>
-                <dd className="mt-1.5 text-[15px] leading-relaxed text-[#4a5560]">{a}</dd>
-              </div>
+              <details key={q} className="lp-faq group">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-[1.05rem] font-bold text-[#171a1f]">
+                  {q}
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden
+                    className="shrink-0 text-[#4a5560] transition-transform duration-200 group-open:rotate-45"
+                  >
+                    <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  </svg>
+                </summary>
+                <p className="-mt-1 max-w-[62ch] pb-5 text-[15px] leading-relaxed text-[#4a5560]">{a}</p>
+              </details>
             ))}
-          </dl>
+          </div>
         </div>
       </section>
 
       <section id="contato" className="scroll-mt-20 bg-[var(--brand-deep)] text-white">
-        <div className="mx-auto flex max-w-[1080px] flex-col gap-6 px-4 py-14 md:flex-row md:items-end md:justify-between md:gap-10 md:px-6 md:py-16">
+        <div className="mx-auto flex max-w-[1180px] flex-col gap-6 px-4 py-16 md:flex-row md:items-end md:justify-between md:gap-10 md:px-6 md:py-20">
           <div className="max-w-xl">
             <h2 className="font-[family-name:var(--font-brand)] text-[1.85rem] font-700 leading-[1.12] md:text-[2.25rem]">
               Não perca mais uma venda. Crie sua loja hoje.
@@ -449,7 +525,7 @@ export default async function HomePage() {
           <div className="flex flex-wrap gap-3">
             <Link
               href="/criar-conta"
-              className="btn bg-white px-5 py-3.5 text-[15px] text-[#171a1f] hover:bg-white/90"
+              className="btn h-12 bg-white px-6 text-[15px] text-[#171a1f] hover:bg-white/90"
             >
               Criar minha loja grátis agora
             </Link>
@@ -458,7 +534,7 @@ export default async function HomePage() {
                 href={wa}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn border border-white/50 bg-transparent px-5 py-3.5 text-[15px] text-white hover:bg-white/10"
+                className="btn h-12 border border-white/50 bg-transparent px-6 text-[15px] text-white hover:bg-white/10"
               >
                 WhatsApp
               </a>
@@ -468,7 +544,7 @@ export default async function HomePage() {
       </section>
 
       <footer className="bg-[#171a1f] text-[#9aa3ad]">
-        <div className="mx-auto flex max-w-[1080px] flex-col gap-3 px-4 py-8 text-sm md:flex-row md:items-center md:justify-between md:px-6">
+        <div className="mx-auto flex max-w-[1180px] flex-col gap-3 px-4 py-8 text-sm md:flex-row md:items-center md:justify-between md:px-6">
           <div className="max-w-[160px]">
             <BrandLogo height={38} />
           </div>
@@ -498,7 +574,7 @@ export default async function HomePage() {
           </div>
         </div>
         {/* Decreto 7.962/2013: quem vende online se identifica no site */}
-        <div className="mx-auto max-w-[1080px] border-t border-white/10 px-4 py-4 text-xs text-[#7d8792] md:px-6">
+        <div className="mx-auto max-w-[1180px] border-t border-white/10 px-4 py-4 text-xs text-[#7d8792] md:px-6">
           <p>
             {empresaIdentificada()}
             {LEGAL.endereco ? ` · ${LEGAL.endereco}` : ''}
