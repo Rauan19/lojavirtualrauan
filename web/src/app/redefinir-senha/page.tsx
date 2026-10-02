@@ -34,15 +34,15 @@ function RedefinirSenhaForm() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f5f5f5] px-4 py-8">
+    <main className="auth-stage flex min-h-screen items-start justify-center px-4 py-10 md:items-center">
       <form
         onSubmit={onSubmit}
-        className="w-full max-w-sm border border-line bg-white p-5 md:p-6"
+        className="auth-card w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_70px_-30px_rgba(4,24,29,0.65)] sm:p-9"
       >
         <Link href="/login" className="text-xs font-medium text-muted hover:text-ink">
           ← Login
         </Link>
-        <h1 className="mt-3 text-xl font-bold">
+        <h1 className="mt-4 font-[family-name:var(--font-brand)] text-[1.7rem] font-800 leading-tight tracking-tight">
           {convite ? 'Criar sua senha' : 'Nova senha'}
         </h1>
         <p className="mt-1 text-sm text-muted">
@@ -82,7 +82,7 @@ function RedefinirSenhaForm() {
                 </div>
                 <button
                   type="submit"
-                  className="btn btn-accent mt-4 w-full"
+                  className="btn btn-accent mt-5 w-full"
                   disabled={busy}
                 >
                   {busy ? 'Salvando...' : 'Salvar senha'}
@@ -104,8 +104,8 @@ export default function AdminRedefinirSenhaPage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen items-center justify-center bg-[#f5f5f5] px-4 py-8">
-          <p className="text-sm text-muted">Carregando...</p>
+        <main className="auth-stage flex min-h-screen items-start justify-center px-4 py-10 md:items-center">
+          <p className="text-sm text-white/80">Carregando…</p>
         </main>
       }
     >

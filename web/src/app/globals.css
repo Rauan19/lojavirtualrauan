@@ -1050,3 +1050,52 @@
     background: #fff;
   }
 }
+
+/* ---------- Entrar / criar conta do lojista (AuthShell) ----------------- */
+/*
+ * Padrão das plataformas grandes: a página toda na cor da marca e o
+ * formulário num cartão branco. O turquesa escuro é a turquesa da logo
+ * levada ao fundo (mesma matiz), com um halo mais claro atrás da vitrine.
+ */
+:root {
+  --brand-deep: #0d3a43;
+}
+
+.auth-stage {
+  background:
+    radial-gradient(60rem 40rem at 78% 70%, rgba(63, 162, 180, 0.32), transparent 62%),
+    radial-gradient(40rem 30rem at 10% 0%, rgba(234, 94, 109, 0.14), transparent 60%),
+    var(--brand-deep);
+}
+
+.auth-card .field {
+  height: 46px;
+  border-radius: 12px;
+  border-color: #cfd5dc;
+  padding: 0 0.85rem;
+  font-size: 15px;
+}
+
+.auth-card .field:focus {
+  border-color: var(--brand-deep);
+  box-shadow: 0 0 0 3px rgba(63, 162, 180, 0.28);
+}
+
+.auth-card .btn {
+  min-height: 46px;
+  border-radius: 999px;
+  font-size: 15px;
+}
+
+.auth-card .label {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.auth-proof {
+  max-height: min(44vh, 380px);
+  overflow: hidden;
+  /* a vitrine continua para baixo: some aos poucos em vez de cortar seco */
+  -webkit-mask-image: linear-gradient(#000 62%, transparent);
+  mask-image: linear-gradient(#000 62%, transparent);
+}

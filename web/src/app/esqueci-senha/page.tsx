@@ -29,15 +29,15 @@ export default function AdminEsqueciSenhaPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f5f5f5] px-4 py-8">
+    <main className="auth-stage flex min-h-screen items-start justify-center px-4 py-10 md:items-center">
       <form
         onSubmit={onSubmit}
-        className="w-full max-w-sm border border-line bg-white p-5 md:p-6"
+        className="auth-card w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_70px_-30px_rgba(4,24,29,0.65)] sm:p-9"
       >
         <Link href="/login" className="text-xs font-medium text-muted hover:text-ink">
           ← Voltar
         </Link>
-        <h1 className="mt-3 text-xl font-bold">Esqueci a senha</h1>
+        <h1 className="mt-4 font-[family-name:var(--font-brand)] text-[1.7rem] font-800 leading-tight tracking-tight">Esqueci a senha</h1>
         <p className="mt-1 text-sm text-muted">
           Enviamos um link se o e-mail existir no painel.
         </p>
@@ -63,8 +63,8 @@ export default function AdminEsqueciSenhaPage() {
             required
           />
         </div>
-        <button type="submit" className="btn btn-accent mt-4 w-full" disabled={busy}>
-          {busy ? 'Enviando...' : 'Enviar link'}
+        <button type="submit" className="btn btn-accent mt-5 w-full" disabled={busy}>
+          {busy ? 'Enviando…' : 'Enviar link'}
         </button>
       </form>
     </main>
