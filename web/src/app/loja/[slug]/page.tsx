@@ -382,14 +382,17 @@ function StorefrontInner({ slug }: { slug: string }) {
         ) : null}
 
         {categoriesWithImage.length > 0 ? (
-          <div className="border-b border-line bg-white px-3 py-4 md:px-4">
+          <section className="bg-white px-3 pb-2 pt-6 md:px-4 md:pt-10">
+            <h2 className="store-display mx-auto mb-4 max-w-[1200px] text-[22px] font-semibold tracking-tight md:text-[26px]">
+              Compre por categoria
+            </h2>
             {/*
               O filho com `w-max` + `mx-auto` centraliza a fileira quando ela
               cabe na tela e, quando não cabe, mantém o scroll horizontal sem
               cortar o primeiro item (o que `justify-center` faria).
             */}
             <div className="no-scrollbar mx-auto max-w-[1200px] overflow-x-auto">
-              <div className="mx-auto flex w-max gap-4 md:gap-6">
+              <div className="flex w-max gap-3 md:gap-4">
                 {categoriesWithImage.map((c) => (
                   <button
                     key={c.id}
@@ -398,7 +401,8 @@ function StorefrontInner({ slug }: { slug: string }) {
                       setCategoryId(c.id);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="flex w-[76px] shrink-0 flex-col items-center gap-1.5 md:w-[92px]"
+                    aria-pressed={categoryId === c.id}
+                    className="group/cat flex w-[132px] shrink-0 flex-col text-left md:w-[176px]"
                   >
                     {/*
                       O anel é sempre visível, não só quando selecionado.
@@ -408,15 +412,12 @@ function StorefrontInner({ slug }: { slug: string }) {
                       engrossa e fecha a cor.
                     */}
                     <span
-                      className="h-16 w-16 overflow-hidden rounded-full md:h-20 md:w-20"
-                      style={{
-                        borderStyle: 'solid',
-                        borderWidth: categoryId === c.id ? 2.5 : 1.5,
-                        borderColor:
-                          categoryId === c.id
-                            ? anelDaCategoria(c)
-                            : `color-mix(in srgb, ${anelDaCategoria(c)} 45%, transparent)`,
-                      }}
+                      className="block aspect-square w-full overflow-hidden rounded-2xl bg-[#f1f1f3]"
+                      style={
+                        categoryId === c.id
+                          ? { boxShadow: `0 0 0 2px #fff, 0 0 0 4px ${anelDaCategoria(c)}` }
+                          : undefined
+                      }
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -424,17 +425,23 @@ function StorefrontInner({ slug }: { slug: string }) {
                         decoding="async"
                         src={mediaUrl(c.imageUrl) || undefined}
                         alt={c.name}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-cover mix-blend-multiply transition-transform duration-500 ease-out group-hover/cat:scale-[1.04]"
                       />
                     </span>
-                    <span className="w-full truncate text-center text-[11px] font-medium text-ink">
-                      {c.name}
+                    <span className="mt-2 flex w-full items-center gap-1 text-[14px] font-semibold text-ink">
+                      <span className="truncate">{c.name}</span>
+                      <span
+                        aria-hidden
+                        className="shrink-0 transition-transform duration-200 group-hover/cat:translate-x-0.5"
+                      >
+                        →
+                      </span>
                     </span>
                   </button>
                 ))}
               </div>
             </div>
-          </div>
+          </section>
         ) : null}
 
         {/*

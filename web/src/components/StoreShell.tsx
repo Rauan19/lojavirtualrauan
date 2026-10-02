@@ -258,7 +258,7 @@ export function StoreShell({
     >
       <FaixaAvisos avisos={avisos ?? []} />
       <header className="sticky top-0 z-30 border-b border-line bg-white">
-        <div className="mx-auto flex h-[var(--header-h)] max-w-[1200px] items-center gap-2 px-3 md:gap-4 md:px-4">
+        <div className="relative mx-auto flex h-[var(--header-h)] max-w-[1200px] items-center gap-2 px-3 md:gap-4 md:px-4">
           <button
             type="button"
             className="icon-btn -ml-2 shrink-0 md:ml-0"
@@ -269,17 +269,20 @@ export function StoreShell({
             <MenuIcon />
           </button>
 
-          <Link href={homeHref} className="flex min-w-0 shrink-0 items-center gap-2 py-1">
+          <Link
+            href={homeHref}
+            className="absolute left-1/2 flex min-w-0 shrink-0 -translate-x-1/2 items-center gap-2 py-1 md:static md:translate-x-0"
+          >
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={logoUrl}
                 alt={storeName}
-                className="h-14 max-w-[200px] object-contain object-left sm:h-16 sm:max-w-[240px] md:h-20 md:max-w-[320px] lg:h-24 lg:max-w-[380px]"
+                className="h-11 max-w-[150px] object-contain sm:h-12 sm:max-w-[180px] md:h-16 md:max-w-[240px] md:object-left"
               />
             ) : (
               <span
-                className="truncate text-xl font-bold tracking-tight md:text-3xl"
+                className="store-display max-w-[52vw] truncate text-xl font-bold tracking-tight md:max-w-none md:text-2xl"
                 style={{ color: 'var(--store-primary)' }}
               >
                 {storeName}
@@ -309,8 +312,8 @@ export function StoreShell({
                 />
               ) : null}
             </span>
-            <span className={loggedIn ? 'max-w-[64px] truncate' : 'whitespace-nowrap'}>
-              {loggedIn ? displayName : 'Entrar/Cadastrar'}
+            <span className="sr-only">
+              {loggedIn ? displayName : 'Entrar ou criar conta'}
             </span>
           </Link>
 
@@ -318,14 +321,14 @@ export function StoreShell({
             <label className="relative block">
               <span className="sr-only">Buscar</span>
               <input
-                className="field h-10 rounded-none border-line pr-10"
+                className="field h-11 !rounded-full !border-transparent bg-[#f3f4f6] pl-5 pr-11 text-[14px] focus:bg-white"
                 placeholder="O que você procura?"
                 value={search}
                 onChange={(e) => onSearch(e.target.value)}
                 onFocus={() => setSuggestionsOpen(true)}
                 onBlur={() => setTimeout(() => setSuggestionsOpen(false), 150)}
               />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted">
                 <SearchIcon />
               </span>
             </label>
@@ -398,16 +401,16 @@ export function StoreShell({
         ) : null}
 
         <nav
-          className="relative hidden border-t border-line md:block"
+          className="relative hidden border-t border-[#f0f1f3] md:block"
           onMouseLeave={closeMega}
         >
-          <ul className="mx-auto flex max-w-[1200px] gap-1 overflow-x-auto px-4">
+          <ul className="no-scrollbar mx-auto flex max-w-[1200px] gap-2 overflow-x-auto px-4 lg:justify-center">
             <li onMouseEnter={() => openMega(null)}>
               <button
                 type="button"
                 onClick={() => selectCategory(null)}
                 onFocus={() => openMega(null)}
-                className={`inline-block whitespace-nowrap border-b-2 px-3 py-2.5 text-[13px] font-medium transition-colors ${
+                className={`inline-block whitespace-nowrap border-b-2 px-3 py-3 text-[14px] font-medium transition-colors ${
                   !activeCategoryId
                     ? 'border-[var(--store-accent)] text-[var(--store-accent-text)]'
                     : 'border-transparent text-ink hover:text-[var(--store-accent-text)]'
@@ -423,7 +426,7 @@ export function StoreShell({
                   onClick={() => selectCategory(item.id)}
                   onFocus={() => openMega(item.id)}
                   aria-expanded={megaId === item.id}
-                  className={`inline-block whitespace-nowrap border-b-2 px-3 py-2.5 text-[13px] font-medium transition-colors ${
+                  className={`inline-block whitespace-nowrap border-b-2 px-3 py-3 text-[14px] font-medium transition-colors ${
                     activeCategoryId === item.id || megaId === item.id
                       ? 'border-[var(--store-accent)] text-[var(--store-accent-text)]'
                       : 'border-transparent text-ink hover:text-[var(--store-accent-text)]'

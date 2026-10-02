@@ -146,36 +146,40 @@ export function StoreMarquee({ images, storeName, intervalMs = 5000 }: Props) {
 
       {total > 1 ? (
         <>
-          <button
-            type="button"
-            aria-label="Banner anterior"
-            onClick={() => go(index - 1)}
-            className="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-[2px] transition-colors hover:bg-black/55 md:left-4 md:h-11 md:w-11"
-          >
-            <ChevronLeft />
-          </button>
-          <button
-            type="button"
-            aria-label="Próximo banner"
-            onClick={() => go(index + 1)}
-            className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-[2px] transition-colors hover:bg-black/55 md:right-4 md:h-11 md:w-11"
-          >
-            <ChevronRight />
-          </button>
-
-          <div className="absolute inset-x-0 bottom-2.5 flex justify-center gap-1.5 md:bottom-4">
-            {urls.map((_, i) => (
+          {/* Controles juntos, numa pílula embaixo e ao centro (tema Dawn) */}
+          <div className="absolute inset-x-0 bottom-2 flex justify-center sm:bottom-3 md:bottom-5">
+            <div className="flex items-center gap-1 rounded-full bg-white/95 px-1.5 py-1.5 text-ink shadow-[0_6px_18px_-8px_rgba(0,0,0,0.45)] sm:px-1 sm:py-1">
               <button
-                key={i}
                 type="button"
-                aria-label={`Ir para o banner ${i + 1}`}
-                aria-current={i === index}
-                onClick={() => go(i)}
-                className={`h-1.5 rounded-full transition-[width,background-color] ${
-                  i === index ? 'w-6 bg-white' : 'w-1.5 bg-white/55 hover:bg-white/80'
-                }`}
-              />
-            ))}
+                aria-label="Banner anterior"
+                onClick={() => go(index - 1)}
+                className="hidden h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-black/5 sm:flex"
+              >
+                <ChevronLeft />
+              </button>
+              <div className="flex items-center gap-1.5 px-1">
+                {urls.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    aria-label={`Ir para o banner ${i + 1}`}
+                    aria-current={i === index}
+                    onClick={() => go(i)}
+                    className={`h-2 rounded-full transition-[width,background-color] ${
+                      i === index ? 'w-6 bg-[#171a1f]' : 'w-2 bg-[#171a1f]/25 hover:bg-[#171a1f]/45'
+                    }`}
+                  />
+                ))}
+              </div>
+              <button
+                type="button"
+                aria-label="Próximo banner"
+                onClick={() => go(index + 1)}
+                className="hidden h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-black/5 sm:flex"
+              >
+                <ChevronRight />
+              </button>
+            </div>
           </div>
         </>
       ) : null}
