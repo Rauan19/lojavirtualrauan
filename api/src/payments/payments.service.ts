@@ -636,10 +636,14 @@ export class PaymentsService {
       // o cliente vê uma frase curta, sem detalhe técnico do Mercado Pago
       let friendly = errText.slice(0, 300);
       let problemaDaLoja = false;
-      if (errText.includes('"code":2034') || errText.includes('Invalid users involved')) {
+      if (
+        errText.includes('"code":2034') ||
+        errText.includes('Invalid users involved') ||
+        errText.includes('user_allowed_only_in_test')
+      ) {
         problemaDaLoja = true;
         friendly =
-          'Usuários incompatíveis (código 2034). Em teste, a conta dona do app (que recebe a comissão), ' +
+          'Usuários incompatíveis (2034 / user_allowed_only_in_test). Em teste, a conta dona do app (que recebe a comissão), ' +
           'o vendedor conectado e o comprador precisam ser todos usuários de teste; em produção, o comprador ' +
           'não pode ser a própria conta do vendedor. Resposta: ' +
           errText.slice(0, 200);
