@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import {
+  Anton,
   Barlow,
   DM_Sans,
   Manrope,
@@ -49,6 +50,14 @@ const storeElegant = Playfair_Display({
   subsets: ['latin'],
   weight: ['500', '600', '700'],
   variable: '--font-store-elegant',
+  preload: false,
+});
+
+// Títulos do tema Street: pesada e condensada, só no tema que usa
+const storeImpact = Anton({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-store-impact',
   preload: false,
 });
 
@@ -111,7 +120,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body
-        className={`${barlow.variable} ${manrope.variable} ${storeModern.variable} ${storeFriendly.variable} ${storeElegant.variable} antialiased`}
+        className={`${barlow.variable} ${manrope.variable} ${storeModern.variable} ${storeFriendly.variable} ${storeElegant.variable} ${storeImpact.variable} antialiased`}
       >
         <ScrollToTop />
         <LabelLinker />

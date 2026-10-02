@@ -26,11 +26,43 @@ export type StoreLayoutPreset = {
   cardRatio: StoreCardRatioKey;
 };
 
-export const STORE_FONT_KEYS = ['padrao', 'moderna', 'amigavel', 'elegante'] as const;
+export const STORE_FONT_KEYS = [
+  'padrao',
+  'moderna',
+  'amigavel',
+  'elegante',
+  'impacto',
+] as const;
 export type StoreFontKey = (typeof STORE_FONT_KEYS)[number];
 
 export const STORE_CARD_RATIO_KEYS = ['retrato', 'quadrado', 'alto'] as const;
 export type StoreCardRatioKey = (typeof STORE_CARD_RATIO_KEYS)[number];
+
+/**
+ * Temas da vitrine. Cada um é uma combinação de peças que já existem
+ * (cabeçalho, banner, cartão, tipografia, cores de fundo), aplicada por CSS
+ * na vitrine; aqui fica só a fonte e o formato de foto que cada tema sugere
+ * quando o lojista não escolheu na mão.
+ */
+export const STORE_THEME_KEYS = [
+  'essencial',
+  'boutique',
+  'tech',
+  'street',
+] as const;
+export type StoreThemeKey = (typeof STORE_THEME_KEYS)[number];
+
+const THEME_LAYOUT: Partial<Record<StoreThemeKey, StoreLayoutPreset>> = {
+  boutique: { font: 'elegante', cardRatio: 'alto' },
+  tech: { font: 'moderna', cardRatio: 'quadrado' },
+  street: { font: 'impacto', cardRatio: 'quadrado' },
+};
+
+export function resolveStoreTheme(theme?: string | null): StoreThemeKey {
+  return STORE_THEME_KEYS.includes(theme as StoreThemeKey)
+    ? (theme as StoreThemeKey)
+    : 'essencial';
+}
 
 export type StoreTypeConfig = {
   type: StoreType;
@@ -235,9 +267,13 @@ export function resolveStoreLayout(
   type: StoreType,
   font?: string | null,
   cardRatio?: string | null,
+  theme?: string | null,
 ): StoreLayoutPreset {
+  // Escolha manual > sugestão do tema > preset do ramo da loja
   const preset =
-    STORE_TYPE_CONFIGS[type]?.layout ?? STORE_TYPE_CONFIGS.GENERAL.layout;
+    THEME_LAYOUT[resolveStoreTheme(theme)] ??
+    STORE_TYPE_CONFIGS[type]?.layout ??
+    STORE_TYPE_CONFIGS.GENERAL.layout;
   return {
     font: STORE_FONT_KEYS.includes(font as StoreFontKey)
       ? (font as StoreFontKey)

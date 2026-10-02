@@ -48,6 +48,7 @@ import {
   isValidCpf,
   onlyDigits,
   resolveStoreLayout,
+  resolveStoreTheme,
 } from './store-type';
 import { TERMS_VERSION } from '../common/legal';
 import { PlanLimitsService } from '../plan-limits/plan-limits.service';
@@ -500,6 +501,7 @@ export class StoresService {
         storeType: true,
         storeFont: true,
         storeCardRatio: true,
+        storeTheme: true,
         analyticsGaId: true,
         analyticsPixelId: true,
         sellerTradeName: true,
@@ -554,6 +556,7 @@ export class StoresService {
       store.storeType,
       store.storeFont,
       store.storeCardRatio,
+      store.storeTheme,
     );
     const padrao = defaultPolicies(store);
 
@@ -573,6 +576,7 @@ export class StoresService {
       // falarem a mesma língua.
       storeFont: layout.font,
       storeCardRatio: layout.cardRatio,
+      storeTheme: resolveStoreTheme(store.storeTheme),
       /*
        * A vitrine precisa saber se há medição configurada para decidir se
        * pede consentimento. Sem nenhum id, só roda cookie essencial e o
@@ -675,6 +679,9 @@ export class StoresService {
           : {}),
         ...(dto.storeCardRatio !== undefined
           ? { storeCardRatio: dto.storeCardRatio.trim() || null }
+          : {}),
+        ...(dto.storeTheme !== undefined
+          ? { storeTheme: dto.storeTheme.trim() || null }
           : {}),
         ...(dto.analyticsGaId !== undefined
           ? { analyticsGaId: dto.analyticsGaId.trim() || null }

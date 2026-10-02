@@ -1418,3 +1418,197 @@
     animation: none;
   }
 }
+
+/* =========================================================================
+ * Temas da vitrine ([data-tema] no StoreShell). Mesmas peças em todos os
+ * temas; aqui muda só a forma, o fundo e a tipografia. A cor da loja
+ * (--store-accent) continua mandando nos botões e selos.
+ * ========================================================================= */
+
+/* ---------- Boutique: editorial, serifa, banner cheio, muito respiro ----- */
+.store-theme[data-tema='boutique'] {
+  --bg: #fbf8f4;
+  --line: #e7e0d8;
+  background: #fbf8f4;
+}
+
+.store-theme[data-tema='boutique'] header,
+.store-theme[data-tema='boutique'] .bg-white {
+  background: #fbf8f4;
+}
+
+.store-theme[data-tema='boutique'] h2.store-display {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  font-size: clamp(26px, 3vw, 36px);
+}
+
+/* Banner de ponta a ponta, sem caixa */
+@media (min-width: 768px) {
+  .store-theme[data-tema='boutique'] .store-promo-marquee {
+    width: 100%;
+    margin-top: 0;
+    border-radius: 0;
+    max-height: 560px;
+  }
+}
+
+/* Cartão sem moldura: a foto é o produto */
+.store-theme[data-tema='boutique'] .store-card-media {
+  border-radius: 2px;
+  background: #efe9e2;
+}
+
+.store-theme[data-tema='boutique'] .product-card :is(h2, h3) {
+  font-family: var(--store-font-display);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.store-theme[data-tema='boutique'] .product-card strong {
+  font-weight: 500;
+}
+
+.store-theme[data-tema='boutique'] .selo-loja {
+  border-radius: 2px;
+  box-shadow: none;
+  letter-spacing: 0.04em;
+}
+
+.store-theme[data-tema='boutique'] .btn {
+  border-radius: 2px;
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Tech: escuro, contorno, foto quadrada ------------------------ */
+.store-theme[data-tema='tech'] {
+  --bg: #0b1016;
+  --surface: #151c26;
+  --ink: #e8edf3;
+  --muted: #98a4b3;
+  --line: #263243;
+  background: #0b1016;
+  color: var(--ink);
+  color-scheme: dark;
+}
+
+.store-theme[data-tema='tech']
+  :is(header, .bg-white, [class*='bg-[#f'], [class*='bg-[#e'], .drawer) {
+  background-color: #11171f;
+}
+
+/* Foto de produto e de categoria fica em fundo branco: produto recortado
+   em fundo escuro some (e a mistura de cor das fotos escurece tudo) */
+.store-theme[data-tema='tech'] .group\/cat > span:first-child,
+.store-theme[data-tema='tech'] .store-card-media {
+  background-color: #ffffff;
+}
+
+.store-theme[data-tema='tech'] .bg-white\/90,
+.store-theme[data-tema='tech'] .bg-white\/95 {
+  background-color: rgba(17, 23, 31, 0.92);
+}
+
+.store-theme[data-tema='tech'] .product-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #151c26;
+  padding: 8px 8px 12px;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.store-theme[data-tema='tech'] .product-card:hover {
+  border-color: var(--store-accent);
+  transform: translateY(-2px);
+}
+
+.store-theme[data-tema='tech'] .store-card-media {
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+/* Preço em destaque na cor da loja */
+.store-theme[data-tema='tech'] .product-card strong {
+  color: var(--store-accent);
+  font-size: 17px;
+}
+
+.store-theme[data-tema='tech'] h2.store-display {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.store-theme[data-tema='tech'] .field {
+  background: #0f151d;
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.store-theme[data-tema='tech'] .faixa-avisos {
+  background: var(--store-accent);
+  color: var(--store-accent-ink);
+}
+
+/* ---------- Street: pesado, caixa alta, cantos retos --------------------- */
+.store-theme[data-tema='street'] {
+  --line: #0a0a0a;
+}
+
+.store-theme[data-tema='street'] .faixa-avisos {
+  background: #0a0a0a;
+  color: #fff;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.store-theme[data-tema='street'] header {
+  border-bottom: 2px solid #0a0a0a;
+}
+
+.store-theme[data-tema='street'] h2.store-display {
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1;
+}
+
+.store-theme[data-tema='street'] .store-card-media,
+.store-theme[data-tema='street'] .loja-foto,
+.store-theme[data-tema='street'] .btn,
+.store-theme[data-tema='street'] .field,
+.store-theme[data-tema='street'] .selo-loja {
+  border-radius: 0;
+}
+
+@media (min-width: 768px) {
+  .store-theme[data-tema='street'] .store-promo-marquee {
+    width: 100%;
+    margin-top: 0;
+    border-radius: 0;
+  }
+}
+
+.store-theme[data-tema='street'] .product-card :is(h2, h3) {
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.store-theme[data-tema='street'] .product-card strong {
+  font-family: var(--store-font-display);
+  font-weight: 400;
+  font-size: 20px;
+}
+
+.store-theme[data-tema='street'] .selo-loja {
+  box-shadow: none;
+  text-transform: uppercase;
+}
+
+.store-theme[data-tema='street'] .btn {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 800;
+}

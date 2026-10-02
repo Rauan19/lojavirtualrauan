@@ -91,7 +91,14 @@ export function mediaUrl(path?: string | null) {
  * não tem miniatura, então volta a própria foto.
  */
 export function thumbUrl(path?: string | null) {
-  if (!path || path.startsWith('http') || !path.endsWith('.webp')) {
+  // Só as fotos enviadas pelo painel (/uploads) ganham a versão -thumb;
+  // imagem estática do site (ex.: /lp/...) não tem miniatura gerada
+  if (
+    !path ||
+    path.startsWith('http') ||
+    !path.endsWith('.webp') ||
+    !path.startsWith('/uploads/')
+  ) {
     return mediaUrl(path);
   }
   if (path.endsWith('-thumb.webp')) return mediaUrl(path);

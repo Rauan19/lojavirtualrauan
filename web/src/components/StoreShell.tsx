@@ -6,7 +6,13 @@ import { useCustomer } from '@/components/CustomerProvider';
 import { CookieConsent } from '@/components/CookieConsent';
 import { PaymentBadges } from '@/components/PaymentBadges';
 import { api, mediaUrl, money } from '@/lib/api';
-import { cardRatioValue, fontStyle } from '@/lib/store-theme';
+import {
+  cardRatioValue,
+  fontStyle,
+  resolveTheme,
+  THEME_LAYOUT,
+  type StoreThemeKey,
+} from '@/lib/store-theme';
 import { sellerWhatsappHref } from '@/lib/contact';
 import { corDeTexto, tintaSobre } from '@/lib/contraste';
 import { FaixaAvisos } from '@/components/FaixaAvisos';
@@ -47,6 +53,8 @@ type Props = {
   tiktokUrl?: string | null;
   storeFont?: string | null;
   storeCardRatio?: string | null;
+  /** Tema da vitrine (essencial, boutique, tech, street) */
+  storeTheme?: string | null;
   analyticsGaId?: string | null;
   analyticsPixelId?: string | null;
   cartCount?: number;
@@ -64,15 +72,34 @@ function formatCnpj(raw: string) {
 function LockIcon() {
   return (
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <rect x="5" y="10.5" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.7" />
-      <path d="M8.5 10.5V8a3.5 3.5 0 017 0v2.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <rect
+        x="5"
+        y="10.5"
+        width="14"
+        height="10"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.7"
+      />
+      <path
+        d="M8.5 10.5V8a3.5 3.5 0 017 0v2.5"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
 
 function WhatsappIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+    >
       <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 2.1.55 4.06 1.6 5.79L2 22l4.44-1.68a9.85 9.85 0 005.6 1.72h.01c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.16h-.01a8.2 8.2 0 01-4.18-1.15l-.3-.18-2.63 1 .7-2.56-.2-.31a8.17 8.17 0 01-1.25-4.36c0-4.53 3.7-8.22 8.24-8.22a8.2 8.2 0 018.23 8.23c0 4.53-3.69 8.22-8.22 8.22z" />
     </svg>
   );
@@ -90,6 +117,7 @@ export function StoreShell({
   accentColor,
   storeFont,
   storeCardRatio,
+  storeTheme,
   analyticsGaId,
   analyticsPixelId,
   categories = [],
@@ -113,6 +141,11 @@ export function StoreShell({
   avisos,
   children,
 }: Props & { children: React.ReactNode }) {
+  const [temaPrevia, setTemaPrevia] = useState<StoreThemeKey | null>(null);
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get('tema');
+    if (t) setTemaPrevia(resolveTheme(t));
+  }, []);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -123,7 +156,10 @@ export function StoreShell({
   const megaTimer = useRef<number | undefined>(undefined);
   const { customer, logout } = useCustomer();
   const helpWa = sellerPhone
-    ? sellerWhatsappHref(sellerPhone, `Olá! Preciso de ajuda com um pedido na loja ${storeName}.`)
+    ? sellerWhatsappHref(
+        sellerPhone,
+        `Olá! Preciso de ajuda com um pedido na loja ${storeName}.`,
+      )
     : null;
 
   const contaHref =
@@ -184,7 +220,8 @@ export function StoreShell({
       { storeSlug },
     )
       .then((res) => {
-        if (!cancelled) setMegaCache((prev) => ({ ...prev, [megaId]: res.items }));
+        if (!cancelled)
+          setMegaCache((prev) => ({ ...prev, [megaId]: res.items }));
       })
       .catch(() => {
         if (!cancelled) setMegaCache((prev) => ({ ...prev, [megaId]: [] }));
@@ -211,7 +248,9 @@ export function StoreShell({
   const navItems = hasTree ? categories.filter((c) => !c.parentId) : categories;
 
   const megaCategory = navItems.find((c) => c.id === megaId) || null;
-  const megaSubs = megaId ? categories.filter((c) => c.parentId === megaId) : [];
+  const megaSubs = megaId
+    ? categories.filter((c) => c.parentId === megaId)
+    : [];
   const megaProducts = megaId ? megaCache[megaId] : undefined;
 
   function openMega(id: string | null) {
@@ -235,8 +274,15 @@ export function StoreShell({
     setMegaId(null);
   }
 
+  // Prévia pelo painel: /loja/x?tema=boutique mostra o tema sem salvar
+  const temaFinal: StoreThemeKey = temaPrevia ?? resolveTheme(storeTheme);
+  const previa = temaPrevia ? THEME_LAYOUT[temaPrevia] : undefined;
+  const fonteFinal = temaPrevia ? (previa?.font ?? null) : storeFont;
+  const fotoFinal = temaPrevia ? (previa?.cardRatio ?? null) : storeCardRatio;
+
   return (
     <div
+      data-tema={temaFinal}
       className="store-theme loja-ui pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0"
       style={
         {
@@ -250,9 +296,9 @@ export function StoreShell({
           // Hover derivado da própria cor da loja, sem pedir um segundo campo
           // no admin.
           '--store-accent-hover': `color-mix(in srgb, ${accentColor} 86%, #000)`,
-          '--store-font': fontStyle(storeFont).body,
-          '--store-font-display': fontStyle(storeFont).display,
-          '--store-card-ratio': cardRatioValue(storeCardRatio),
+          '--store-font': fontStyle(fonteFinal).body,
+          '--store-font-display': fontStyle(fonteFinal).display,
+          '--store-card-ratio': cardRatioValue(fotoFinal),
         } as React.CSSProperties
       }
     >
@@ -299,8 +345,12 @@ export function StoreShell({
             className={`relative ml-auto flex shrink-0 items-center gap-1 py-1.5 pl-2 pr-1 text-[11px] font-semibold md:hidden ${
               loggedIn ? 'text-ink' : 'text-ink'
             }`}
-            aria-label={loggedIn ? `Olá, ${displayName}` : 'Entrar ou criar conta'}
-            title={loggedIn ? `Olá, ${customer?.name}` : 'Entrar ou criar conta'}
+            aria-label={
+              loggedIn ? `Olá, ${displayName}` : 'Entrar ou criar conta'
+            }
+            title={
+              loggedIn ? `Olá, ${customer?.name}` : 'Entrar ou criar conta'
+            }
           >
             <span className="relative">
               <UserIcon />
@@ -438,7 +488,8 @@ export function StoreShell({
             ))}
           </ul>
 
-          {megaCategory && (megaSubs.length > 0 || (megaProducts?.length ?? 0) > 0) ? (
+          {megaCategory &&
+          (megaSubs.length > 0 || (megaProducts?.length ?? 0) > 0) ? (
             <div
               className="absolute inset-x-0 top-full z-40 border-t border-line bg-white shadow-[0_20px_40px_-26px_rgba(0,0,0,0.5)]"
               onMouseEnter={() => window.clearTimeout(megaTimer.current)}
@@ -498,33 +549,35 @@ export function StoreShell({
                       {megaProducts
                         .slice(0, megaSubs.length > 0 ? 4 : 6)
                         .map((prod) => {
-                        const img = mediaUrl(prod.images?.[0]?.url);
-                        return (
-                          <Link
-                            key={prod.id}
-                            href={`/loja/${storeSlug}/p/${prod.slug || prod.id}`}
-                            onClick={() => setMegaId(null)}
-                            className="group block"
-                          >
-                            <div className="aspect-square overflow-hidden rounded-md bg-[#f3f3f3]">
-                              {img ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                  loading="lazy"
-                                  decoding="async"
-                                  src={img}
-                                  alt={prod.name}
-                                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                />
-                              ) : null}
-                            </div>
-                            <p className="mt-1.5 line-clamp-2 text-[12px] leading-snug">
-                              {prod.name}
-                            </p>
-                            <strong className="text-[12px]">{money(Number(prod.price))}</strong>
-                          </Link>
-                        );
-                      })}
+                          const img = mediaUrl(prod.images?.[0]?.url);
+                          return (
+                            <Link
+                              key={prod.id}
+                              href={`/loja/${storeSlug}/p/${prod.slug || prod.id}`}
+                              onClick={() => setMegaId(null)}
+                              className="group block"
+                            >
+                              <div className="aspect-square overflow-hidden rounded-md bg-[#f3f3f3]">
+                                {img ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    loading="lazy"
+                                    decoding="async"
+                                    src={img}
+                                    alt={prod.name}
+                                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                  />
+                                ) : null}
+                              </div>
+                              <p className="mt-1.5 line-clamp-2 text-[12px] leading-snug">
+                                {prod.name}
+                              </p>
+                              <strong className="text-[12px]">
+                                {money(Number(prod.price))}
+                              </strong>
+                            </Link>
+                          );
+                        })}
                     </div>
                   </div>
                 ) : null}
@@ -539,7 +592,10 @@ export function StoreShell({
         onClick={() => setMenuOpen(false)}
         aria-hidden={!menuOpen}
       />
-      <aside className={`drawer ${menuOpen ? 'open' : ''}`} aria-hidden={!menuOpen}>
+      <aside
+        className={`drawer ${menuOpen ? 'open' : ''}`}
+        aria-hidden={!menuOpen}
+      >
         <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -566,14 +622,21 @@ export function StoreShell({
             <div className="flex items-center gap-3">
               <span
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-base font-bold"
-                style={{ background: 'var(--store-accent)', color: 'var(--store-accent-ink)' }}
+                style={{
+                  background: 'var(--store-accent)',
+                  color: 'var(--store-accent-ink)',
+                }}
                 aria-hidden
               >
                 {(displayName || '·').charAt(0).toUpperCase()}
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-[15px] font-semibold">Olá, {displayName}</span>
-                <span className="block truncate text-xs text-muted">{customer?.email}</span>
+                <span className="block truncate text-[15px] font-semibold">
+                  Olá, {displayName}
+                </span>
+                <span className="block truncate text-xs text-muted">
+                  {customer?.email}
+                </span>
               </span>
             </div>
           ) : (
@@ -587,7 +650,10 @@ export function StoreShell({
           )}
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-2 pb-2" aria-label="Categorias">
+        <nav
+          className="flex-1 overflow-y-auto px-2 pb-2"
+          aria-label="Categorias"
+        >
           <button
             type="button"
             className={`menu-loja-item ${!activeCategoryId ? 'is-ativo' : ''}`}
@@ -626,11 +692,19 @@ export function StoreShell({
         <div className="border-t border-line px-2 py-2">
           {loggedIn ? (
             <>
-              <Link href={pedidosHref} className="menu-loja-atalho" onClick={() => setMenuOpen(false)}>
+              <Link
+                href={pedidosHref}
+                className="menu-loja-atalho"
+                onClick={() => setMenuOpen(false)}
+              >
                 <BagIcon />
                 Minhas compras
               </Link>
-              <Link href={contaHref} className="menu-loja-atalho" onClick={() => setMenuOpen(false)}>
+              <Link
+                href={contaHref}
+                className="menu-loja-atalho"
+                onClick={() => setMenuOpen(false)}
+              >
                 <UserIcon />
                 Minha conta e endereços
               </Link>
@@ -647,8 +721,19 @@ export function StoreShell({
             </Link>
           ) : null}
           {helpWa ? (
-            <a href={helpWa} target="_blank" rel="noopener noreferrer" className="menu-loja-atalho">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <a
+              href={helpWa}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="menu-loja-atalho"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden
+              >
                 <path
                   d="M20 12a8 8 0 01-11.6 7.1L4 20l1-4.2A8 8 0 1120 12z"
                   stroke="currentColor"
@@ -665,7 +750,13 @@ export function StoreShell({
               className="menu-loja-atalho w-full text-[#b42318] hover:bg-[#fef3f2]"
               onClick={handleLogout}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden
+              >
                 <path
                   d="M15 7l5 5-5 5M20 12H9M11 4H5v16h6"
                   stroke="currentColor"
@@ -686,22 +777,33 @@ export function StoreShell({
         <div className="mx-auto max-w-[1200px] px-4 py-9">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <p className="mb-3 text-xs font-bold uppercase tracking-wider">Institucional</p>
+              <p className="mb-3 text-xs font-bold uppercase tracking-wider">
+                Institucional
+              </p>
               <ul className="space-y-2 text-sm text-muted">
                 {storeSlug ? (
                   <>
                     <li>
-                      <Link href={`/loja/${storeSlug}/politicas/termos`} className="hover:text-ink">
+                      <Link
+                        href={`/loja/${storeSlug}/politicas/termos`}
+                        className="hover:text-ink"
+                      >
                         Termos de uso
                       </Link>
                     </li>
                     <li>
-                      <Link href={`/loja/${storeSlug}/politicas/trocas`} className="hover:text-ink">
+                      <Link
+                        href={`/loja/${storeSlug}/politicas/trocas`}
+                        className="hover:text-ink"
+                      >
                         Trocas e devoluções
                       </Link>
                     </li>
                     <li>
-                      <Link href={`/loja/${storeSlug}/politicas/privacidade`} className="hover:text-ink">
+                      <Link
+                        href={`/loja/${storeSlug}/politicas/privacidade`}
+                        className="hover:text-ink"
+                      >
                         Política de privacidade
                       </Link>
                     </li>
@@ -711,7 +813,9 @@ export function StoreShell({
             </div>
 
             <div>
-              <p className="mb-3 text-xs font-bold uppercase tracking-wider">Minha conta</p>
+              <p className="mb-3 text-xs font-bold uppercase tracking-wider">
+                Minha conta
+              </p>
               <ul className="space-y-2 text-sm text-muted">
                 {storeSlug ? (
                   <>
@@ -726,7 +830,10 @@ export function StoreShell({
                       </Link>
                     </li>
                     <li>
-                      <Link href={`/loja/${storeSlug}/favoritos`} className="hover:text-ink">
+                      <Link
+                        href={`/loja/${storeSlug}/favoritos`}
+                        className="hover:text-ink"
+                      >
                         Favoritos
                       </Link>
                     </li>
@@ -736,7 +843,9 @@ export function StoreShell({
             </div>
 
             <div>
-              <p className="mb-3 text-xs font-bold uppercase tracking-wider">Atendimento</p>
+              <p className="mb-3 text-xs font-bold uppercase tracking-wider">
+                Atendimento
+              </p>
               <ul className="space-y-2 text-sm text-muted">
                 <li>
                   {helpWa ? (
@@ -814,7 +923,9 @@ export function StoreShell({
             <p>
               {legalName || storeName}
               {sellerDocument ? ` · CNPJ ${formatCnpj(sellerDocument)}` : ''}
-              {sellerCity && sellerState ? ` · ${sellerCity}/${sellerState}` : ''}
+              {sellerCity && sellerState
+                ? ` · ${sellerCity}/${sellerState}`
+                : ''}
             </p>
             <p className="flex items-center gap-1.5">
               <LockIcon />
@@ -945,11 +1056,19 @@ function SearchSuggestions({
             <div className="h-10 w-8 shrink-0 overflow-hidden bg-[#f3f3f3]">
               {img ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img loading="lazy" decoding="async" src={img} alt="" className="h-full w-full object-cover" />
+                <img
+                  loading="lazy"
+                  decoding="async"
+                  src={img}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
               ) : null}
             </div>
             <span className="min-w-0 flex-1 truncate text-sm">{p.name}</span>
-            <strong className="shrink-0 text-xs">{money(Number(p.price))}</strong>
+            <strong className="shrink-0 text-xs">
+              {money(Number(p.price))}
+            </strong>
           </Link>
         );
       })}
@@ -960,7 +1079,15 @@ function SearchSuggestions({
 function InstagramIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" strokeWidth="1.6" />
+      <rect
+        x="3"
+        y="3"
+        width="18"
+        height="18"
+        rx="5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
       <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.6" />
       <circle cx="17.2" cy="6.8" r="1" fill="currentColor" />
     </svg>
@@ -1023,7 +1150,12 @@ function UserIcon() {
 function MenuIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path
+        d="M4 7h16M4 12h16M4 17h16"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -1031,7 +1163,12 @@ function MenuIcon() {
 function CloseIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path
+        d="M6 6l12 12M18 6L6 18"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -1040,7 +1177,12 @@ function SearchIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
       <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M16.5 16.5L21 21" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path
+        d="M16.5 16.5L21 21"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -1072,15 +1214,33 @@ function OrdersIcon() {
         strokeWidth="1.6"
         strokeLinejoin="round"
       />
-      <path d="M9 8h6M9 12h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path
+        d="M9 8h6M9 12h6"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
 
 function ChevronRight() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden className="shrink-0 opacity-60">
-      <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className="shrink-0 opacity-60"
+    >
+      <path
+        d="M9 6l6 6-6 6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

@@ -85,6 +85,7 @@ const navGroups: NavGroup[] = [
   {
     title: 'Configuração',
     items: [
+      { href: '/admin/temas', label: 'Temas da loja', area: 'configuracoes' },
       {
         href: '/admin/settings',
         label: 'Loja e frete',

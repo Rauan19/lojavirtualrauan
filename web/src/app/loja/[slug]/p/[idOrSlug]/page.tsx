@@ -35,6 +35,7 @@ type Store = {
   freteModo?: string | null;
   sellerPhone?: string | null;
   storeFont?: string | null;
+  storeTheme?: string | null;
   storeCardRatio?: string | null;
   analyticsGaId?: string | null;
   analyticsPixelId?: string | null;
@@ -357,6 +358,7 @@ function ProductInner({
         storeSlug={storeSlug}
         sellerPhone={store.sellerPhone}
         storeFont={store.storeFont}
+        storeTheme={store.storeTheme}
         storeCardRatio={store.storeCardRatio}
         analyticsGaId={store.analyticsGaId}
         analyticsPixelId={store.analyticsPixelId}

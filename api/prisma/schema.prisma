@@ -212,6 +212,8 @@ model Store {
    */
   storeFont        String?
   storeCardRatio   String?
+  /** Tema da vitrine: essencial | boutique | tech | street. Nulo = Essencial. */
+  storeTheme       String?
 
   /**
    * Sequência do número do pedido. Antes o número saía de count(*) + 1, o
