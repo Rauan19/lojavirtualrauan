@@ -15,6 +15,7 @@ import {
   formatDate,
   moneyBr,
   planBadge,
+  ALERTA_LABEL,
   statusLabel,
   statusTone,
   StoreRow,
@@ -170,7 +171,9 @@ export function SuperLojasInner() {
   const filtered = useMemo(() => {
     const needle = qParam.trim().toLowerCase();
     return stores.filter((s) => {
-      if (statusFilter && s.status !== statusFilter) return false;
+      if (statusFilter === 'ALERTA') {
+        if (!s.alertasCadastro?.length) return false;
+      } else if (statusFilter && s.status !== statusFilter) return false;
       if (planFilter && s.planState !== planFilter) return false;
       if (!needle) return true;
       const hay = [
@@ -441,6 +444,7 @@ export function SuperLojasInner() {
             <option value="TRIAL">Em teste</option>
             <option value="PAST_DUE">Em atraso</option>
             <option value="SUSPENDED">Suspensa</option>
+            <option value="ALERTA">Para revisar (antifraude)</option>
           </select>
         </div>
         <div>
@@ -516,6 +520,16 @@ export function SuperLojasInner() {
                       >
                         {badge.text}
                       </span>
+                      {s.alertasCadastro?.length ? (
+                        <span
+                          className="rounded-full bg-[#fff6e0] px-2 py-0.5 text-[11px] font-semibold text-[#8a5a00]"
+                          title={s.alertasCadastro
+                            .map((a) => ALERTA_LABEL[a] || a)
+                            .join(' · ')}
+                        >
+                          Revisar
+                        </span>
+                      ) : null}
                     </div>
                     <p className="mt-1 text-sm text-muted">
                       /loja/{s.slug} · plano {nomePlano(s.planName)} ·{' '}

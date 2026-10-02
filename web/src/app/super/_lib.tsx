@@ -13,6 +13,8 @@ export type StoreAdmin = {
 export type StoreRow = {
   id: string;
   name: string;
+  /** Alertas antifraude do cadastro (ver ALERTA_LABEL) */
+  alertasCadastro?: string[];
   slug: string;
   status: string;
   storeType?: string;
@@ -79,6 +81,14 @@ export const emptyCreateStore = {
   sellerNeighborhood: '',
   sellerCity: '',
   sellerState: '',
+};
+
+/** O que cada alerta antifraude quer dizer, em português */
+export const ALERTA_LABEL: Record<string, string> = {
+  cnpj_nao_verificado:
+    'CNPJ não conferido na Receita (serviço fora do ar no cadastro)',
+  documento_mp_diferente:
+    'CPF/CNPJ da conta do Mercado Pago diferente do cadastro da loja',
 };
 
 export const statusLabel: Record<string, string> = {

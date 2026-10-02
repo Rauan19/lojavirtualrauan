@@ -12,6 +12,7 @@ import { emTrava, TravasService } from '../fila/travas.service';
 import { ConfigService } from '@nestjs/config';
 import { SecretsService } from '../common/secrets/secrets.service';
 import { SweepRunner } from '../common/utils/sweep-runner';
+import { comAlerta, documentoDaContaMp } from '../antifraude/conta-mp';
 import { PrismaService } from '../prisma/prisma.service';
 
 /*
@@ -251,6 +252,8 @@ export class MercadoPagoOauthService implements OnModuleInit, OnModuleDestroy {
       },
     });
 
+    await this.conferirDocumento(storeId, token.access_token as string);
+
     this.logger.log(
       `Mercado Pago conectado · loja ${storeId} · conta ${token.user_id ?? '?'}${
         String(token.access_token).startsWith('TEST-') ? ' (teste)' : ''
@@ -317,6 +320,44 @@ export class MercadoPagoOauthService implements OnModuleInit, OnModuleDestroy {
     });
     for (const loja of lojas) await this.ensureFreshToken(loja.id);
     return lojas.length;
+  }
+
+  /**
+   * Antifraude: o CPF/CNPJ da conta do Mercado Pago conectada tem que ser o
+   * mesmo do cadastro da loja. Se não for, a loja ganha o alerta
+   * "documento_mp_diferente" para revisão no Super Admin (não bloqueia: um
+   * sócio pode conectar a conta da empresa, por exemplo).
+   */
+  private async conferirDocumento(storeId: string, accessToken: string) {
+    try {
+      const doMp = await documentoDaContaMp(accessToken);
+      const loja = await this.prisma.store.findUnique({
+        where: { id: storeId },
+        select: { sellerDocument: true, alertasCadastro: true },
+      });
+      if (!loja || !doMp || !loja.sellerDocument) return;
+      const diferente = doMp !== loja.sellerDocument;
+      const alertas = comAlerta(
+        loja.alertasCadastro,
+        'documento_mp_diferente',
+        diferente,
+      );
+      if (alertas.join() !== loja.alertasCadastro.join()) {
+        await this.prisma.store.update({
+          where: { id: storeId },
+          data: { alertasCadastro: alertas },
+        });
+      }
+      if (diferente) {
+        this.logger.warn(
+          `Documento da conta do Mercado Pago diferente do cadastro · loja ${storeId}`,
+        );
+      }
+    } catch (err) {
+      this.logger.warn(
+        `Não foi possível conferir o documento da conta do MP · loja ${storeId}: ${String(err)}`,
+      );
+    }
   }
 
   /** Esquece a conexão. Não revoga no Mercado Pago. */

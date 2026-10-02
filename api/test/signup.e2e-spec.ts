@@ -8,6 +8,7 @@ import { createTestApp, resetDb } from './helpers/test-app';
 // Documentos com dígito verificador válido pelo mesmo algoritmo da API.
 const VALID_CPF = '11144477735';
 const VALID_CNPJ = '11222333000181';
+const OUTRO_CPF = '52998224725';
 
 const VALID_ADDRESS = {
   zipCode: '01310100',
@@ -141,7 +142,11 @@ describe('Signup público (e2e)', () => {
 
   it('gera slug alternativo quando o nome já existe (não trava o cadastro)', async () => {
     const a = await signup().expect(201);
-    const b = await signup({ adminEmail: 'outra@exemplo.com' }).expect(201);
+    // Outro dono (outro CPF): o mesmo documento não abre segunda loja
+    const b = await signup({
+      adminEmail: 'outra@exemplo.com',
+      sellerDocument: OUTRO_CPF,
+    }).expect(201);
 
     expect(a.body.slug).not.toBe(b.body.slug);
     expect(b.body.slug).toMatch(/^loja-da-maria-\d+$/);
@@ -164,6 +169,31 @@ describe('Signup público (e2e)', () => {
       where: { slug: res.body.slug },
     });
     expect(store.planName).toBeTruthy();
+  });
+
+  describe('antifraude', () => {
+    it('o mesmo CPF não abre uma segunda loja (um teste grátis por documento)', async () => {
+      await signup().expect(201);
+      const res = await signup({ adminEmail: 'outra@exemplo.com' }).expect(409);
+      expect(res.body.message).toMatch(/já tem uma loja/);
+      expect(await prisma.store.count()).toBe(1);
+    });
+
+    it('recusa e-mail temporário', async () => {
+      const res = await signup({ adminEmail: 'golpe@mailinator.com' }).expect(
+        400,
+      );
+      expect(res.body.message).toMatch(/e-mail permanente/);
+      expect(await prisma.store.count()).toBe(0);
+    });
+
+    it('loja nasce sem alertas quando tudo confere', async () => {
+      const res = await signup().expect(201);
+      const store = await prisma.store.findUniqueOrThrow({
+        where: { slug: res.body.slug },
+      });
+      expect(store.alertasCadastro).toEqual([]);
+    });
   });
 
   describe('documento (CPF/CNPJ)', () => {
@@ -295,6 +325,7 @@ describe('Signup público (e2e)', () => {
       await signup({ complement: 'Sala 401' }).expect(201);
       await signup({
         adminEmail: 'sem-complemento@exemplo.com',
+        sellerDocument: OUTRO_CPF,
         complement: undefined,
       }).expect(201);
     });

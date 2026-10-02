@@ -228,6 +228,14 @@ model Store {
    */
   analyticsGaId     String?
   analyticsPixelId  String?
+
+  /**
+   * Alertas antifraude do cadastro, para revisão no Super Admin. Ex.:
+   * "cnpj_nao_verificado" (Receita fora do ar no cadastro) e
+   * "documento_mp_diferente" (CPF/CNPJ da conta do Mercado Pago conectada
+   * não bate com o da loja). Não bloqueiam a loja sozinhos.
+   */
+  alertasCadastro   String[]    @default([])
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 
@@ -249,6 +257,9 @@ model Store {
   platformFeeEnabled Boolean?
   reviews           Review[]
   favorites         Favorite[]
+
+  /** Um teste grátis por CPF/CNPJ: o cadastro procura a loja pelo documento */
+  @@index([sellerDocument])
 }
 
 model User {

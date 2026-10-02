@@ -14,6 +14,8 @@ import {
   StoreType,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { emailDescartavel } from '../antifraude/email-descartavel';
+import { consultarCnpj } from '../antifraude/receita';
 import { BillingService } from '../billing/billing.service';
 import { PlatformPlansService } from '../billing/platform-plans.service';
 import { type PlatformPlan } from '../billing/platform-plans';
@@ -97,6 +99,7 @@ export class StoresService {
    * loja já ACTIVE sem pagar.
    */
   async signup(dto: PublicSignupDto, ip: string) {
+    const alertasCadastro = await this.checarAntifraudeCadastro(dto);
     const slug = await this.resolveAvailableSlug(dto.slug || dto.storeName);
     const passwordHash = await bcrypt.hash(dto.adminPassword, 10);
     const trialDays = await this.billingService.getTrialDays();
@@ -138,6 +141,7 @@ export class StoresService {
           termsVersion: TERMS_VERSION,
           termsAcceptedAt: new Date(),
           termsAcceptedIp: ip.slice(0, 64),
+          alertasCadastro,
         },
       });
 
@@ -165,6 +169,71 @@ export class StoresService {
     });
 
     return { storeId: store.id, slug: store.slug };
+  }
+
+  /**
+   * Barreiras do cadastro público contra robô e teste grátis infinito:
+   * e-mail descartável, CPF/CNPJ que já tem loja e CNPJ que não existe ou não
+   * está ativo na Receita. Devolve os alertas que não bloqueiam, mas pedem
+   * revisão (ex.: Receita fora do ar na hora do cadastro).
+   */
+  private async checarAntifraudeCadastro(dto: PublicSignupDto) {
+    const alertas: string[] = [];
+
+    if (emailDescartavel(dto.adminEmail)) {
+      throw new BadRequestException(
+        'Use um e-mail permanente: não aceitamos e-mail temporário.',
+      );
+    }
+
+    const documento = onlyDigits(dto.sellerDocument || '');
+    if (documento) {
+      await this.garantirDocumentoLivre(documento);
+    }
+
+    if (
+      dto.sellerDocType === SellerDocType.CNPJ &&
+      documento.length === 14 &&
+      this.receitaLigada()
+    ) {
+      const r = await consultarCnpj(documento);
+      if (r.status === 'nao_encontrado') {
+        throw new BadRequestException(
+          'Não encontramos este CNPJ na Receita Federal. Confira os números.',
+        );
+      }
+      if (r.status === 'inativa') {
+        throw new BadRequestException(
+          `Este CNPJ está ${r.situacao.toLowerCase()} na Receita Federal. Só aceitamos CNPJ ativo.`,
+        );
+      }
+      if (r.status === 'indisponivel') alertas.push('cnpj_nao_verificado');
+    }
+
+    return alertas;
+  }
+
+  /** Um teste grátis por CPF/CNPJ: documento que já tem loja não abre outra */
+  private async garantirDocumentoLivre(documento: string, exceto?: string) {
+    const existente = await this.prisma.store.findFirst({
+      where: {
+        sellerDocument: documento,
+        ...(exceto ? { NOT: { id: exceto } } : {}),
+      },
+      select: { id: true },
+    });
+    if (existente) {
+      throw new ConflictException(
+        'Este CPF/CNPJ já tem uma loja na Vendira. Entre na sua conta ou fale com o suporte.',
+      );
+    }
+  }
+
+  /** Consulta à Receita: ligada por padrão, desligada nos testes automáticos */
+  private receitaLigada() {
+    const flag = this.config.get<string>('ANTIFRAUDE_RECEITA');
+    if (flag) return flag !== 'off';
+    return this.config.get<string>('NODE_ENV') !== 'test';
   }
 
   /** Adiciona sufixo numérico até achar um slug livre. Self-serve não pode travar em "slug já em uso". */
@@ -196,10 +265,10 @@ export class StoresService {
     const plans = await this.platformPlansService.listActive();
     const escolhido = plans.find((p) => p.id === planId);
     if (escolhido) return escolhido;
-    const pagosMensais = plans.filter((p) => p.amount > 0 && p.periodDays < 360);
-    return (
-      pagosMensais.find((p) => p.highlight) ?? pagosMensais[0] ?? plans[0]
+    const pagosMensais = plans.filter(
+      (p) => p.amount > 0 && p.periodDays < 360,
     );
+    return pagosMensais.find((p) => p.highlight) ?? pagosMensais[0] ?? plans[0];
   }
 
   async create(dto: CreateStoreDto) {
@@ -519,7 +588,9 @@ export class StoresService {
        * CPF é dado pessoal do lojista: só o documento de empresa sai daqui.
        */
       sellerDocument:
-        store.sellerDocType === SellerDocType.CNPJ ? store.sellerDocument : null,
+        store.sellerDocType === SellerDocType.CNPJ
+          ? store.sellerDocument
+          : null,
       sellerCity: store.sellerCity,
       sellerState: store.sellerState,
       sellerPhone: store.sellerPhone,
@@ -683,6 +754,14 @@ export class StoresService {
     }
     if (dto.sellerDocument !== undefined) {
       data.sellerDocument = seller.sellerDocument ?? null;
+      // Trocar para um documento que já tem outra loja burlaria o "um teste
+      // grátis por CPF/CNPJ" do cadastro
+      if (
+        seller.sellerDocument &&
+        seller.sellerDocument !== store.sellerDocument
+      ) {
+        await this.garantirDocumentoLivre(seller.sellerDocument, storeId);
+      }
     }
     if (dto.sellerLegalName !== undefined) {
       data.sellerLegalName = dto.sellerLegalName?.trim() || null;
@@ -1230,13 +1309,13 @@ export class StoresService {
       nfeCscToken,
       ...rest
     } = store as T & {
-        mpAccessToken?: string | null;
-        mpRefreshToken?: string | null;
-        freteToken?: string | null;
-        freteRefreshToken?: string | null;
-        nfeApiToken?: string | null;
-        nfeCscToken?: string | null;
-      };
+      mpAccessToken?: string | null;
+      mpRefreshToken?: string | null;
+      freteToken?: string | null;
+      freteRefreshToken?: string | null;
+      nfeApiToken?: string | null;
+      nfeCscToken?: string | null;
+    };
     const token = (mpAccessToken || '').trim();
     const nfeToken = (nfeApiToken || '').trim();
     const pk =
