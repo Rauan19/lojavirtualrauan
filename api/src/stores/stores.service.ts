@@ -462,6 +462,7 @@ export class StoresService {
         pixDiscountPercent: true,
         marqueeEnabled: true,
         marqueeImages: true,
+        marqueeMobile: true,
         freteModo: true,
         freteValorFixo: true,
         freteGratisAcima: true,
@@ -550,6 +551,7 @@ export class StoresService {
         mode === 'personalized' ? Number(store.pixDiscountPercent ?? 0) : 0,
       marqueeEnabled: store.marqueeEnabled,
       marqueeImages: store.marqueeImages,
+      marqueeMobile: store.marqueeMobile,
       freteModo: store.freteModo,
       freteValorFixo: store.freteValorFixo,
       freteGratisAcima: store.freteGratisAcima,
@@ -614,6 +616,22 @@ export class StoresService {
           : {}),
         ...(dto.marqueeImages !== undefined
           ? { marqueeImages: dto.marqueeImages }
+          : {}),
+        // Só texto curto em cada par: o objeto vem do painel, mas é JSON livre
+        ...(dto.marqueeMobile !== undefined
+          ? {
+              marqueeMobile: Object.fromEntries(
+                Object.entries(dto.marqueeMobile)
+                  .filter(
+                    ([k, v]) =>
+                      typeof v === 'string' &&
+                      v.trim() !== '' &&
+                      k.length <= 300 &&
+                      v.length <= 300,
+                  )
+                  .slice(0, 12),
+              ),
+            }
           : {}),
         ...(dto.instagramUrl !== undefined
           ? { instagramUrl: dto.instagramUrl || null }

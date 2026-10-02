@@ -202,6 +202,8 @@ model Store {
   autoDeliverDays   Int         @default(0)
   marqueeEnabled   Boolean     @default(true)
   marqueeImages    Json?
+  /// Versão para celular de cada banner: { [imagem do computador]: imagem do celular }
+  marqueeMobile    Json?
 
   /**
    * Aparência da vitrine. Nulo = herda o preset do storeType, então trocar o

@@ -62,6 +62,8 @@ type Store = {
   freteTransportadoras?: string[] | null;
   marqueeEnabled?: boolean;
   marqueeImages?: string[] | null;
+  /** Versão para celular de cada banner */
+  marqueeMobile?: Record<string, string> | null;
   instagramUrl?: string | null;
   facebookUrl?: string | null;
   tiktokUrl?: string | null;
@@ -870,6 +872,7 @@ export default function AdminSettingsPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [uploadingMarquee, setUploadingMarquee] = useState(false);
+  const [uploadingMarqueeMobile, setUploadingMarqueeMobile] = useState<string | null>(null);
   const [originModalOpen, setOriginModalOpen] = useState(false);
   const [savingOrigin, setSavingOrigin] = useState(false);
   const [openSection, setOpenSection] = useState<
@@ -1335,9 +1338,70 @@ export default function AdminSettingsPage() {
     }
   }
 
+  /** Envia (ou troca) a versão para celular de um banner. */
+  async function uploadMarqueeMobile(desktopPath: string, file: File) {
+    const { token, storeSlug } = auth();
+    if (!token || !storeSlug || !store) return;
+    setUploadingMarqueeMobile(desktopPath);
+    setError('');
+    setMessage('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const uploaded = await api<{ path: string }>('/admin/uploads', {
+        method: 'POST',
+        token,
+        storeSlug,
+        formData,
+      });
+      const updated = await patchBranding({
+        name: store.name,
+        logoUrl: store.logoUrl,
+        primaryColor: store.primaryColor,
+        secondaryColor: store.secondaryColor,
+        accentColor: store.accentColor,
+        customDomain: store.customDomain || undefined,
+        marqueeMobile: { ...(store.marqueeMobile || {}), [desktopPath]: uploaded.path },
+      });
+      if (updated) {
+        setStore({ ...updated, marqueeImages: asImages(updated.marqueeImages) });
+      }
+      setMessage('Versão para celular salva');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro no upload');
+    } finally {
+      setUploadingMarqueeMobile(null);
+    }
+  }
+
+  async function removeMarqueeMobile(desktopPath: string) {
+    if (!store) return;
+    const resto = { ...(store.marqueeMobile || {}) };
+    delete resto[desktopPath];
+    try {
+      const updated = await patchBranding({
+        name: store.name,
+        logoUrl: store.logoUrl,
+        primaryColor: store.primaryColor,
+        secondaryColor: store.secondaryColor,
+        accentColor: store.accentColor,
+        customDomain: store.customDomain || undefined,
+        marqueeMobile: resto,
+      });
+      if (updated) {
+        setStore({ ...updated, marqueeImages: asImages(updated.marqueeImages) });
+      }
+      setMessage('Versão para celular removida');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro');
+    }
+  }
+
   async function removeMarqueeImage(path: string) {
     if (!store) return;
     const next = asImages(store.marqueeImages).filter((p) => p !== path);
+    const celularRestante = { ...(store.marqueeMobile || {}) };
+    delete celularRestante[path];
     try {
       const updated = await patchBranding({
         name: store.name,
@@ -1348,6 +1412,7 @@ export default function AdminSettingsPage() {
         customDomain: store.customDomain || undefined,
         marqueeEnabled: store.marqueeEnabled !== false,
         marqueeImages: next,
+        marqueeMobile: celularRestante,
       });
       if (updated) {
         setStore({
@@ -2224,30 +2289,68 @@ export default function AdminSettingsPage() {
         </div>
 
         <p className="text-xs leading-relaxed text-muted">
-          Banners grandes passando no topo — lookbook, promoção, coleção. Ideal{' '}
-          <strong className="text-ink">1920 × 800 px</strong>, JPG ou PNG até 5 MB.
-          De 3 a 12 fotos.
+          Banners grandes passando no topo — lookbook, promoção, coleção. Como na
+          Shopify e na Nuvemshop, cada banner pode ter duas versões:{' '}
+          <strong className="text-ink">computador 1920 × 640 px</strong> (bem
+          largo) e <strong className="text-ink">celular 1080 × 1080 px</strong>{' '}
+          (quadrado, opcional). Sem a versão de celular, o celular mostra a do
+          computador, menor. JPG ou PNG até 5 MB, de 1 a 12 banners.
         </p>
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
           {marquee.map((path) => {
             const src = mediaUrl(path);
             return (
-              <div
-                key={path}
-                className="group relative aspect-[21/9] overflow-hidden border border-line bg-[#eee]"
-              >
-                {src ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={src} alt="" className="h-full w-full object-cover" />
-                ) : null}
-                <button
-                  type="button"
-                  className="absolute right-1 top-1 bg-black/70 px-1.5 py-0.5 text-[11px] font-bold text-white opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100"
-                  onClick={() => removeMarqueeImage(path)}
-                >
-                  Remover
-                </button>
+              <div key={path} className="flex flex-col gap-1.5">
+                <div className="group relative aspect-[21/9] overflow-hidden rounded-lg border border-line bg-[#eee]">
+                  {src ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={src} alt="Banner (computador)" className="h-full w-full object-cover" />
+                  ) : null}
+                  <button
+                    type="button"
+                    className="absolute right-1 top-1 rounded bg-black/70 px-1.5 py-0.5 text-[11px] font-bold text-white opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100"
+                    onClick={() => removeMarqueeImage(path)}
+                  >
+                    Remover
+                  </button>
+                </div>
+                {store.marqueeMobile?.[path] ? (
+                  <div className="flex items-center gap-2 text-[12px]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={mediaUrl(store.marqueeMobile[path]) || ''}
+                      alt="Banner (celular)"
+                      className="h-10 w-10 shrink-0 rounded border border-line object-cover"
+                    />
+                    <span className="min-w-0 flex-1 text-muted">Celular ok</span>
+                    <button
+                      type="button"
+                      className="font-semibold text-accent hover:underline"
+                      onClick={() => removeMarqueeMobile(path)}
+                    >
+                      Tirar
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    className={`flex h-10 cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-line text-[12px] font-semibold text-muted transition hover:border-ink/30 hover:bg-[#fafafa] ${
+                      uploadingMarqueeMobile === path ? 'pointer-events-none opacity-60' : ''
+                    }`}
+                  >
+                    {uploadingMarqueeMobile === path ? 'Enviando…' : '+ Versão para celular'}
+                    <input
+                      type="file"
+                      className="sr-only"
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={(e) => {
+                        const arquivo = e.target.files?.[0];
+                        e.target.value = '';
+                        if (arquivo) uploadMarqueeMobile(path, arquivo).catch(() => undefined);
+                      }}
+                    />
+                  </label>
+                )}
               </div>
             );
           })}

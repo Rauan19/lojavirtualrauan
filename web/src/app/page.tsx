@@ -166,12 +166,7 @@ export default async function HomePage() {
               Sua loja virtual vende 24 horas por dia.{' '}
               <span className="text-[var(--brand-coral)]">Sem depender do seu atendimento.</span>
             </h1>
-            <p className="mt-4 max-w-[40ch] text-[16px] leading-relaxed text-white/80 md:text-[17px]">
-              Catálogo, checkout, Pix, cartão e frete calculado em uma
-              plataforma só. O cliente escolhe e paga sozinho, a qualquer hora,
-              e o valor cai direto na sua conta.
-            </p>
-            <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+            <div className="mt-7 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
               <LandingCta href="/criar-conta" label="Criar minha loja grátis" />
               {wa ? (
                 <a

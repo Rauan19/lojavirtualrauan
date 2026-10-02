@@ -6,6 +6,7 @@ import {
   IsEmail,
   IsEnum,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   Length,
@@ -210,6 +211,11 @@ export class UpdateStoreBrandingDto {
   @IsArray()
   @IsString({ each: true })
   marqueeImages?: string[];
+
+  /** Versão para celular de cada banner: { imagemDoComputador: imagemDoCelular } */
+  @IsOptional()
+  @IsObject()
+  marqueeMobile?: Record<string, string>;
 
   @IsOptional()
   @IsString()

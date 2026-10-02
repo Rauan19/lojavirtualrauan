@@ -5,6 +5,8 @@ import { mediaUrl } from '@/lib/api';
 
 type Props = {
   images: string[];
+  /** Versão para celular de cada banner: { imagemDoComputador: imagemDoCelular } */
+  mobile?: Record<string, string> | null;
   storeName?: string;
   /** Tempo entre trocas automáticas (ms). 0 desliga o auto-play. */
   intervalMs?: number;
@@ -43,8 +45,10 @@ function ChevronRight() {
  * controle pelas setas, pelos indicadores ou arrastando no celular. Auto-play
  * pausa no hover e quando o visitante navega manualmente.
  */
-export function StoreMarquee({ images, storeName, intervalMs = 5000 }: Props) {
+export function StoreMarquee({ images, mobile, storeName, intervalMs = 5000 }: Props) {
   const urls = images.map((src) => mediaUrl(src)).filter(Boolean) as string[];
+  // Imagem de celular por banner (padrão Shopify/Nuvemshop); sem ela, a do PC
+  const urlsCelular = images.map((src) => mediaUrl(mobile?.[src]) || null);
   const total = urls.length;
 
   const [index, setIndex] = useState(0);
@@ -123,8 +127,11 @@ export function StoreMarquee({ images, storeName, intervalMs = 5000 }: Props) {
               className="absolute inset-0 h-full w-full scale-110 object-cover blur-2xl"
               draggable={false}
             />
-            {/* Arte real: inteira, sem corte. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {/* Arte real: inteira, sem corte. No celular, a versão de celular. */}
+            <picture>
+              {urlsCelular[i] ? (
+                <source media="(max-width: 767px)" srcSet={urlsCelular[i] as string} />
+              ) : null}
             <img
               src={src}
               alt=""
@@ -140,6 +147,7 @@ export function StoreMarquee({ images, storeName, intervalMs = 5000 }: Props) {
                 }
               }}
             />
+            </picture>
           </div>
         ))}
       </div>

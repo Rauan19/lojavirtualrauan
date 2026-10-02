@@ -385,8 +385,20 @@
  */
 .store-promo-marquee {
   aspect-ratio: var(--promo-ratio, 5 / 2);
-  max-height: 460px;
-  min-height: 200px;
+  min-height: 160px;
+}
+
+/*
+ * Computador (padrão Nuvemshop): o banner fica em caixa, na largura do
+ * conteúdo e na proporção exata da arte. Antes um teto de 460px encolhia a
+ * arte larga no meio da tela e sobrava fundo desfocado dos lados.
+ */
+@media (min-width: 768px) {
+  .store-promo-marquee {
+    width: min(1400px, calc(100% - 32px));
+    margin: 16px auto 0;
+    border-radius: 18px;
+  }
 }
 
 /* Rola sem mostrar a barra (fileira de categorias, trilhos horizontais) */
@@ -708,7 +720,7 @@
   /* No celular a proporção da arte também vale, com teto menor para o
      catálogo não sair da primeira tela. */
   .store-promo-marquee {
-    max-height: 240px;
+    max-height: 560px;
     min-height: 0;
   }
 }

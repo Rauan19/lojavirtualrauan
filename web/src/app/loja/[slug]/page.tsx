@@ -32,6 +32,7 @@ type Store = {
   status: string;
   marqueeEnabled?: boolean;
   marqueeImages?: string[] | null;
+  marqueeMobile?: Record<string, string> | null;
   freteGratisAcima?: string | number | null;
   pixDiscountPercent?: number | null;
   freteModo?: string;
@@ -378,7 +379,11 @@ function StorefrontInner({ slug }: { slug: string }) {
         onOpenCart={() => cart.setOpen(true)}
       >
         {marqueeImages.length > 0 ? (
-          <StoreMarquee images={marqueeImages} storeName={store.name} />
+          <StoreMarquee
+            images={marqueeImages}
+            mobile={store.marqueeMobile}
+            storeName={store.name}
+          />
         ) : null}
 
         {categoriesWithImage.length > 0 ? (
