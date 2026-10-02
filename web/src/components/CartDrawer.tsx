@@ -99,8 +99,15 @@ export function CartDrawer({
         role="dialog"
         aria-label="Sacola"
       >
-        <div className="flex items-center justify-between border-b border-line px-4 py-3">
-          <strong className="text-sm">Sacola{count > 0 ? ` (${count})` : ''}</strong>
+        <div className="flex items-center justify-between border-b border-line px-5 py-4">
+          <h2 className="text-[20px] font-semibold tracking-tight">
+            Sua sacola
+            {count > 0 ? (
+              <span className="ml-2 text-[15px] font-normal text-muted">
+                {count} {count === 1 ? 'item' : 'itens'}
+              </span>
+            ) : null}
+          </h2>
           <button
             type="button"
             className="icon-btn"
@@ -118,83 +125,8 @@ export function CartDrawer({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto overscroll-contain">
-          {items.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 px-4 py-16 text-center">
-              <EmptyBagIcon />
-              <p className="text-sm font-semibold text-ink">Sua sacola está vazia</p>
-              <p className="text-xs text-muted">Adicione produtos pra continuar a compra.</p>
-            </div>
-          ) : (
-            <ul className="divide-y divide-line">
-              {items.map((item) => {
-                const img = thumbUrl(item.image);
-                return (
-                  <li key={cartLineKey(item)} className="flex gap-3 px-4 py-3">
-                    <div className="h-20 w-16 shrink-0 overflow-hidden bg-[#f3f3f3]">
-                      {img ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img loading="lazy" decoding="async" src={img} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        <SemFoto nome={item.name} variante="mini" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="truncate text-sm font-medium">{item.name}</p>
-                        <button
-                          type="button"
-                          className="icon-btn -mr-2 -mt-2 h-10 w-10 shrink-0 text-muted hover:text-accent"
-                          aria-label="Remover item"
-                          onClick={() => remove(item.productId, item.variantId)}
-                        >
-                          <TrashIcon />
-                        </button>
-                      </div>
-                      {item.variantLabel ? (
-                        <p className="mt-0.5 text-xs text-muted">{item.variantLabel}</p>
-                      ) : null}
-                      <div className="mt-2 flex items-center justify-between gap-2">
-                        <div className="inline-flex items-center border border-line">
-                          <button
-                            type="button"
-                            className="flex h-9 w-9 items-center justify-center text-ink hover:bg-[#f7f8fa]"
-                            aria-label="Diminuir quantidade"
-                            onClick={() =>
-                              updateQty(item.productId, item.quantity - 1, item.variantId)
-                            }
-                          >
-                            <MinusIcon />
-                          </button>
-                          <span className="w-8 text-center text-sm tabular-nums">
-                            {item.quantity}
-                          </span>
-                          <button
-                            type="button"
-                            className="flex h-9 w-9 items-center justify-center text-ink hover:bg-[#f7f8fa]"
-                            aria-label="Aumentar quantidade"
-                            onClick={() =>
-                              updateQty(item.productId, item.quantity + 1, item.variantId)
-                            }
-                          >
-                            <PlusIcon />
-                          </button>
-                        </div>
-                        <strong className="text-sm">
-                          {money(item.price * item.quantity)}
-                        </strong>
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-
-        <div className="border-t border-line p-4">
           {items.length > 0 && limiteFrete > 0 ? (
-            <div className="mb-4">
+            <div className="border-b border-line bg-[#fafafa] px-5 py-3">
               <p className="mb-1.5 text-[13px]">
                 {faltaFrete > 0 ? (
                   <>
@@ -222,9 +154,92 @@ export function CartDrawer({
               </div>
             </div>
           ) : null}
-          <div className="flex justify-between text-sm">
-            <span className="text-muted">Subtotal</span>
-            <strong className="text-base tabular-nums">{money(subtotal)}</strong>
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          {items.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 px-4 py-16 text-center">
+              <EmptyBagIcon />
+              <p className="text-[17px] font-semibold text-ink">Sua sacola está vazia</p>
+              <p className="text-sm text-muted">Que tal dar uma olhada nos produtos?</p>
+              <button
+                type="button"
+                className="btn btn-accent mt-2 h-11 px-6"
+                onClick={() => setOpen(false)}
+              >
+                Continuar comprando
+              </button>
+            </div>
+          ) : (
+            <ul className="divide-y divide-line">
+              {items.map((item) => {
+                const img = thumbUrl(item.image);
+                return (
+                  <li key={cartLineKey(item)} className="flex gap-4 px-5 py-4">
+                    <div className="h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-[#f3f3f3]">
+                      {img ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img loading="lazy" decoding="async" src={img} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <SemFoto nome={item.name} variante="mini" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="line-clamp-2 text-[15px] font-medium leading-snug">{item.name}</p>
+                        <button
+                          type="button"
+                          className="icon-btn -mr-2 -mt-2 h-10 w-10 shrink-0 text-muted hover:text-accent"
+                          aria-label="Remover item"
+                          onClick={() => remove(item.productId, item.variantId)}
+                        >
+                          <TrashIcon />
+                        </button>
+                      </div>
+                      {item.variantLabel ? (
+                        <p className="mt-0.5 text-xs text-muted">{item.variantLabel}</p>
+                      ) : null}
+                      <div className="mt-2 flex items-center justify-between gap-2">
+                        <div className="inline-flex items-center rounded-full border border-line">
+                          <button
+                            type="button"
+                            className="flex h-9 w-9 items-center justify-center rounded-full text-ink hover:bg-[#f3f4f6]"
+                            aria-label="Diminuir quantidade"
+                            onClick={() =>
+                              updateQty(item.productId, item.quantity - 1, item.variantId)
+                            }
+                          >
+                            <MinusIcon />
+                          </button>
+                          <span className="w-8 text-center text-sm tabular-nums">
+                            {item.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            className="flex h-9 w-9 items-center justify-center rounded-full text-ink hover:bg-[#f3f4f6]"
+                            aria-label="Aumentar quantidade"
+                            onClick={() =>
+                              updateQty(item.productId, item.quantity + 1, item.variantId)
+                            }
+                          >
+                            <PlusIcon />
+                          </button>
+                        </div>
+                        <strong className="text-[15px] tabular-nums">
+                          {money(item.price * item.quantity)}
+                        </strong>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {items.length > 0 ? (
+        <div className="border-t border-line px-5 py-4 shadow-[0_-10px_24px_-20px_rgba(0,0,0,0.35)]">
+          <div className="flex items-baseline justify-between">
+            <span className="text-[15px] font-semibold">Subtotal</span>
+            <strong className="text-[20px] tabular-nums">{money(subtotal)}</strong>
           </div>
           {items.length > 0 && pixPercent ? (
             <div className="mt-0.5 flex justify-between text-[13px] text-[var(--ok)]">
@@ -236,6 +251,9 @@ export function CartDrawer({
           ) : null}
           {items.length > 0 ? (
             <>
+              <p className="mt-1 text-[12px] text-muted">
+                Frete e prazo calculados no próximo passo.
+              </p>
               <Link
                 href={checkoutHref}
                 className="btn btn-accent btn-block mt-3 h-12 text-[15px]"
@@ -251,12 +269,9 @@ export function CartDrawer({
                 Continuar comprando
               </button>
             </>
-          ) : (
-            <button type="button" className="btn btn-ghost btn-block" onClick={() => setOpen(false)}>
-              Continuar comprando
-            </button>
-          )}
+          ) : null}
         </div>
+        ) : null}
       </aside>
     </>
   );

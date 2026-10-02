@@ -560,66 +560,41 @@ export function StoreShell({
             <CloseIcon />
           </button>
         </div>
-        <div className="border-b border-line px-4 py-3">
+        {/* Cliente: entra ou vê a própria área (gaveta de menu do tema Dawn) */}
+        <div className="px-4 pb-2 pt-4">
           {loggedIn ? (
-            <div>
-              <p className="text-sm font-semibold">Olá, {displayName}</p>
-              <p className="mt-0.5 text-xs text-muted">{customer?.email}</p>
+            <div className="flex items-center gap-3">
+              <span
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-base font-bold"
+                style={{ background: 'var(--store-accent)', color: 'var(--store-accent-ink)' }}
+                aria-hidden
+              >
+                {(displayName || '·').charAt(0).toUpperCase()}
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-[15px] font-semibold">Olá, {displayName}</span>
+                <span className="block truncate text-xs text-muted">{customer?.email}</span>
+              </span>
             </div>
           ) : (
             <Link
               href={`${contaHref}/entrar?next=${encodeURIComponent(homeHref)}`}
-              className="text-sm font-semibold underline"
+              className="btn btn-accent h-11 w-full text-[15px]"
               onClick={() => setMenuOpen(false)}
             >
-              Entrar / Criar conta
+              Entrar ou criar conta
             </Link>
           )}
         </div>
 
-        {loggedIn ? (
-          <div className="border-b border-line py-1">
-            <Link
-              href={pedidosHref}
-              className="block px-4 py-3 text-sm font-medium"
-              onClick={() => setMenuOpen(false)}
-            >
-              Minhas compras
-            </Link>
-            <Link
-              href={contaHref}
-              className="block px-4 py-3 text-sm font-medium"
-              onClick={() => setMenuOpen(false)}
-            >
-              Minha conta e endereços
-            </Link>
-          </div>
-        ) : null}
-
-        {storeSlug ? (
-          <div className="border-b border-line py-1">
-            <Link
-              href={`/loja/${storeSlug}/favoritos`}
-              className="block px-4 py-3 text-sm font-medium"
-              onClick={() => setMenuOpen(false)}
-            >
-              Favoritos
-            </Link>
-          </div>
-        ) : null}
-
-        <nav className="flex-1 overflow-y-auto py-2">
-          <p className="px-4 pb-1 pt-2 text-[11px] font-bold uppercase tracking-wider text-muted">
-            Categorias
-          </p>
+        <nav className="flex-1 overflow-y-auto px-2 pb-2" aria-label="Categorias">
           <button
             type="button"
-            className={`block w-full border-b border-line px-4 py-3 text-left text-sm font-medium ${
-              !activeCategoryId ? 'text-[var(--store-accent-text)]' : ''
-            }`}
+            className={`menu-loja-item ${!activeCategoryId ? 'is-ativo' : ''}`}
             onClick={() => selectCategory(null)}
           >
-            Todos os produtos
+            <span>Todos os produtos</span>
+            <ChevronRight />
           </button>
           {navItems.map((item) => {
             const subs = categories.filter((c) => c.parentId === item.id);
@@ -627,20 +602,17 @@ export function StoreShell({
               <div key={item.id}>
                 <button
                   type="button"
-                  className={`block w-full border-b border-line px-4 py-3 text-left text-sm font-medium ${
-                    activeCategoryId === item.id ? 'text-[var(--store-accent-text)]' : ''
-                  }`}
+                  className={`menu-loja-item ${activeCategoryId === item.id ? 'is-ativo' : ''}`}
                   onClick={() => selectCategory(item.id)}
                 >
-                  {item.name}
+                  <span>{item.name}</span>
+                  <ChevronRight />
                 </button>
                 {subs.map((sub) => (
                   <button
                     type="button"
                     key={sub.id}
-                    className={`block w-full border-b border-line py-2.5 pl-8 pr-4 text-left text-[13px] text-muted ${
-                      activeCategoryId === sub.id ? 'text-[var(--store-accent-text)]' : ''
-                    }`}
+                    className={`menu-loja-sub ${activeCategoryId === sub.id ? 'is-ativo' : ''}`}
                     onClick={() => selectCategory(sub.id)}
                   >
                     {sub.name}
@@ -651,18 +623,60 @@ export function StoreShell({
           })}
         </nav>
 
-        <div className="border-t border-line p-4">
+        <div className="border-t border-line px-2 py-2">
+          {loggedIn ? (
+            <>
+              <Link href={pedidosHref} className="menu-loja-atalho" onClick={() => setMenuOpen(false)}>
+                <BagIcon />
+                Minhas compras
+              </Link>
+              <Link href={contaHref} className="menu-loja-atalho" onClick={() => setMenuOpen(false)}>
+                <UserIcon />
+                Minha conta e endereços
+              </Link>
+            </>
+          ) : null}
+          {storeSlug ? (
+            <Link
+              href={`/loja/${storeSlug}/favoritos`}
+              className="menu-loja-atalho"
+              onClick={() => setMenuOpen(false)}
+            >
+              <HeartIcon />
+              Favoritos
+            </Link>
+          ) : null}
+          {helpWa ? (
+            <a href={helpWa} target="_blank" rel="noopener noreferrer" className="menu-loja-atalho">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path
+                  d="M20 12a8 8 0 01-11.6 7.1L4 20l1-4.2A8 8 0 1120 12z"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Falar com a loja
+            </a>
+          ) : null}
           {loggedIn ? (
             <button
               type="button"
-              className="w-full border border-rose-600 bg-rose-600 px-3 py-2.5 text-sm font-bold text-white"
+              className="menu-loja-atalho w-full text-[#b42318] hover:bg-[#fef3f2]"
               onClick={handleLogout}
             >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path
+                  d="M15 7l5 5-5 5M20 12H9M11 4H5v16h6"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
               Sair da conta
             </button>
-          ) : (
-            <p className="text-xs text-muted">Frete · Trocas · Atendimento</p>
-          )}
+          ) : null}
         </div>
       </aside>
 
@@ -1059,6 +1073,14 @@ function OrdersIcon() {
         strokeLinejoin="round"
       />
       <path d="M9 8h6M9 12h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ChevronRight() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden className="shrink-0 opacity-60">
+      <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

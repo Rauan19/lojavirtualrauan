@@ -8,6 +8,7 @@ import { clearSession, getToken, getUser, saveSession } from '@/lib/auth';
 import { supportWhatsappHref } from '@/lib/contact';
 import { PlanRestrictionModal } from '@/components/PlanRestrictionModal';
 import { AvisoConexaoMp, useTaxaDaLoja } from '@/components/TaxaVendira';
+import { IconeMenu } from '@/components/admin/IconeMenu';
 
 type BadgeKey = 'orders' | 'refunds';
 /**
@@ -293,14 +294,34 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   const nav = (
     <>
-      <div className="border-b border-line px-4 py-3">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
-          Painel da loja
-        </p>
-        <h1 className="mt-0.5 truncate text-sm font-bold">
-          {user.store?.name || 'Painel'}
-        </h1>
-        <p className="truncate text-xs text-muted">{user.email}</p>
+      <div className="border-b border-line px-3 py-3">
+        <div className="flex items-center gap-3 rounded-xl px-1 py-1">
+          <span
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-deep)] text-[15px] font-bold text-white"
+            aria-hidden
+          >
+            {(user.store?.name || 'L').trim().charAt(0).toUpperCase()}
+          </span>
+          <span className="min-w-0">
+            <h1 className="truncate text-[15px] font-bold leading-tight">
+              {user.store?.name || 'Painel'}
+            </h1>
+            <span className="block truncate text-xs text-muted">{user.email}</span>
+          </span>
+        </div>
+        {user.store?.slug ? (
+          <Link
+            href={`/loja/${user.store.slug}`}
+            target="_blank"
+            className="mt-2 flex h-9 items-center justify-center gap-1.5 rounded-lg border border-line text-[13px] font-medium text-ink transition-colors hover:bg-[#e9f1f3]"
+            onClick={() => setOpen(false)}
+          >
+            Ver minha loja
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M14 5h5v5M19 5l-8 8M18 14v5H5V6h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </Link>
+        ) : null}
       </div>
 
       <nav className="flex-1 overflow-y-auto py-2">
@@ -309,7 +330,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           if (itens.length === 0) return null;
           return (
           <div key={group.title} className="mb-2">
-            <p className="px-4 pb-1 pt-2 text-[11px] font-bold uppercase tracking-wider text-muted">
+            <p className="px-5 pb-1 pt-3 text-[12px] font-semibold text-muted">
               {group.title}
             </p>
             {itens.map((link) => {
@@ -332,13 +353,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   key={link.href}
                   href={locked ? '/admin/settings/planos' : link.href}
                   onClick={() => setOpen(false)}
-                  className={`mx-2 flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
+                  className={`mx-2 flex items-center gap-3 rounded-lg px-3 py-2 text-[14px] transition-colors ${
                     active
                       ? 'bg-[var(--brand-deep)] font-semibold text-white'
                       : 'text-ink hover:bg-[#e9f1f3]'
                   }`}
                 >
-                  <span>{link.label}</span>
+                  <IconeMenu href={link.href} />
+                  <span className="min-w-0 flex-1 truncate">{link.label}</span>
                   <NavBadge
                     count={badge}
                     active={active}
@@ -357,14 +379,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <p className="px-4 pb-1 pt-1 text-[11px] font-bold uppercase tracking-wider text-muted">
               Atalhos
             </p>
-            <Link
-              href={`/loja/${user.store.slug}`}
-              target="_blank"
-              className="mx-2 block rounded px-3 py-2 text-sm text-muted transition-colors hover:bg-[#eef0f3] hover:text-ink"
-              onClick={() => setOpen(false)}
-            >
-              Ver vitrine
-            </Link>
             {wa ? (
               <a
                 href={wa}
@@ -381,7 +395,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       </nav>
 
       <button
-        className="border-t border-line px-4 py-3 text-left text-sm font-medium text-accent"
+        className="mx-2 mb-2 flex items-center gap-3 rounded-lg border-t border-line px-3 py-2.5 text-left text-[14px] font-medium text-[#b42318] hover:bg-[#fef3f2]"
         onClick={() => {
           clearSession();
           router.push('/login');
