@@ -708,6 +708,13 @@ async function seedOrders(
     await prisma.order.createMany({ data: ordersPayload.slice(i, i + 100) });
   }
 
+  // Os pedidos acima levam número direto; o contador da loja tem que andar
+  // junto, senão o próximo checkout tenta um número que já existe
+  await prisma.store.update({
+    where: { id: storeId },
+    data: { orderSeq: ordersPayload.length },
+  });
+
   const createdOrders = await prisma.order.findMany({
     where: { storeId },
     select: { id: true, orderNumber: true },
