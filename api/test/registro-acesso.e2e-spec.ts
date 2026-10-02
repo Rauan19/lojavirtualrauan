@@ -102,7 +102,12 @@ describe('Registro de acesso (e2e)', () => {
       .set('X-Forwarded-For', '203.0.113.12')
       .expect(200);
 
-    const logs = await prisma.accessLog.findMany({});
+    // O registro é gravado em segundo plano: espera até 3 s em máquina lenta
+    let logs = await prisma.accessLog.findMany({});
+    for (let i = 0; i < 30 && logs.length < 2; i++) {
+      await new Promise((r) => setTimeout(r, 100));
+      logs = await prisma.accessLog.findMany({});
+    }
     expect(logs).toHaveLength(2);
     expect(logs.some((l) => l.customerId === seed.customer.id)).toBe(true);
     expect(logs.some((l) => l.customerId === null)).toBe(true);
