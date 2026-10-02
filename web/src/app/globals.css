@@ -1167,3 +1167,33 @@
 .loja-ui :is(.card, .border.bg-white):has(table) {
   overflow: hidden;
 }
+
+/* ---------- Vitrine: faixa de avisos e selos (padrão Shopify Dawn) ------ */
+.faixa-avisos {
+  background: var(--store-primary, #111);
+  color: var(--store-primary-ink, #fff);
+  letter-spacing: 0.01em;
+}
+
+.faixa-avisos-texto {
+  animation: faixa-entra 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes faixa-entra {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* Selo do cartão: pílula pequena, como o "Sale" do tema Dawn */
+.selo-loja {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}

@@ -9,6 +9,7 @@ import { api, mediaUrl, money } from '@/lib/api';
 import { cardRatioValue, fontStyle } from '@/lib/store-theme';
 import { sellerWhatsappHref } from '@/lib/contact';
 import { corDeTexto, tintaSobre } from '@/lib/contraste';
+import { FaixaAvisos } from '@/components/FaixaAvisos';
 
 type Suggestion = {
   id: string;
@@ -50,6 +51,8 @@ type Props = {
   analyticsPixelId?: string | null;
   cartCount?: number;
   onOpenCart?: () => void;
+  /** Faixa de avisos no topo (frete grátis, Pix, cupom) */
+  avisos?: string[];
 };
 
 function formatCnpj(raw: string) {
@@ -107,6 +110,7 @@ export function StoreShell({
   tiktokUrl,
   cartCount = 0,
   onOpenCart,
+  avisos,
   children,
 }: Props & { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -237,6 +241,7 @@ export function StoreShell({
       style={
         {
           '--store-primary': primaryColor,
+          '--store-primary-ink': tintaSobre(primaryColor),
           '--store-accent': accentColor,
           // Texto em cima da cor (branco ou preto) e a cor como texto em fundo
           // branco, escurecida se for clara demais: qualquer cor fica legível
@@ -251,6 +256,7 @@ export function StoreShell({
         } as React.CSSProperties
       }
     >
+      <FaixaAvisos avisos={avisos ?? []} />
       <header className="sticky top-0 z-30 border-b border-line bg-white">
         <div className="mx-auto flex h-[var(--header-h)] max-w-[1200px] items-center gap-2 px-3 md:gap-4 md:px-4">
           <button

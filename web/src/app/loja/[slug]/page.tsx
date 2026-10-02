@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { CartDrawer } from '@/components/CartDrawer';
 import { CartProvider, useCart } from '@/components/CartProvider';
 import { InstallmentsBlock } from '@/components/InstallmentsBlock';
@@ -14,6 +14,7 @@ import { StarRating } from '@/components/StarRating';
 import { WishlistButton } from '@/components/WishlistButton';
 import { api, mediaUrl, thumbUrl, money } from '@/lib/api';
 import { precoNoPix } from '@/lib/pix';
+import { avisosDaLoja } from '@/lib/avisos-loja';
 import {
   fetchInstallmentsBatch,
   type InstallmentsResponse,
@@ -107,27 +108,6 @@ function ProductCardSkeleton() {
   );
 }
 
-function TruckIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden className="text-white">
-      <path
-        d="M2.5 6.5h11v9h-11v-9z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M13.5 10h3.5l3.5 3v2.5h-7V10z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <circle cx="6.5" cy="17.5" r="1.8" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="16.5" cy="17.5" r="1.8" stroke="currentColor" strokeWidth="1.6" />
-    </svg>
-  );
-}
-
 function SearchOffIcon() {
   return (
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden className="text-muted">
@@ -166,7 +146,6 @@ export default function StorefrontPage() {
 }
 
 function StorefrontInner({ slug }: { slug: string }) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const cart = useCart();
   const [store, setStore] = useState<Store | null>(null);
@@ -370,6 +349,7 @@ function StorefrontInner({ slug }: { slug: string }) {
   return (
     <>
       <StoreShell
+        avisos={avisosDaLoja(store, couponBanner)}
         storeName={store.name}
         logoUrl={mediaUrl(store.logoUrl)}
         primaryColor={store.primaryColor || '#1a1a1a'}
@@ -456,68 +436,6 @@ function StorefrontInner({ slug }: { slug: string }) {
           </div>
         ) : null}
 
-        {(() => {
-          const freeFrom = store.freteGratisAcima
-            ? Number(store.freteGratisAcima)
-            : 0;
-          const alwaysFree = store.freteModo === 'gratis';
-          if (!alwaysFree && !(freeFrom > 0)) return null;
-          return (
-            <div
-              className="store-free-ship relative overflow-hidden px-3 py-3.5 text-center md:px-4 md:py-4"
-              style={{
-                background:
-                  'linear-gradient(105deg, color-mix(in srgb, var(--store-accent) 92%, #111) 0%, var(--store-accent) 100%)',
-              }}
-            >
-              <div
-                className="store-free-ship-shine pointer-events-none absolute inset-y-0 -left-1/3 w-1/3"
-                aria-hidden
-              />
-              <p className="relative flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[13px] font-bold tracking-wide text-white md:text-[15px]">
-                <span
-                  className="store-free-ship-icon inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/20 backdrop-blur-[2px]"
-                  aria-hidden
-                >
-                  <TruckIcon />
-                </span>
-                {alwaysFree ? (
-                  <span className="drop-shadow-sm">
-                    Frete grátis em todos os pedidos
-                  </span>
-                ) : (
-                  <>
-                    <span className="drop-shadow-sm">Frete grátis</span>
-                    <span className="store-free-ship-value inline-flex items-baseline gap-1 rounded-md bg-white px-2.5 py-1 text-[var(--store-accent-text)] shadow-sm">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider opacity-80">
-                        acima de
-                      </span>
-                      <span className="text-base font-extrabold tabular-nums tracking-tight md:text-lg">
-                        {money(freeFrom)}
-                      </span>
-                    </span>
-                  </>
-                )}
-              </p>
-            </div>
-          );
-        })()}
-
-        {couponBanner ? (
-          <div className="border-b border-line bg-[#171a1f] px-3 py-2.5 text-center text-[13px] font-medium text-white md:text-sm">
-            {couponBanner.description ? `${couponBanner.description}: ` : 'Ganhe '}
-            {couponBanner.type === 'FREE_SHIPPING'
-              ? 'frete grátis'
-              : couponBanner.type === 'PERCENT'
-                ? `${Number(couponBanner.value)}% de desconto`
-                : `${money(Number(couponBanner.value))} de desconto`}{' '}
-            com o cupom{' '}
-            <strong className="tracking-wide" style={{ color: 'var(--store-accent)' }}>
-              {couponBanner.code}
-            </strong>
-          </div>
-        ) : null}
-
         {/*
           Vitrines curadas só na home "limpa": quem está buscando ou filtrando
           quer o resultado, não prateleira temática no caminho.
@@ -547,12 +465,9 @@ function StorefrontInner({ slug }: { slug: string }) {
 
         <div className="mx-auto max-w-[1200px] px-3 py-3 pb-24 md:px-4 md:py-4">
           <div className="mb-3 flex flex-wrap items-end justify-between gap-3 md:mb-4">
-            <div>
-              <p className="text-[11px] uppercase tracking-wider text-muted">Catálogo</p>
-              <h1 className="text-lg font-bold md:text-xl">
-                {activeCategoryName || store.name}
-              </h1>
-            </div>
+            <h1 className="store-display text-[22px] font-semibold tracking-tight md:text-[26px]">
+              {activeCategoryName || 'Todos os produtos'}
+            </h1>
 
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-xs text-muted md:text-sm">
@@ -728,19 +643,21 @@ function StorefrontInner({ slug }: { slug: string }) {
                       ) : (
                         <SemFoto nome={p.name} />
                       )}
-                      {discount ? (
-                        <span
-                          className="absolute left-2 top-2 px-1.5 py-0.5 text-[11px] font-bold text-[var(--store-accent-ink)]"
-                          style={{ background: 'var(--store-accent)' }}
-                        >
-                          -{discount}%
-                        </span>
-                      ) : null}
-                      {p.stock != null && p.stock > 0 && p.stock <= 5 ? (
-                        <span
-                          className={`absolute left-2 bg-black/75 px-1.5 py-0.5 text-[11px] font-semibold text-white ${discount ? 'top-9' : 'top-2'}`}
-                        >
-                          Só {p.stock} un.
+                      {discount || (p.stock != null && p.stock > 0 && p.stock <= 5) ? (
+                        <span className="absolute left-2 top-2 flex flex-col items-start gap-1">
+                          {discount ? (
+                            <span
+                              className="selo-loja"
+                              style={{ background: 'var(--store-accent)', color: 'var(--store-accent-ink)' }}
+                            >
+                              -{discount}%
+                            </span>
+                          ) : null}
+                          {p.stock != null && p.stock > 0 && p.stock <= 5 ? (
+                            <span className="selo-loja bg-white/95 text-ink">
+                              Últimas {p.stock}
+                            </span>
+                          ) : null}
                         </span>
                       ) : null}
                       <WishlistButton
@@ -787,27 +704,6 @@ function StorefrontInner({ slug }: { slug: string }) {
                         preset={installmentsById[p.id] ?? null}
                         presetLoading={installmentsLoading}
                       />
-                      <div className="mt-auto pt-2.5">
-                        <button
-                          type="button"
-                          className="btn btn-ghost h-10 w-full px-1 text-[13px]"
-                          onClick={() => {
-                            if (p.hasVariants) {
-                              router.push(`/loja/${slug}/p/${p.slug || p.id}`);
-                              return;
-                            }
-                            cart.add({
-                              productId: p.id,
-                              name: p.name,
-                              price,
-                              image: p.images[0]?.url || null,
-                              installmentsFree: p.installments ?? null,
-                            });
-                          }}
-                        >
-                          {p.hasVariants ? 'Escolher opções' : 'Adicionar à sacola'}
-                        </button>
-                      </div>
                     </div>
                   </article>
                 );

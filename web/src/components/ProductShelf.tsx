@@ -97,7 +97,7 @@ export function ProductShelf({
     <section className="border-b border-line bg-white py-5 md:py-7">
       <div className="mx-auto max-w-[1200px] px-3 md:px-4">
         <div className="mb-3 flex items-end justify-between gap-3">
-          <h2 className="text-[17px] font-bold tracking-tight text-ink md:text-[20px]">
+          <h2 className="store-display text-[22px] font-semibold tracking-tight text-ink md:text-[26px]">
             {title}
           </h2>
           <div className="flex items-center gap-1.5">
@@ -179,8 +179,8 @@ export function ProductShelf({
                     )}
                     {off ? (
                       <span
-                        className="absolute left-2 top-2 px-1.5 py-0.5 text-[11px] font-bold text-[var(--store-accent-ink)]"
-                        style={{ background: 'var(--store-accent)' }}
+                        className="selo-loja absolute left-2 top-2"
+                        style={{ background: 'var(--store-accent)', color: 'var(--store-accent-ink)' }}
                       >
                         -{off}%
                       </span>

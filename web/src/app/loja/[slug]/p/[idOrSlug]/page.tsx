@@ -19,6 +19,7 @@ import { sellerWhatsappHref } from '@/lib/contact';
 import { pctTexto, precoNoPix } from '@/lib/pix';
 import { AviseMe } from '@/components/AviseMe';
 import { CompreJunto } from '@/components/CompreJunto';
+import { avisosDaLoja } from '@/lib/avisos-loja';
 import { getRecentlyViewed, pushRecentlyViewed, type RecentProduct } from '@/lib/recently-viewed';
 import { SemFoto } from '@/components/SemFoto';
 
@@ -31,6 +32,7 @@ type Store = {
   /** Desconto no Pix (0 = sem) */
   pixDiscountPercent?: number;
   freteGratisAcima?: string | number | null;
+  freteModo?: string | null;
   sellerPhone?: string | null;
   storeFont?: string | null;
   storeCardRatio?: string | null;
@@ -341,6 +343,7 @@ function ProductInner({
   return (
     <>
       <StoreShell
+        avisos={avisosDaLoja(store)}
         storeName={store.name}
         logoUrl={mediaUrl(store.logoUrl)}
         primaryColor={store.primaryColor || '#1a1a1a'}
