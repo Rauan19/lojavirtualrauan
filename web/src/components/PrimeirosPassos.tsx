@@ -9,6 +9,9 @@ type LojaResumo = {
   slug: string;
   logoUrl?: string | null;
   mpAccessTokenSet?: boolean;
+  freteModo?: string | null;
+  freteValorFixo?: string | number | null;
+  freteTokenSet?: boolean;
   freteCepOrigem?: string | null;
   freteRuaOrigem?: string | null;
   freteNumeroOrigem?: string | null;
@@ -24,11 +27,19 @@ type Passo = {
   href: string;
   acao: string;
   novaAba?: boolean;
+  obrigatorio?: boolean;
+  /** Passo que precisa de outro antes: fica travado até ele estar feito */
+  depoisDe?: string;
 };
+
+// Transportadoras que cotam pela API (precisam de conta conectada)
+const MODOS_TRANSPORTADORA = new Set(['melhor_envio', 'frenet', 'superfrete']);
 
 /**
  * Roteiro de primeiros passos para loja nova: o que falta para começar a
- * vender, na ordem. Some sozinho quando tudo está feito, ou quando o lojista
+ * vender, na ordem em que um passo depende do outro (endereço antes do
+ * frete, frete antes do produto, que precisa de peso e medidas para a
+ * cotação). Some sozinho quando tudo está feito, ou quando o lojista
  * esconde. O "ver a loja" conta como feito ao clicar.
  */
 export function PrimeirosPassos() {
@@ -71,6 +82,18 @@ export function PrimeirosPassos() {
     loja.freteUfOrigem?.trim(),
   );
 
+  /*
+   * Frete só conta como configurado com uma escolha de verdade: o modo
+   * "manual" sem valor cai num padrão de R$ 25 que o lojista nunca viu.
+   */
+  const modoFrete = loja.freteModo || 'manual';
+  const freteConfigurado =
+    modoFrete === 'gratis' ||
+    (modoFrete === 'manual' &&
+      loja.freteValorFixo != null &&
+      String(loja.freteValorFixo).trim() !== '') ||
+    (MODOS_TRANSPORTADORA.has(modoFrete) && Boolean(loja.freteTokenSet));
+
   const passos: Passo[] = [
     {
       id: 'pagamento',
@@ -80,14 +103,7 @@ export function PrimeirosPassos() {
       feito: Boolean(loja.mpAccessTokenSet),
       href: '/admin/settings?secao=payments',
       acao: 'Conectar',
-    },
-    {
-      id: 'produto',
-      titulo: 'Cadastrar o primeiro produto',
-      detalhe: 'Nome, preço e uma boa foto já bastam para começar.',
-      feito: produtos > 0,
-      href: '/admin/products',
-      acao: 'Cadastrar',
+      obrigatorio: true,
     },
     {
       id: 'frete',
@@ -96,6 +112,29 @@ export function PrimeirosPassos() {
       feito: temOrigem,
       href: '/admin/settings?secao=shipping',
       acao: 'Informar',
+      obrigatorio: true,
+    },
+    {
+      id: 'frete-modo',
+      titulo: 'Configurar o frete',
+      detalhe:
+        'Conecte o Melhor Envio para cotar Correios e transportadoras pelo CEP do cliente, ou defina um valor fixo ou frete grátis.',
+      feito: freteConfigurado,
+      href: '/admin/settings?secao=shipping',
+      acao: 'Configurar',
+      obrigatorio: true,
+      depoisDe: 'frete',
+    },
+    {
+      id: 'produto',
+      titulo: 'Cadastrar o primeiro produto',
+      detalhe:
+        'Nome, preço, foto, e peso e medidas da embalagem: é com eles que o frete é cotado.',
+      feito: produtos > 0,
+      href: '/admin/products',
+      acao: 'Cadastrar',
+      obrigatorio: true,
+      depoisDe: 'frete-modo',
     },
     {
       id: 'marca',
@@ -113,6 +152,7 @@ export function PrimeirosPassos() {
       href: `/loja/${loja.slug}`,
       acao: 'Abrir a loja',
       novaAba: true,
+      depoisDe: 'produto',
     },
   ];
 
@@ -137,6 +177,11 @@ export function PrimeirosPassos() {
     setViuLoja(true);
   }
 
+  const porId = new Map(passos.map((p) => [p.id, p]));
+  const travadoPor = (p: Passo) => {
+    const antes = p.depoisDe ? porId.get(p.depoisDe) : undefined;
+    return antes && !antes.feito ? antes : null;
+  };
   const proximo = passos.find((p) => !p.feito);
 
   return (
@@ -177,43 +222,63 @@ export function PrimeirosPassos() {
       </div>
 
       <ol className="mt-4 divide-y divide-line">
-        {passos.map((p, i) => (
-          <li key={p.id} className="flex items-center gap-3 py-2.5">
-            <span
-              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                p.feito
-                  ? 'bg-emerald-500 text-white'
-                  : p.id === proximo?.id
-                    ? 'bg-ink text-white'
-                    : 'bg-zinc-100 text-muted'
-              }`}
-              aria-hidden
-            >
-              {p.feito ? '✓' : i + 1}
-            </span>
-            <span className="min-w-0 flex-1">
+        {passos.map((p, i) => {
+          const travado = !p.feito ? travadoPor(p) : null;
+          return (
+            <li key={p.id} className="flex items-center gap-3 py-2.5">
               <span
-                className={`block text-sm font-semibold ${p.feito ? 'text-muted line-through' : 'text-ink'}`}
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                  p.feito
+                    ? 'bg-emerald-500 text-white'
+                    : p.id === proximo?.id
+                      ? 'bg-ink text-white'
+                      : 'bg-zinc-100 text-muted'
+                }`}
+                aria-hidden
               >
-                {p.titulo}
+                {p.feito ? '✓' : i + 1}
               </span>
-              {!p.feito ? (
-                <span className="block text-xs text-muted">{p.detalhe}</span>
+              <span className="min-w-0 flex-1">
+                <span
+                  className={`block text-sm font-semibold ${p.feito ? 'text-muted line-through' : 'text-ink'}`}
+                >
+                  {p.titulo}
+                  {p.obrigatorio && !p.feito ? (
+                    <span className="ml-2 rounded-full bg-amber-100 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase tracking-wide text-amber-800">
+                      Obrigatório
+                    </span>
+                  ) : null}
+                </span>
+                {!p.feito ? (
+                  <span className="block text-xs text-muted">
+                    {travado
+                      ? `Primeiro: ${travado.titulo.toLowerCase()}.`
+                      : p.detalhe}
+                  </span>
+                ) : null}
+              </span>
+              {travado ? (
+                <span
+                  className="btn btn-ghost shrink-0 cursor-not-allowed py-1.5 text-xs opacity-50"
+                  aria-disabled="true"
+                  title={`Primeiro: ${travado.titulo.toLowerCase()}`}
+                >
+                  {p.acao}
+                </span>
+              ) : !p.feito ? (
+                <Link
+                  href={p.href}
+                  target={p.novaAba ? '_blank' : undefined}
+                  rel={p.novaAba ? 'noopener noreferrer' : undefined}
+                  onClick={p.id === 'ver' ? marcarVisto : undefined}
+                  className={`btn shrink-0 py-1.5 text-xs ${p.id === proximo?.id ? 'btn-accent' : 'btn-ghost'}`}
+                >
+                  {p.acao}
+                </Link>
               ) : null}
-            </span>
-            {!p.feito ? (
-              <Link
-                href={p.href}
-                target={p.novaAba ? '_blank' : undefined}
-                rel={p.novaAba ? 'noopener noreferrer' : undefined}
-                onClick={p.id === 'ver' ? marcarVisto : undefined}
-                className={`btn shrink-0 py-1.5 text-xs ${p.id === proximo?.id ? 'btn-accent' : 'btn-ghost'}`}
-              >
-                {p.acao}
-              </Link>
-            ) : null}
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ol>
     </section>
   );
