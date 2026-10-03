@@ -134,7 +134,8 @@ export function CalcularFrete({
                     {o.days > 0 ? (
                       <span className="text-muted">
                         {' '}
-                        · até {o.days} {o.days === 1 ? 'dia útil' : 'dias úteis'}
+                        · até {o.days}{' '}
+                        {o.days === 1 ? 'dia útil' : 'dias úteis'}
                       </span>
                     ) : null}
                   </span>

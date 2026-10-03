@@ -161,7 +161,7 @@ const COLOR_HEX: Record<string, string> = {
   laranja: '#ea580c',
   roxo: '#7c3aed',
   unico: '#e5e7eb',
-  'único': '#e5e7eb',
+  único: '#e5e7eb',
 };
 
 function colorHex(name: string) {
@@ -199,13 +199,17 @@ function StepGroup({
           {hint}
         </p>
       ) : null}
-      <div className="mt-3.5 grid gap-x-4 gap-y-4 md:grid-cols-2">{children}</div>
+      <div className="mt-3.5 grid gap-x-4 gap-y-4 md:grid-cols-2">
+        {children}
+      </div>
     </section>
   );
 }
 
 function FieldHint({ children }: { children: ReactNode }) {
-  return <p className="mt-0.5 text-[11px] leading-snug text-muted">{children}</p>;
+  return (
+    <p className="mt-0.5 text-[11px] leading-snug text-muted">{children}</p>
+  );
 }
 
 const AXIS_TEMPLATES: {
@@ -298,13 +302,15 @@ const AXIS_TEMPLATES: {
 ];
 
 function slugKey(label: string) {
-  return label
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_|_$/g, '')
-    .slice(0, 32) || `eixo_${Date.now()}`;
+  return (
+    label
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_|_$/g, '')
+      .slice(0, 32) || `eixo_${Date.now()}`
+  );
 }
 
 function cartesianProduct(sets: string[][]): string[][] {
@@ -479,7 +485,9 @@ export default function AdminProductsPage() {
   }, [debouncedQ, filterCategoryId, filterActive]);
 
   useEffect(() => {
-    load(page).catch((err) => setError(err instanceof Error ? err.message : 'Erro'));
+    load(page).catch((err) =>
+      setError(err instanceof Error ? err.message : 'Erro'),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, debouncedQ, filterCategoryId, filterActive]);
 
@@ -511,7 +519,11 @@ export default function AdminProductsPage() {
     setUseVariants(true);
     setAxes((prev) => [
       ...prev,
-      newAxis({ key: `opcao_${prev.length + 1}`, label: 'Nova opção', presets: [] }),
+      newAxis({
+        key: `opcao_${prev.length + 1}`,
+        label: 'Nova opção',
+        presets: [],
+      }),
     ]);
   }
 
@@ -741,15 +753,15 @@ export default function AdminProductsPage() {
   /** Já tem algo digitado no cadastro? (estoque e medidas vêm preenchidos) */
   const createDirty = Boolean(
     name.trim() ||
-      price.trim() ||
-      compareAt.trim() ||
-      description.trim() ||
-      brand.trim() ||
-      sku.trim() ||
-      ncm.trim() ||
-      categoryId ||
-      files.length ||
-      draftVariants.length,
+    price.trim() ||
+    compareAt.trim() ||
+    description.trim() ||
+    brand.trim() ||
+    sku.trim() ||
+    ncm.trim() ||
+    categoryId ||
+    files.length ||
+    draftVariants.length,
   );
 
   useEscapeKey(createOpen, () => void closeCreate());
@@ -804,7 +816,8 @@ export default function AdminProductsPage() {
       const wi = Number(widthCm);
       const h = Number(heightCm);
       const l = Number(lengthCm);
-      if (!Number.isFinite(w) || w < 0.01) return 'Informe o peso do pacote (kg)';
+      if (!Number.isFinite(w) || w < 0.01)
+        return 'Informe o peso do pacote (kg)';
       if (!Number.isFinite(wi) || wi < 1) return 'Informe a largura (cm)';
       if (!Number.isFinite(h) || h < 1) return 'Informe a altura (cm)';
       if (!Number.isFinite(l) || l < 1) return 'Informe o comprimento (cm)';
@@ -1135,9 +1148,7 @@ export default function AdminProductsPage() {
       const variantsPayload =
         useVariants && draftVariants.length > 0
           ? draftVariants.map((v) => {
-              const variantPrice = v.price.trim()
-                ? Number(v.price)
-                : undefined;
+              const variantPrice = v.price.trim() ? Number(v.price) : undefined;
               if (
                 variantPrice !== undefined &&
                 (!Number.isFinite(variantPrice) || variantPrice < 0)
@@ -1226,7 +1237,11 @@ export default function AdminProductsPage() {
               >
                 Importar planilha
               </button>
-              <button type="button" className="btn btn-accent" onClick={openCreate}>
+              <button
+                type="button"
+                className="btn btn-accent"
+                onClick={openCreate}
+              >
                 + Criar produto
               </button>
             </div>
@@ -1291,7 +1306,9 @@ export default function AdminProductsPage() {
       {items.length === 0 ? (
         <div className="card py-10 text-center">
           <p className="text-sm font-medium">
-            {hasProductFilters ? 'Nenhum produto encontrado' : 'Nenhum produto ainda'}
+            {hasProductFilters
+              ? 'Nenhum produto encontrado'
+              : 'Nenhum produto ainda'}
           </p>
           <p className="mt-1 text-xs text-muted">
             {hasProductFilters
@@ -1369,7 +1386,9 @@ export default function AdminProductsPage() {
                       à vista ou até {p.installments}x s/ juros
                     </p>
                   ) : (
-                    <p className="text-[11px] text-muted">à vista · cartão c/ juros</p>
+                    <p className="text-[11px] text-muted">
+                      à vista · cartão c/ juros
+                    </p>
                   )}
                   <p className="text-[11px] text-muted">Estoque: {p.stock}</p>
                   {variantCount > 0 || p.hasVariants ? (
@@ -1432,7 +1451,6 @@ export default function AdminProductsPage() {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
       />
-
 
       {createOpen ? (
         <div
@@ -1565,7 +1583,9 @@ export default function AdminProductsPage() {
                           value={categoryId}
                           onChange={(e) => setCategoryId(e.target.value)}
                         >
-                          <option value="">Escolha onde o produto aparece…</option>
+                          <option value="">
+                            Escolha onde o produto aparece…
+                          </option>
                           {categories.map((c) => (
                             <option key={c.id} value={c.id}>
                               {c.name}
@@ -1687,7 +1707,9 @@ export default function AdminProductsPage() {
                             onChange={(e) => setBrand(e.target.value)}
                             placeholder="Ex.: Nike, Natura…"
                           />
-                          <FieldHint>Aparece junto ao nome na listagem.</FieldHint>
+                          <FieldHint>
+                            Aparece junto ao nome na listagem.
+                          </FieldHint>
                         </div>
                         <div>
                           <label className="label">Código do produto</label>
@@ -1782,8 +1804,8 @@ export default function AdminProductsPage() {
                           ))}
                         </select>
                         <FieldHint>
-                          Até Nx o cliente vê sem juros; acima disso, até 12x com
-                          juros — mesma lógica do checkout.
+                          Até Nx o cliente vê sem juros; acima disso, até 12x
+                          com juros — mesma lógica do checkout.
                         </FieldHint>
                       </div>
                       <div>
@@ -1796,8 +1818,8 @@ export default function AdminProductsPage() {
                           disabled={useVariants && draftVariants.length > 0}
                         />
                         <FieldHint>
-                          Criando opções (P/M/G…) na última etapa, o estoque passa
-                          a ser por opção e este campo vira referência.
+                          Criando opções (P/M/G…) na última etapa, o estoque
+                          passa a ser por opção e este campo vira referência.
                         </FieldHint>
                       </div>
                     </StepGroup>
@@ -1860,10 +1882,10 @@ export default function AdminProductsPage() {
 
                     {carrierShipping ? (
                       <p className="border border-line bg-[#fafafa] px-3.5 py-3 text-xs leading-relaxed text-muted">
-                        Sua loja cota frete por transportadora, então essas quatro
-                        medidas são obrigatórias. Medida errada aqui vira cobrança
-                        de diferença depois — a transportadora pesa o pacote na
-                        origem.
+                        Sua loja cota frete por transportadora, então essas
+                        quatro medidas são obrigatórias. Medida errada aqui vira
+                        cobrança de diferença depois — a transportadora pesa o
+                        pacote na origem.
                       </p>
                     ) : null}
                   </div>
@@ -1895,378 +1917,383 @@ export default function AdminProductsPage() {
                       </span>
                     </label>
 
-                  {useVariants ? (
-                    <>
-                      <div className="rounded border border-line bg-[#fafafa] p-3">
-                        <p className="text-xs font-bold text-ink">
-                          1) Comece por um modelo pronto (opcional)
-                        </p>
-                        <p className="mt-0.5 text-[11px] text-muted">
-                          Clique no tipo do produto. Depois marque as opções
-                          (ex.: P, M e as cores) e gere as combinações.
-                        </p>
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {AXIS_TEMPLATES.map((t) => (
+                    {useVariants ? (
+                      <>
+                        <div className="rounded border border-line bg-[#fafafa] p-3">
+                          <p className="text-xs font-bold text-ink">
+                            1) Comece por um modelo pronto (opcional)
+                          </p>
+                          <p className="mt-0.5 text-[11px] text-muted">
+                            Clique no tipo do produto. Depois marque as opções
+                            (ex.: P, M e as cores) e gere as combinações.
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {AXIS_TEMPLATES.map((t) => (
+                              <button
+                                key={t.id}
+                                type="button"
+                                className="btn btn-ghost py-1.5 text-xs"
+                                onClick={() => applyTemplate(t.id)}
+                                title={t.hint}
+                              >
+                                {t.label}
+                              </button>
+                            ))}
                             <button
-                              key={t.id}
                               type="button"
                               className="btn btn-ghost py-1.5 text-xs"
-                              onClick={() => applyTemplate(t.id)}
-                              title={t.hint}
+                              onClick={addEmptyAxis}
                             >
-                              {t.label}
+                              + Criar tipo de opção do zero
                             </button>
-                          ))}
-                          <button
-                            type="button"
-                            className="btn btn-ghost py-1.5 text-xs"
-                            onClick={addEmptyAxis}
-                          >
-                            + Criar tipo de opção do zero
-                          </button>
-                        </div>
-                      </div>
-
-                      {axes.map((axis, axisIndex) => {
-                        const chips = Array.from(
-                          new Set([...axis.presets, ...axis.selected]),
-                        );
-                        const asColor = isColorAxis(axis);
-                        return (
-                          <div
-                            key={axis.id}
-                            className="space-y-2 rounded border border-line p-3"
-                          >
-                            <div className="flex flex-wrap items-end gap-2">
-                              <div className="min-w-[160px] flex-1">
-                                <label className="label">
-                                  Tipo de opção {axisIndex + 1}
-                                </label>
-                                <input
-                                  className="field"
-                                  value={axis.label}
-                                  onChange={(e) =>
-                                    updateAxis(axis.id, {
-                                      label: e.target.value,
-                                    })
-                                  }
-                                  placeholder="Ex.: Tamanho, Cor, Volume"
-                                />
-                                <FieldHint>
-                                  O cliente vê esse nome na página do produto
-                                  (ex.: “Escolha a cor”).
-                                </FieldHint>
-                              </div>
-                              <button
-                                type="button"
-                                className="btn btn-ghost text-accent"
-                                onClick={() => removeAxis(axis.id)}
-                              >
-                                Remover
-                              </button>
-                            </div>
-                            <p className="text-xs font-semibold text-ink">
-                              {asColor
-                                ? '2) Selecione as cores disponíveis (clique para marcar)'
-                                : '2) Selecione os valores disponíveis (clique para marcar)'}
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {chips.map((opt) => {
-                                const on = axis.selected.includes(opt);
-                                const hex = asColor ? colorHex(opt) : null;
-                                return (
-                                  <button
-                                    key={opt}
-                                    type="button"
-                                    className={`inline-flex items-center gap-2 border px-2.5 py-1.5 text-xs font-medium transition ${
-                                      on
-                                        ? 'border-ink bg-ink text-white ring-2 ring-ink/20'
-                                        : 'border-line bg-white text-ink hover:border-ink/40'
-                                    }`}
-                                    onClick={() =>
-                                      toggleAxisOption(axis.id, opt)
-                                    }
-                                    aria-pressed={on}
-                                  >
-                                    {asColor ? (
-                                      <span
-                                        className="h-4 w-4 shrink-0 rounded-full border border-black/15 shadow-inner"
-                                        style={{
-                                          backgroundColor: hex || '#d4d4d4',
-                                        }}
-                                        aria-hidden
-                                      />
-                                    ) : null}
-                                    <span>{opt}</span>
-                                    {on ? (
-                                      <span className="text-[11px] opacity-80">
-                                        ✓
-                                      </span>
-                                    ) : null}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                            {asColor ? (
-                              <div className="flex flex-wrap items-end gap-2">
-                                <div className="min-w-[120px] flex-1">
-                                  <label className="label">
-                                    Adicionar outra cor (nome)
-                                  </label>
-                                  <input
-                                    className="field"
-                                    value={axis.customInput}
-                                    onChange={(e) =>
-                                      updateAxis(axis.id, {
-                                        customInput: e.target.value,
-                                      })
-                                    }
-                                    placeholder="Ex.: Marsala, Off-white…"
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        addCustomOption(axis.id);
-                                      }
-                                    }}
-                                  />
-                                </div>
-                                <button
-                                  type="button"
-                                  className="btn btn-ghost shrink-0"
-                                  onClick={() => addCustomOption(axis.id)}
-                                >
-                                  Incluir cor
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="flex flex-wrap items-end gap-2">
-                                <div className="min-w-[120px] flex-1">
-                                  <label className="label">
-                                    Adicionar outro valor
-                                  </label>
-                                  <input
-                                    className="field"
-                                    value={axis.customInput}
-                                    onChange={(e) =>
-                                      updateAxis(axis.id, {
-                                        customInput: e.target.value,
-                                      })
-                                    }
-                                    placeholder="Ex.: GG, 750ml, 42…"
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        addCustomOption(axis.id);
-                                      }
-                                    }}
-                                  />
-                                </div>
-                                <button
-                                  type="button"
-                                  className="btn btn-ghost shrink-0"
-                                  onClick={() => addCustomOption(axis.id)}
-                                >
-                                  Incluir
-                                </button>
-                              </div>
-                            )}
-                            <FieldHint>
-                              Marcado = o cliente poderá escolher. Sem estoque
-                              depois, a opção some/bloqueia na loja.
-                            </FieldHint>
                           </div>
-                        );
-                      })}
-
-                      <div className="rounded border border-dashed border-line p-3">
-                        <p className="text-xs font-bold text-ink">
-                          3) Gerar as combinações e definir estoque / preço
-                        </p>
-                        <p className="mt-0.5 text-[11px] text-muted">
-                          Ex.: tamanho M + cor Preto vira uma linha com estoque
-                          próprio. Preço vazio = usa o preço de venda acima.
-                        </p>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            className="btn"
-                            onClick={generateCombinations}
-                            disabled={axes.length === 0}
-                          >
-                            Gerar combinações
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-ghost"
-                            onClick={addManualVariantRow}
-                          >
-                            + Adicionar opção manual
-                          </button>
-                          {draftVariants.length > 0 ? (
-                            <button
-                              type="button"
-                              className="btn btn-ghost text-accent"
-                              onClick={() => setDraftVariants([])}
-                            >
-                              Limpar lista
-                            </button>
-                          ) : null}
                         </div>
-                      </div>
 
-                      {draftVariants.length > 0 ? (
-                        <div className="space-y-2">
-                          <p className="text-xs text-muted">
-                            {draftVariants.length} opção(ões) · estoque total{' '}
-                            {variantStockSum}
-                          </p>
-                          {draftVariants.map((v, idx) => (
+                        {axes.map((axis, axisIndex) => {
+                          const chips = Array.from(
+                            new Set([...axis.presets, ...axis.selected]),
+                          );
+                          const asColor = isColorAxis(axis);
+                          return (
                             <div
-                              key={v.key}
-                              className="grid gap-2 border border-line p-3 sm:grid-cols-2"
+                              key={axis.id}
+                              className="space-y-2 rounded border border-line p-3"
                             >
-                              <div className="sm:col-span-2">
-                                <label className="label">
-                                  Nome que o cliente vê
-                                </label>
-                                <input
-                                  className="field"
-                                  value={v.label}
-                                  onChange={(e) =>
-                                    setDraftVariants((prev) =>
-                                      prev.map((row, i) =>
-                                        i === idx
-                                          ? { ...row, label: e.target.value }
-                                          : row,
-                                      ),
-                                    )
-                                  }
-                                />
-                                <FieldHint>
-                                  Ex.: “M / Preto” ou “500ml”.
-                                </FieldHint>
-                              </div>
-                              <div>
-                                <label className="label">
-                                  Estoque desta opção
-                                </label>
-                                <input
-                                  className="field"
-                                  type="number"
-                                  min="0"
-                                  value={v.stock}
-                                  onChange={(e) =>
-                                    setDraftVariants((prev) =>
-                                      prev.map((row, i) =>
-                                        i === idx
-                                          ? { ...row, stock: e.target.value }
-                                          : row,
-                                      ),
-                                    )
-                                  }
-                                />
-                                <FieldHint>
-                                  Quantas unidades desta combinação você tem.
-                                </FieldHint>
-                              </div>
-                              <div>
-                                <label className="label">
-                                  Preço só desta opção (opcional)
-                                </label>
-                                <input
-                                  className="field"
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  value={v.price}
-                                  onChange={(e) =>
-                                    setDraftVariants((prev) =>
-                                      prev.map((row, i) =>
-                                        i === idx
-                                          ? { ...row, price: e.target.value }
-                                          : row,
-                                      ),
-                                    )
-                                  }
-                                  placeholder={
-                                    price
-                                      ? `Vazio = R$ ${price}`
-                                      : 'Vazio = preço padrão'
-                                  }
-                                />
-                                <FieldHint>
-                                  Preencha se GG ou 1L custar diferente.
-                                </FieldHint>
-                              </div>
-                              <div>
-                                <label className="label">
-                                  Código interno (SKU)
-                                </label>
-                                <input
-                                  className="field"
-                                  value={v.sku}
-                                  onChange={(e) =>
-                                    setDraftVariants((prev) =>
-                                      prev.map((row, i) =>
-                                        i === idx
-                                          ? { ...row, sku: e.target.value }
-                                          : row,
-                                      ),
-                                    )
-                                  }
-                                  placeholder="Opcional"
-                                />
-                              </div>
-                              <div>
-                                <label className="label">Código de barras</label>
-                                <input
-                                  className="field"
-                                  value={v.barcode}
-                                  onChange={(e) =>
-                                    setDraftVariants((prev) =>
-                                      prev.map((row, i) =>
-                                        i === idx
-                                          ? {
-                                              ...row,
-                                              barcode: e.target.value,
-                                            }
-                                          : row,
-                                      ),
-                                    )
-                                  }
-                                  placeholder="Opcional"
-                                />
-                              </div>
-                              <div className="sm:col-span-2">
+                              <div className="flex flex-wrap items-end gap-2">
+                                <div className="min-w-[160px] flex-1">
+                                  <label className="label">
+                                    Tipo de opção {axisIndex + 1}
+                                  </label>
+                                  <input
+                                    className="field"
+                                    value={axis.label}
+                                    onChange={(e) =>
+                                      updateAxis(axis.id, {
+                                        label: e.target.value,
+                                      })
+                                    }
+                                    placeholder="Ex.: Tamanho, Cor, Volume"
+                                  />
+                                  <FieldHint>
+                                    O cliente vê esse nome na página do produto
+                                    (ex.: “Escolha a cor”).
+                                  </FieldHint>
+                                </div>
                                 <button
                                   type="button"
                                   className="btn btn-ghost text-accent"
-                                  onClick={() =>
-                                    setDraftVariants((prev) =>
-                                      prev.filter((_, i) => i !== idx),
-                                    )
-                                  }
+                                  onClick={() => removeAxis(axis.id)}
                                 >
-                                  Remover esta opção
+                                  Remover
                                 </button>
                               </div>
+                              <p className="text-xs font-semibold text-ink">
+                                {asColor
+                                  ? '2) Selecione as cores disponíveis (clique para marcar)'
+                                  : '2) Selecione os valores disponíveis (clique para marcar)'}
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {chips.map((opt) => {
+                                  const on = axis.selected.includes(opt);
+                                  const hex = asColor ? colorHex(opt) : null;
+                                  return (
+                                    <button
+                                      key={opt}
+                                      type="button"
+                                      className={`inline-flex items-center gap-2 border px-2.5 py-1.5 text-xs font-medium transition ${
+                                        on
+                                          ? 'border-ink bg-ink text-white ring-2 ring-ink/20'
+                                          : 'border-line bg-white text-ink hover:border-ink/40'
+                                      }`}
+                                      onClick={() =>
+                                        toggleAxisOption(axis.id, opt)
+                                      }
+                                      aria-pressed={on}
+                                    >
+                                      {asColor ? (
+                                        <span
+                                          className="h-4 w-4 shrink-0 rounded-full border border-black/15 shadow-inner"
+                                          style={{
+                                            backgroundColor: hex || '#d4d4d4',
+                                          }}
+                                          aria-hidden
+                                        />
+                                      ) : null}
+                                      <span>{opt}</span>
+                                      {on ? (
+                                        <span className="text-[11px] opacity-80">
+                                          ✓
+                                        </span>
+                                      ) : null}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              {asColor ? (
+                                <div className="flex flex-wrap items-end gap-2">
+                                  <div className="min-w-[120px] flex-1">
+                                    <label className="label">
+                                      Adicionar outra cor (nome)
+                                    </label>
+                                    <input
+                                      className="field"
+                                      value={axis.customInput}
+                                      onChange={(e) =>
+                                        updateAxis(axis.id, {
+                                          customInput: e.target.value,
+                                        })
+                                      }
+                                      placeholder="Ex.: Marsala, Off-white…"
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          e.preventDefault();
+                                          addCustomOption(axis.id);
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="btn btn-ghost shrink-0"
+                                    onClick={() => addCustomOption(axis.id)}
+                                  >
+                                    Incluir cor
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex flex-wrap items-end gap-2">
+                                  <div className="min-w-[120px] flex-1">
+                                    <label className="label">
+                                      Adicionar outro valor
+                                    </label>
+                                    <input
+                                      className="field"
+                                      value={axis.customInput}
+                                      onChange={(e) =>
+                                        updateAxis(axis.id, {
+                                          customInput: e.target.value,
+                                        })
+                                      }
+                                      placeholder="Ex.: GG, 750ml, 42…"
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          e.preventDefault();
+                                          addCustomOption(axis.id);
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="btn btn-ghost shrink-0"
+                                    onClick={() => addCustomOption(axis.id)}
+                                  >
+                                    Incluir
+                                  </button>
+                                </div>
+                              )}
+                              <FieldHint>
+                                Marcado = o cliente poderá escolher. Sem estoque
+                                depois, a opção some/bloqueia na loja.
+                              </FieldHint>
                             </div>
-                          ))}
+                          );
+                        })}
+
+                        <div className="rounded border border-dashed border-line p-3">
+                          <p className="text-xs font-bold text-ink">
+                            3) Gerar as combinações e definir estoque / preço
+                          </p>
+                          <p className="mt-0.5 text-[11px] text-muted">
+                            Ex.: tamanho M + cor Preto vira uma linha com
+                            estoque próprio. Preço vazio = usa o preço de venda
+                            acima.
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              className="btn"
+                              onClick={generateCombinations}
+                              disabled={axes.length === 0}
+                            >
+                              Gerar combinações
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-ghost"
+                              onClick={addManualVariantRow}
+                            >
+                              + Adicionar opção manual
+                            </button>
+                            {draftVariants.length > 0 ? (
+                              <button
+                                type="button"
+                                className="btn btn-ghost text-accent"
+                                onClick={() => setDraftVariants([])}
+                              >
+                                Limpar lista
+                              </button>
+                            ) : null}
+                          </div>
                         </div>
-                      ) : null}
-                    </>
-                  ) : (
-                    <p className="rounded border border-line bg-[#fafafa] p-3 text-xs text-muted">
-                      Sem opções extras: o cliente compra o produto único com o
-                      estoque da etapa Preço. Ative acima se tiver tamanho, cor,
-                      ml etc.
-                    </p>
-                  )}
+
+                        {draftVariants.length > 0 ? (
+                          <div className="space-y-2">
+                            <p className="text-xs text-muted">
+                              {draftVariants.length} opção(ões) · estoque total{' '}
+                              {variantStockSum}
+                            </p>
+                            {draftVariants.map((v, idx) => (
+                              <div
+                                key={v.key}
+                                className="grid gap-2 border border-line p-3 sm:grid-cols-2"
+                              >
+                                <div className="sm:col-span-2">
+                                  <label className="label">
+                                    Nome que o cliente vê
+                                  </label>
+                                  <input
+                                    className="field"
+                                    value={v.label}
+                                    onChange={(e) =>
+                                      setDraftVariants((prev) =>
+                                        prev.map((row, i) =>
+                                          i === idx
+                                            ? { ...row, label: e.target.value }
+                                            : row,
+                                        ),
+                                      )
+                                    }
+                                  />
+                                  <FieldHint>
+                                    Ex.: “M / Preto” ou “500ml”.
+                                  </FieldHint>
+                                </div>
+                                <div>
+                                  <label className="label">
+                                    Estoque desta opção
+                                  </label>
+                                  <input
+                                    className="field"
+                                    type="number"
+                                    min="0"
+                                    value={v.stock}
+                                    onChange={(e) =>
+                                      setDraftVariants((prev) =>
+                                        prev.map((row, i) =>
+                                          i === idx
+                                            ? { ...row, stock: e.target.value }
+                                            : row,
+                                        ),
+                                      )
+                                    }
+                                  />
+                                  <FieldHint>
+                                    Quantas unidades desta combinação você tem.
+                                  </FieldHint>
+                                </div>
+                                <div>
+                                  <label className="label">
+                                    Preço só desta opção (opcional)
+                                  </label>
+                                  <input
+                                    className="field"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={v.price}
+                                    onChange={(e) =>
+                                      setDraftVariants((prev) =>
+                                        prev.map((row, i) =>
+                                          i === idx
+                                            ? { ...row, price: e.target.value }
+                                            : row,
+                                        ),
+                                      )
+                                    }
+                                    placeholder={
+                                      price
+                                        ? `Vazio = R$ ${price}`
+                                        : 'Vazio = preço padrão'
+                                    }
+                                  />
+                                  <FieldHint>
+                                    Preencha se GG ou 1L custar diferente.
+                                  </FieldHint>
+                                </div>
+                                <div>
+                                  <label className="label">
+                                    Código interno (SKU)
+                                  </label>
+                                  <input
+                                    className="field"
+                                    value={v.sku}
+                                    onChange={(e) =>
+                                      setDraftVariants((prev) =>
+                                        prev.map((row, i) =>
+                                          i === idx
+                                            ? { ...row, sku: e.target.value }
+                                            : row,
+                                        ),
+                                      )
+                                    }
+                                    placeholder="Opcional"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="label">
+                                    Código de barras
+                                  </label>
+                                  <input
+                                    className="field"
+                                    value={v.barcode}
+                                    onChange={(e) =>
+                                      setDraftVariants((prev) =>
+                                        prev.map((row, i) =>
+                                          i === idx
+                                            ? {
+                                                ...row,
+                                                barcode: e.target.value,
+                                              }
+                                            : row,
+                                        ),
+                                      )
+                                    }
+                                    placeholder="Opcional"
+                                  />
+                                </div>
+                                <div className="sm:col-span-2">
+                                  <button
+                                    type="button"
+                                    className="btn btn-ghost text-accent"
+                                    onClick={() =>
+                                      setDraftVariants((prev) =>
+                                        prev.filter((_, i) => i !== idx),
+                                      )
+                                    }
+                                  >
+                                    Remover esta opção
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : null}
+                      </>
+                    ) : (
+                      <p className="rounded border border-line bg-[#fafafa] p-3 text-xs text-muted">
+                        Sem opções extras: o cliente compra o produto único com
+                        o estoque da etapa Preço. Ative acima se tiver tamanho,
+                        cor, ml etc.
+                      </p>
+                    )}
                   </div>
                 ) : null}
 
                 {error ? (
-                  <p role="alert" className="mt-3 text-sm text-accent">{error}</p>
+                  <p role="alert" className="mt-3 text-sm text-accent">
+                    {error}
+                  </p>
                 ) : null}
               </div>
 
@@ -2325,7 +2352,9 @@ export default function AdminProductsPage() {
 
             <div className="form-grid min-h-0 flex-1 overflow-y-auto px-4 py-4 md:grid-cols-2">
               {error ? (
-                <p role="alert" className="text-sm text-accent md:col-span-2">{error}</p>
+                <p role="alert" className="text-sm text-accent md:col-span-2">
+                  {error}
+                </p>
               ) : null}
               <div>
                 <label className="label">Nome</label>

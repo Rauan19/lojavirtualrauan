@@ -38,7 +38,9 @@ describe('Registro de acesso (e2e)', () => {
     await prisma.accessLog.deleteMany({});
     seed = await seedStore(prisma);
     // o cache de deduplicação vive no processo e atravessaria os testes
-    (accessLog as unknown as { recentes: Map<string, number> }).recentes.clear();
+    (
+      accessLog as unknown as { recentes: Map<string, number> }
+    ).recentes.clear();
   });
 
   it('registra o acesso de um visitante', async () => {

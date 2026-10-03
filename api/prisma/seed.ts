@@ -17,37 +17,125 @@ const PRODUCT_COUNT = Number(process.env.SEED_PRODUCTS || 150);
 const ORDER_COUNT = Number(process.env.SEED_ORDERS || 280);
 const DEMO_CUSTOMER_EMAIL = 'cliente@demo.com';
 const DEMO_CUSTOMER_PASSWORD = 'cliente123';
-const STORE_ADMIN_EMAIL = process.env.SEED_STORE_ADMIN_EMAIL || 'admin@rauanimports.com';
-const STORE_ADMIN_PASSWORD = process.env.SEED_STORE_ADMIN_PASSWORD || 'admin123';
+const STORE_ADMIN_EMAIL =
+  process.env.SEED_STORE_ADMIN_EMAIL || 'admin@rauanimports.com';
+const STORE_ADMIN_PASSWORD =
+  process.env.SEED_STORE_ADMIN_PASSWORD || 'admin123';
 
 const FIRST_NAMES = [
-  'Ana', 'Bruno', 'Carla', 'Diego', 'Elena', 'Fábio', 'Gabriela', 'Hugo',
-  'Isabela', 'João', 'Karen', 'Lucas', 'Marina', 'Nicolas', 'Olívia', 'Pedro',
-  'Queila', 'Rafael', 'Sofia', 'Thiago', 'Úrsula', 'Vinícius', 'Wendy', 'Yasmin',
-  'André', 'Beatriz', 'Caio', 'Daniela', 'Eduardo', 'Fernanda', 'Gustavo', 'Helena',
+  'Ana',
+  'Bruno',
+  'Carla',
+  'Diego',
+  'Elena',
+  'Fábio',
+  'Gabriela',
+  'Hugo',
+  'Isabela',
+  'João',
+  'Karen',
+  'Lucas',
+  'Marina',
+  'Nicolas',
+  'Olívia',
+  'Pedro',
+  'Queila',
+  'Rafael',
+  'Sofia',
+  'Thiago',
+  'Úrsula',
+  'Vinícius',
+  'Wendy',
+  'Yasmin',
+  'André',
+  'Beatriz',
+  'Caio',
+  'Daniela',
+  'Eduardo',
+  'Fernanda',
+  'Gustavo',
+  'Helena',
 ];
 
 const LAST_NAMES = [
-  'Silva', 'Santos', 'Oliveira', 'Souza', 'Rodrigues', 'Ferreira', 'Alves',
-  'Pereira', 'Lima', 'Gomes', 'Costa', 'Ribeiro', 'Martins', 'Carvalho',
-  'Rocha', 'Almeida', 'Nascimento', 'Araújo', 'Melo', 'Barbosa',
+  'Silva',
+  'Santos',
+  'Oliveira',
+  'Souza',
+  'Rodrigues',
+  'Ferreira',
+  'Alves',
+  'Pereira',
+  'Lima',
+  'Gomes',
+  'Costa',
+  'Ribeiro',
+  'Martins',
+  'Carvalho',
+  'Rocha',
+  'Almeida',
+  'Nascimento',
+  'Araújo',
+  'Melo',
+  'Barbosa',
 ];
 
 const CITIES = [
-  { city: 'São Paulo', state: 'SP', zips: ['01001-000', '01310-100', '04038-001'] },
-  { city: 'Rio de Janeiro', state: 'RJ', zips: ['20040-020', '22041-080', '22640-100'] },
-  { city: 'Belo Horizonte', state: 'MG', zips: ['30130-000', '30140-071', '30310-190'] },
-  { city: 'Curitiba', state: 'PR', zips: ['80010-000', '80250-030', '80420-090'] },
-  { city: 'Porto Alegre', state: 'RS', zips: ['90010-150', '90430-001', '90620-110'] },
-  { city: 'Salvador', state: 'BA', zips: ['40020-000', '40140-110', '41820-020'] },
-  { city: 'Brasília', state: 'DF', zips: ['70040-010', '70200-030', '70390-050'] },
-  { city: 'Fortaleza', state: 'CE', zips: ['60025-000', '60165-121', '60810-140'] },
+  {
+    city: 'São Paulo',
+    state: 'SP',
+    zips: ['01001-000', '01310-100', '04038-001'],
+  },
+  {
+    city: 'Rio de Janeiro',
+    state: 'RJ',
+    zips: ['20040-020', '22041-080', '22640-100'],
+  },
+  {
+    city: 'Belo Horizonte',
+    state: 'MG',
+    zips: ['30130-000', '30140-071', '30310-190'],
+  },
+  {
+    city: 'Curitiba',
+    state: 'PR',
+    zips: ['80010-000', '80250-030', '80420-090'],
+  },
+  {
+    city: 'Porto Alegre',
+    state: 'RS',
+    zips: ['90010-150', '90430-001', '90620-110'],
+  },
+  {
+    city: 'Salvador',
+    state: 'BA',
+    zips: ['40020-000', '40140-110', '41820-020'],
+  },
+  {
+    city: 'Brasília',
+    state: 'DF',
+    zips: ['70040-010', '70200-030', '70390-050'],
+  },
+  {
+    city: 'Fortaleza',
+    state: 'CE',
+    zips: ['60025-000', '60165-121', '60810-140'],
+  },
 ];
 
 const STREETS = [
-  'Rua das Flores', 'Av. Paulista', 'Rua Augusta', 'Rua XV de Novembro',
-  'Av. Brasil', 'Rua do Comércio', 'Rua das Palmeiras', 'Av. Atlântica',
-  'Rua Amazonas', 'Rua Bahia', 'Av. Independência', 'Rua São João',
+  'Rua das Flores',
+  'Av. Paulista',
+  'Rua Augusta',
+  'Rua XV de Novembro',
+  'Av. Brasil',
+  'Rua do Comércio',
+  'Rua das Palmeiras',
+  'Av. Atlântica',
+  'Rua Amazonas',
+  'Rua Bahia',
+  'Av. Independência',
+  'Rua São João',
 ];
 
 const CATEGORIES = [
@@ -66,18 +154,47 @@ const CATEGORIES = [
 ];
 
 const PRODUCT_PREFIXES = [
-  'Fone Bluetooth', 'Carregador Turbo', 'Capa Premium', 'Smartwatch',
-  'Caixa de Som', 'Mouse Gamer', 'Teclado Mecânico', 'Webcam Full HD',
-  'Power Bank', 'Cabo USB-C', 'Suporte Veicular', 'Ring Light',
-  'Perfume Importado', 'Mochila Executiva', 'Tênis Running', 'Óculos UV',
-  'Bolsa Crossbody', 'Camiseta Oversized', 'Jaqueta Corta-Vento', 'Boné Snapback',
-  'Kit Skincare', 'Difusor Aroma', 'Luminária LED', 'Organizador Mesa',
-  'Garrafa Térmica', 'Squeeze Academia', 'Faixa Elástica', 'Colchonete Yoga',
+  'Fone Bluetooth',
+  'Carregador Turbo',
+  'Capa Premium',
+  'Smartwatch',
+  'Caixa de Som',
+  'Mouse Gamer',
+  'Teclado Mecânico',
+  'Webcam Full HD',
+  'Power Bank',
+  'Cabo USB-C',
+  'Suporte Veicular',
+  'Ring Light',
+  'Perfume Importado',
+  'Mochila Executiva',
+  'Tênis Running',
+  'Óculos UV',
+  'Bolsa Crossbody',
+  'Camiseta Oversized',
+  'Jaqueta Corta-Vento',
+  'Boné Snapback',
+  'Kit Skincare',
+  'Difusor Aroma',
+  'Luminária LED',
+  'Organizador Mesa',
+  'Garrafa Térmica',
+  'Squeeze Academia',
+  'Faixa Elástica',
+  'Colchonete Yoga',
 ];
 
 const BRANDS = [
-  'NovaTech', 'PrimeBox', 'UrbanFit', 'GlowLab', 'Aether', 'VoltMax',
-  'CasaNest', 'StyleHub', 'SportPeak', 'Lumina',
+  'NovaTech',
+  'PrimeBox',
+  'UrbanFit',
+  'GlowLab',
+  'Aether',
+  'VoltMax',
+  'CasaNest',
+  'StyleHub',
+  'SportPeak',
+  'Lumina',
 ];
 
 const ORDER_STATUSES: OrderStatus[] = [
@@ -118,7 +235,9 @@ function phoneFor(i: number) {
 }
 
 function cpfFor(i: number) {
-  const base = String(10000000000 + i).padStart(11, '0').slice(0, 11);
+  const base = String(10000000000 + i)
+    .padStart(11, '0')
+    .slice(0, 11);
   return `${base.slice(0, 3)}.${base.slice(3, 6)}.${base.slice(6, 9)}-${base.slice(9)}`;
 }
 
@@ -223,7 +342,9 @@ async function ensureStore() {
 }
 
 async function wipeStoreCatalog(storeId: string) {
-  console.log('Limpando dados anteriores da loja (pedidos, produtos, clientes)...');
+  console.log(
+    'Limpando dados anteriores da loja (pedidos, produtos, clientes)...',
+  );
   await prisma.orderItem.deleteMany({ where: { order: { storeId } } });
   await prisma.order.deleteMany({ where: { storeId } });
   await prisma.promotion.deleteMany({ where: { storeId } });
@@ -253,10 +374,7 @@ async function seedCategories(storeId: string) {
   return created;
 }
 
-async function seedProducts(
-  storeId: string,
-  categories: { id: string }[],
-) {
+async function seedProducts(storeId: string, categories: { id: string }[]) {
   const productsData = Array.from({ length: PRODUCT_COUNT }, (_, i) => {
     const name = `${pick(PRODUCT_PREFIXES, i)} ${pick(BRANDS, i + 3)} ${i + 1}`;
     const price = money(29.9 + (i % 40) * 12.5 + (i % 7) * 3.1);
@@ -393,7 +511,10 @@ async function seedCoupons(storeId: string) {
   return rows;
 }
 
-async function seedPromotions(storeId: string, products: { id: string; name: string }[]) {
+async function seedPromotions(
+  storeId: string,
+  products: { id: string; name: string }[],
+) {
   const featured = products.filter((_, i) => i % 7 === 0).slice(0, 25);
   await prisma.promotion.createMany({
     data: featured.map((p, i) => ({
@@ -439,13 +560,21 @@ async function seedCustomers(storeId: string) {
       customerId: c.id,
       street: pick(STREETS, i),
       number: String(10 + (i % 900)),
-      neighborhood: pick(['Centro', 'Jardins', 'Boa Vista', 'Vila Nova', 'Industrial'], i),
+      neighborhood: pick(
+        ['Centro', 'Jardins', 'Boa Vista', 'Vila Nova', 'Industrial'],
+        i,
+      ),
       city: place.city,
       state: place.state,
       zipCode: zip,
     };
     const list = [
-      { ...base, label: 'Casa', isDefault: true, complement: i % 4 === 0 ? 'Apto 12' : null },
+      {
+        ...base,
+        label: 'Casa',
+        isDefault: true,
+        complement: i % 4 === 0 ? 'Apto 12' : null,
+      },
     ];
     if (i % 3 === 0) {
       list.push({
@@ -465,7 +594,9 @@ async function seedCustomers(storeId: string) {
     await prisma.address.createMany({ data: addresses.slice(i, i + 400) });
   }
 
-  console.log(`Clientes: ${customers.length} (+ ${addresses.length} endereços)`);
+  console.log(
+    `Clientes: ${customers.length} (+ ${addresses.length} endereços)`,
+  );
   return customers;
 }
 
@@ -501,7 +632,11 @@ function statusBundle(i: number): {
     return {
       status,
       paymentStatus: pick(
-        [PaymentStatus.CANCELLED, PaymentStatus.REJECTED, PaymentStatus.PENDING],
+        [
+          PaymentStatus.CANCELLED,
+          PaymentStatus.REJECTED,
+          PaymentStatus.PENDING,
+        ],
         i,
       ),
       refundStatus: null,
@@ -561,14 +696,24 @@ function statusBundle(i: number): {
 
 async function seedOrders(
   storeId: string,
-  customers: { id: string; name: string; email: string; phone: string | null }[],
+  customers: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+  }[],
   products: {
     id: string;
     name: string;
     sku: string | null;
     price: { toNumber?: () => number } | number | string;
   }[],
-  coupons: { id: string; code: string; type: DiscountType; value: { toNumber?: () => number } | number }[],
+  coupons: {
+    id: string;
+    code: string;
+    type: DiscountType;
+    value: { toNumber?: () => number } | number;
+  }[],
 ) {
   const demoCustomer = customers.find((c) => c.email === DEMO_CUSTOMER_EMAIL)!;
   const activeProducts = products.filter((_, i) => i % 17 !== 0);
@@ -613,8 +758,7 @@ async function seedOrders(
   >();
 
   for (let i = 0; i < ORDER_COUNT; i++) {
-    const customer =
-      i < 45 ? demoCustomer : pick(customers, i + 11);
+    const customer = i < 45 ? demoCustomer : pick(customers, i + 11);
     const itemCount = 1 + (i % 4);
     const lineItems = [];
     let subtotal = 0;
@@ -622,7 +766,9 @@ async function seedOrders(
     for (let j = 0; j < itemCount; j++) {
       const product = pick(activeProducts, i * 3 + j);
       const unit =
-        typeof product.price === 'object' && product.price && 'toNumber' in product.price
+        typeof product.price === 'object' &&
+        product.price &&
+        'toNumber' in product.price
           ? product.price.toNumber!()
           : Number(product.price);
       const quantity = 1 + ((i + j) % 3);
@@ -645,7 +791,9 @@ async function seedOrders(
     let discount = 0;
     if (coupon) {
       const value =
-        typeof coupon.value === 'object' && coupon.value && 'toNumber' in coupon.value
+        typeof coupon.value === 'object' &&
+        coupon.value &&
+        'toNumber' in coupon.value
           ? coupon.value.toNumber!()
           : Number(coupon.value);
       if (coupon.type === DiscountType.PERCENT) {
@@ -763,9 +911,13 @@ async function main() {
   console.log('\n=== Pronto ===');
   console.log(`Vitrine: /loja/${STORE_SLUG}`);
   console.log(`Admin loja: ${STORE_ADMIN_EMAIL} / ${STORE_ADMIN_PASSWORD}`);
-  console.log(`Cliente demo (muitos pedidos): ${DEMO_CUSTOMER_EMAIL} / ${DEMO_CUSTOMER_PASSWORD}`);
+  console.log(
+    `Cliente demo (muitos pedidos): ${DEMO_CUSTOMER_EMAIL} / ${DEMO_CUSTOMER_PASSWORD}`,
+  );
   console.log(`Pedidos do cliente: /loja/${STORE_SLUG}/conta/pedidos`);
-  console.log(`Super admin: ${process.env.SUPER_ADMIN_EMAIL || 'admin@plataforma.com'} / ${process.env.SUPER_ADMIN_PASSWORD || 'admin123'}`);
+  console.log(
+    `Super admin: ${process.env.SUPER_ADMIN_EMAIL || 'admin@plataforma.com'} / ${process.env.SUPER_ADMIN_PASSWORD || 'admin123'}`,
+  );
 }
 
 main()

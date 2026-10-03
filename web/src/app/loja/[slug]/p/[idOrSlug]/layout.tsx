@@ -88,7 +88,9 @@ export default async function ProductLayout({
       ? { description: metaDescription(product.description, product.name) }
       : {}),
     ...(product.sku ? { sku: product.sku } : {}),
-    ...(product.brand ? { brand: { '@type': 'Brand', name: product.brand } } : {}),
+    ...(product.brand
+      ? { brand: { '@type': 'Brand', name: product.brand } }
+      : {}),
     ...(product.images?.length
       ? {
           image: product.images
@@ -149,10 +151,7 @@ export default async function ProductLayout({
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(breadcrumbJsonLd).replace(
-            /</g,
-            '\\u003c',
-          ),
+          __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c'),
         }}
       />
       <script

@@ -162,7 +162,9 @@ export function DoisFatores({ onAtivado }: { onAtivado?: () => void }) {
         id="codigo-app"
         className="field h-12 max-w-[220px] text-center font-mono text-xl tracking-[0.3em]"
         value={codigo}
-        onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
+        onChange={(e) =>
+          setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))
+        }
         inputMode="numeric"
         autoComplete="one-time-code"
         placeholder="000000"
@@ -254,9 +256,9 @@ export function DoisFatores({ onAtivado }: { onAtivado?: () => void }) {
         <div className="border border-[#f0d998] bg-[#fff8e1] px-4 py-3 text-sm text-[#6b4f00]">
           <p className="font-semibold">Guarde estes códigos de recuperação</p>
           <p className="mt-1">
-            Se perder o celular, cada código entra uma vez no lugar do app.
-            Eles aparecem só agora: anote num papel ou salve no seu gerenciador
-            de senhas.
+            Se perder o celular, cada código entra uma vez no lugar do app. Eles
+            aparecem só agora: anote num papel ou salve no seu gerenciador de
+            senhas.
           </p>
         </div>
         <ul className="grid max-w-md grid-cols-2 gap-x-6 gap-y-1.5 border border-line bg-white p-4 font-mono text-[15px]">
@@ -389,7 +391,8 @@ export function DoisFatores({ onAtivado }: { onAtivado?: () => void }) {
                 : 'text-muted'
             }`}
           >
-            Códigos de recuperação restantes: {status.codigosRecuperacaoRestantes}
+            Códigos de recuperação restantes:{' '}
+            {status.codigosRecuperacaoRestantes}
             {status.codigosRecuperacaoRestantes <= 3
               ? ' — gere novos para não ficar sem.'
               : ''}

@@ -34,10 +34,13 @@ export function useTaxaDaLoja(mes?: string) {
     const token = getToken();
     if (!user?.store?.slug || !token) return;
     let cancelado = false;
-    api<TaxaDaLoja>(`/platform-fee/me${mes ? `?mes=${encodeURIComponent(mes)}` : ''}`, {
-      token,
-      storeSlug: user.store.slug,
-    })
+    api<TaxaDaLoja>(
+      `/platform-fee/me${mes ? `?mes=${encodeURIComponent(mes)}` : ''}`,
+      {
+        token,
+        storeSlug: user.store.slug,
+      },
+    )
       .then((d) => {
         if (!cancelado) setDados(d);
       })
@@ -90,7 +93,8 @@ export function AvisoConexaoMp({ taxa }: { taxa: TaxaDaLoja | null }) {
 /** Cartão "Taxas deste mês" na tela de planos. */
 export function ResumoTaxas() {
   const taxa = useTaxaDaLoja();
-  if (!taxa || (taxa.feeBps <= 0 && taxa.totais.cobradoCents === 0)) return null;
+  if (!taxa || (taxa.feeBps <= 0 && taxa.totais.cobradoCents === 0))
+    return null;
   const t = taxa.totais;
   const [ano, mes] = taxa.mes.split('-');
   return (
@@ -103,7 +107,9 @@ export function ResumoTaxas() {
           {taxa.feeBps > 0
             ? `${percentual(taxa.feeBps)}% por venda no seu plano`
             : 'Seu plano atual não tem taxa por venda'}
-          {taxa.feeBps > 0 && !taxa.cobrancaAtiva ? ' · ainda não está sendo cobrada' : ''}
+          {taxa.feeBps > 0 && !taxa.cobrancaAtiva
+            ? ' · ainda não está sendo cobrada'
+            : ''}
         </p>
       </div>
       <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">

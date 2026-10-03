@@ -40,13 +40,18 @@ async function removerFundo(caminho) {
     const mn = Math.min(r, g, b);
     const sat = mx === 0 ? 0 : (mx - mn) / mx;
     const lum = mx / 255;
-    const a = Math.max(0, Math.min(1, Math.max((sat - 0.15) / 0.25, (0.85 - lum) / 0.25)));
+    const a = Math.max(
+      0,
+      Math.min(1, Math.max((sat - 0.15) / 0.25, (0.85 - lum) / 0.25)),
+    );
     out[j] = r;
     out[j + 1] = g;
     out[j + 2] = b;
     out[j + 3] = Math.round(a * 255);
   }
-  return sharp(out, { raw: { width, height, channels: 4 } }).png().toBuffer();
+  return sharp(out, { raw: { width, height, channels: 4 } })
+    .png()
+    .toBuffer();
 }
 
 async function aparar(buf) {
@@ -58,7 +63,9 @@ async function aparar(buf) {
 
 /** Rótulo de componentes conectados, para separar o símbolo das letras. */
 async function componentes(buf) {
-  const { data, info } = await sharp(buf).raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = await sharp(buf)
+    .raw()
+    .toBuffer({ resolveWithObject: true });
   const { width: w, height: h } = info;
   const lab = new Int32Array(w * h).fill(-1);
   const lista = [];
@@ -73,7 +80,12 @@ async function componentes(buf) {
       const x = q % w;
       const y = (q - x) / w;
       if (x < minx) minx = x;
-      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      for (const [dx, dy] of [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ]) {
         const nx = x + dx;
         const ny = y + dy;
         if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
@@ -98,7 +110,9 @@ function so(ids, data, info, lab) {
     out[j + 2] = data[j + 2];
     out[j + 3] = data[j + 3];
   }
-  return sharp(out, { raw: { width: info.width, height: info.height, channels: 4 } })
+  return sharp(out, {
+    raw: { width: info.width, height: info.height, channels: 4 },
+  })
     .png()
     .toBuffer();
 }
@@ -111,7 +125,10 @@ const h = infoCheio.height;
 // 1) lockup completo
 writeFileSync(
   'public/brand/vendira-logo.webp',
-  await sharp(cheio).resize({ height: 200 }).webp({ quality: 92, alphaQuality: 100 }).toBuffer(),
+  await sharp(cheio)
+    .resize({ height: 200 })
+    .webp({ quality: 92, alphaQuality: 100 })
+    .toBuffer(),
 );
 
 /*
@@ -130,7 +147,10 @@ const semTag = await sharp(bruto, { raw: { width: w, height: h, channels: 4 } })
 const { buf: wordmark } = await aparar(semTag);
 writeFileSync(
   'public/brand/vendira-wordmark.webp',
-  await sharp(wordmark).resize({ height: 140 }).webp({ quality: 92, alphaQuality: 100 }).toBuffer(),
+  await sharp(wordmark)
+    .resize({ height: 140 })
+    .webp({ quality: 92, alphaQuality: 100 })
+    .toBuffer(),
 );
 
 /*
@@ -140,34 +160,65 @@ writeFileSync(
  */
 const { data, info, lab, lista } = await componentes(semTag);
 const LIMITE = Math.round(w * 0.22);
-const idsSimbolo = new Set(lista.filter((c) => c.minx < LIMITE).map((c) => c.id));
-const { buf: simbolo, info: infoSimbolo } = await aparar(await so(idsSimbolo, data, info, lab));
+const idsSimbolo = new Set(
+  lista.filter((c) => c.minx < LIMITE).map((c) => c.id),
+);
+const { buf: simbolo, info: infoSimbolo } = await aparar(
+  await so(idsSimbolo, data, info, lab),
+);
 
 const lado = Math.round(Math.max(infoSimbolo.width, infoSimbolo.height) * 1.24);
 const arte = await sharp(simbolo)
-  .resize({ width: Math.round(lado * 0.78), height: Math.round(lado * 0.78), fit: 'inside' })
+  .resize({
+    width: Math.round(lado * 0.78),
+    height: Math.round(lado * 0.78),
+    fit: 'inside',
+  })
   .toBuffer();
 const dim = await sharp(arte).metadata();
 const quadrado = await sharp({
-  create: { width: lado, height: lado, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+  create: {
+    width: lado,
+    height: lado,
+    channels: 4,
+    background: { r: 0, g: 0, b: 0, alpha: 0 },
+  },
 })
   .composite([
-    { input: arte, left: Math.round((lado - dim.width) / 2), top: Math.round((lado - dim.height) / 2) },
+    {
+      input: arte,
+      left: Math.round((lado - dim.width) / 2),
+      top: Math.round((lado - dim.height) / 2),
+    },
   ])
   .png()
   .toBuffer();
 
 writeFileSync(
   'public/brand/vendira-mark.webp',
-  await sharp(quadrado).resize(256, 256).webp({ quality: 95, alphaQuality: 100 }).toBuffer(),
+  await sharp(quadrado)
+    .resize(256, 256)
+    .webp({ quality: 95, alphaQuality: 100 })
+    .toBuffer(),
 );
-writeFileSync('src/app/icon.png', await sharp(quadrado).resize(512, 512).png().toBuffer());
+writeFileSync(
+  'src/app/icon.png',
+  await sharp(quadrado).resize(512, 512).png().toBuffer(),
+);
 
 // iOS não respeita transparência no atalho: sem fundo sólido o ícone sai preto.
 writeFileSync(
   'src/app/apple-icon.png',
-  await sharp({ create: { width: 180, height: 180, channels: 4, background: '#ffffff' } })
-    .composite([{ input: await sharp(quadrado).resize(150, 150).toBuffer(), left: 15, top: 15 }])
+  await sharp({
+    create: { width: 180, height: 180, channels: 4, background: '#ffffff' },
+  })
+    .composite([
+      {
+        input: await sharp(quadrado).resize(150, 150).toBuffer(),
+        left: 15,
+        top: 15,
+      },
+    ])
     .png()
     .toBuffer(),
 );
@@ -181,4 +232,6 @@ for (const f of [
 ]) {
   console.log(`ok  ${f}  ${(statSync(f).size / 1024).toFixed(1)} KB`);
 }
-console.log('\nRode `npm run og` depois, se a logo mudou: a imagem de compartilhamento usa ela.');
+console.log(
+  '\nRode `npm run og` depois, se a logo mudou: a imagem de compartilhamento usa ela.',
+);

@@ -123,7 +123,9 @@ export function ConfirmDialog({
                 id="confirm-dialog-field"
                 className="field"
                 type={field.type === 'password' ? 'password' : 'text'}
-                autoComplete={field.type === 'password' ? 'current-password' : 'off'}
+                autoComplete={
+                  field.type === 'password' ? 'current-password' : 'off'
+                }
                 value={value}
                 placeholder={field.placeholder}
                 onChange={(e) => setValue(e.target.value)}

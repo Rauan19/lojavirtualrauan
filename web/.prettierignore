@@ -1,0 +1,11 @@
+# Gerado ou de terceiros: não é código nosso para formatar
+node_modules/
+.next/
+out/
+build/
+coverage/
+public/
+lp-fotos-originais/
+next-env.d.ts
+package-lock.json
+*.md

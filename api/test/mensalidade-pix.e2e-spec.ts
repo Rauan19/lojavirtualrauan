@@ -1,5 +1,10 @@
 import { INestApplication } from '@nestjs/common';
-import { PaymentStatus, Prisma, SellerDocType, StoreStatus } from '@prisma/client';
+import {
+  PaymentStatus,
+  Prisma,
+  SellerDocType,
+  StoreStatus,
+} from '@prisma/client';
 import request from 'supertest';
 import { BillingCronService } from '../src/billing/billing-cron.service';
 import { BillingService } from '../src/billing/billing.service';
@@ -31,7 +36,8 @@ describe('Mensalidade por Pix (e2e)', () => {
   let cron: BillingCronService;
   let seed: SeededStore;
   let adminToken: string;
-  let enviados: { to: string; subject: string; text: string; html: string }[] = [];
+  let enviados: { to: string; subject: string; text: string; html: string }[] =
+    [];
 
   /** Requisições que a aplicação mandou para o Mercado Pago. */
   let chamadasMp: { url: string; body: Record<string, unknown> }[] = [];
@@ -72,7 +78,10 @@ describe('Mensalidade por Pix (e2e)', () => {
      * O Mercado Pago é dublê: o que interessa testar é o que a aplicação
      * manda para ele e o que grava com a resposta, não a API deles.
      */
-    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    globalThis.fetch = (async (
+      input: RequestInfo | URL,
+      init?: RequestInit,
+    ) => {
       const url = String(input);
       if (url.includes('api.mercadopago.com')) {
         const body = init?.body ? JSON.parse(String(init.body)) : {};
@@ -171,8 +180,9 @@ describe('Mensalidade por Pix (e2e)', () => {
       const [chamada] = pagamentosPedidos();
       expect(chamada.body.payment_method_id).toBe('pix');
       expect(chamada.body.transaction_amount).toBe(99.9);
-      expect((chamada.body.payer as { identification: unknown }).identification)
-        .toEqual({ type: 'CNPJ', number: '12345678000199' });
+      expect(
+        (chamada.body.payer as { identification: unknown }).identification,
+      ).toEqual({ type: 'CNPJ', number: '12345678000199' });
 
       // é por external_reference que o webhook reencontra a fatura
       const fatura = await prisma.platformInvoice.findFirstOrThrow({
@@ -206,7 +216,9 @@ describe('Mensalidade por Pix (e2e)', () => {
 
       // fatura sem cobrança bloquearia a próxima tentativa
       expect(
-        await prisma.platformInvoice.count({ where: { storeId: seed.store.id } }),
+        await prisma.platformInvoice.count({
+          where: { storeId: seed.store.id },
+        }),
       ).toBe(0);
     });
   });
@@ -219,7 +231,9 @@ describe('Mensalidade por Pix (e2e)', () => {
       expect(segunda!.id).toBe(primeira!.id);
       expect(pagamentosPedidos()).toHaveLength(1);
       expect(
-        await prisma.platformInvoice.count({ where: { storeId: seed.store.id } }),
+        await prisma.platformInvoice.count({
+          where: { storeId: seed.store.id },
+        }),
       ).toBe(1);
     });
 
@@ -233,7 +247,9 @@ describe('Mensalidade por Pix (e2e)', () => {
 
       expect(pagamentosPedidos()).toHaveLength(1);
       expect(
-        await prisma.platformInvoice.count({ where: { storeId: seed.store.id } }),
+        await prisma.platformInvoice.count({
+          where: { storeId: seed.store.id },
+        }),
       ).toBe(1);
     });
 
@@ -270,7 +286,9 @@ describe('Mensalidade por Pix (e2e)', () => {
 
       expect(pagamentosPedidos()).toHaveLength(2);
       expect(
-        await prisma.platformInvoice.count({ where: { storeId: seed.store.id } }),
+        await prisma.platformInvoice.count({
+          where: { storeId: seed.store.id },
+        }),
       ).toBe(2);
     });
   });
@@ -403,7 +421,9 @@ describe('Mensalidade por Pix (e2e)', () => {
 
       expect(r.geradas).toBe(1);
       expect(
-        await prisma.platformInvoice.count({ where: { storeId: seed.store.id } }),
+        await prisma.platformInvoice.count({
+          where: { storeId: seed.store.id },
+        }),
       ).toBe(2);
     });
   });

@@ -7,10 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from './mail.service';
 import { buildOrderEmail } from './order-status-email';
-import {
-  buildRefundEmail,
-  type RefundMailKind,
-} from './refund-email';
+import { buildRefundEmail, type RefundMailKind } from './refund-email';
 import {
   buildTrackingAvailableEmail,
   resolvePublicTrackingUrl,

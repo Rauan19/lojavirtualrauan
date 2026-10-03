@@ -57,7 +57,8 @@ describe('Equipe da loja (e2e)', () => {
   /** Convida, cria a senha pelo link e devolve a sessão do funcionário. */
   async function entrarComo(permissoes: string[], email = 'bia@teste.com') {
     await convidar({ name: 'Bia Souza', email, permissoes }).expect(201);
-    const link = convites[convites.length - 1].text.match(/token=([a-f0-9]+)/)![1];
+    const link =
+      convites[convites.length - 1].text.match(/token=([a-f0-9]+)/)![1];
     await http()
       .post('/api/auth/reset-password')
       .set('X-Forwarded-For', `198.51.100.${++ip}`)

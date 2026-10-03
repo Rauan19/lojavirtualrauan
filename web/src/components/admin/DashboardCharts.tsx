@@ -72,12 +72,19 @@ type SeriesPoint = { label: string; orders: number; revenue: number };
 /** Faturamento ao longo do período — área, porque a leitura é de tendência. */
 export function RevenueAreaChart({ data }: { data: SeriesPoint[] }) {
   if (data.length === 0) {
-    return <p className="py-10 text-center text-sm text-muted">Sem dados no período</p>;
+    return (
+      <p className="py-10 text-center text-sm text-muted">
+        Sem dados no período
+      </p>
+    );
   }
 
   return (
     <ResponsiveContainer width="100%" height={220}>
-      <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
+      <AreaChart
+        data={data}
+        margin={{ top: 8, right: 8, bottom: 0, left: -12 }}
+      >
         <defs>
           <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={SERIES.revenue} stopOpacity={0.28} />
@@ -139,7 +146,11 @@ export function RevenueAreaChart({ data }: { data: SeriesPoint[] }) {
 /** Volume de pedidos — barra, porque a leitura é de magnitude por período. */
 export function OrdersBarChart({ data }: { data: SeriesPoint[] }) {
   if (data.length === 0) {
-    return <p className="py-10 text-center text-sm text-muted">Sem dados no período</p>;
+    return (
+      <p className="py-10 text-center text-sm text-muted">
+        Sem dados no período
+      </p>
+    );
   }
 
   return (
@@ -153,7 +164,13 @@ export function OrdersBarChart({ data }: { data: SeriesPoint[] }) {
           axisLine={{ stroke: GRID }}
           minTickGap={16}
         />
-        <YAxis tick={AXIS} tickLine={false} axisLine={false} width={36} allowDecimals={false} />
+        <YAxis
+          tick={AXIS}
+          tickLine={false}
+          axisLine={false}
+          width={36}
+          allowDecimals={false}
+        />
         <Tooltip
           cursor={{ fill: 'rgba(47,111,208,0.06)' }}
           content={({ active, payload, label }) =>
@@ -201,9 +218,19 @@ export function StatusBarChart({
 
   return (
     <ResponsiveContainer width="100%" height={Math.max(160, rows.length * 34)}>
-      <BarChart data={rows} layout="vertical" margin={{ top: 4, right: 28, bottom: 4, left: 4 }}>
+      <BarChart
+        data={rows}
+        layout="vertical"
+        margin={{ top: 4, right: 28, bottom: 4, left: 4 }}
+      >
         <CartesianGrid stroke={GRID} horizontal={false} />
-        <XAxis type="number" tick={AXIS} tickLine={false} axisLine={false} allowDecimals={false} />
+        <XAxis
+          type="number"
+          tick={AXIS}
+          tickLine={false}
+          axisLine={false}
+          allowDecimals={false}
+        />
         <YAxis
           type="category"
           dataKey="label"
@@ -228,7 +255,12 @@ export function StatusBarChart({
             ) : null
           }
         />
-        <Bar dataKey="count" radius={[0, 4, 4, 0]} maxBarSize={22} isAnimationActive={false}>
+        <Bar
+          dataKey="count"
+          radius={[0, 4, 4, 0]}
+          maxBarSize={22}
+          isAnimationActive={false}
+        >
           {rows.map((r) => (
             <Cell key={r.status} fill={r.color} />
           ))}

@@ -14,7 +14,12 @@ type LinhaPrevia = {
 
 type Previa = {
   resumo: { criar: number; atualizar: number; erros: number };
-  limite: { plano: string; maximo: number; vagas: number; passa: boolean } | null;
+  limite: {
+    plano: string;
+    maximo: number;
+    vagas: number;
+    passa: boolean;
+  } | null;
   colunasIgnoradas: string[];
   linhas: LinhaPrevia[];
 };
@@ -64,7 +69,9 @@ async function enviar<T>(arquivo: File, confirmar: boolean): Promise<T> {
     message?: string | string[];
   };
   if (!res.ok) {
-    const m = Array.isArray(corpo.message) ? corpo.message.join(', ') : corpo.message;
+    const m = Array.isArray(corpo.message)
+      ? corpo.message.join(', ')
+      : corpo.message;
     throw new Error(m || 'Não foi possível ler a planilha');
   }
   return corpo as T;
@@ -132,14 +139,16 @@ export function ImportarPlanilha({
       {resultado ? (
         <div className="space-y-3">
           <p className="text-sm font-semibold text-[var(--ok)]">
-            Pronto: {resultado.criados} produto{resultado.criados === 1 ? '' : 's'}{' '}
-            criado{resultado.criados === 1 ? '' : 's'} e {resultado.atualizados}{' '}
+            Pronto: {resultado.criados} produto
+            {resultado.criados === 1 ? '' : 's'} criado
+            {resultado.criados === 1 ? '' : 's'} e {resultado.atualizados}{' '}
             atualizado{resultado.atualizados === 1 ? '' : 's'}.
           </p>
           {resultado.erros.length ? (
             <div className="border border-[#ecd49a] bg-[#fff8e1] px-3 py-2 text-sm text-[#6b4f00]">
               <p className="font-semibold">
-                {resultado.erros.length} linha{resultado.erros.length === 1 ? '' : 's'} não{' '}
+                {resultado.erros.length} linha
+                {resultado.erros.length === 1 ? '' : 's'} não{' '}
                 {resultado.erros.length === 1 ? 'entrou' : 'entraram'}:
               </p>
               <ul className="mt-1 max-h-40 list-disc overflow-y-auto pl-5">
@@ -169,12 +178,13 @@ export function ImportarPlanilha({
               >
                 Baixe a planilha modelo
               </button>{' '}
-              e preencha um produto por linha. Só <strong className="text-ink">nome</strong>{' '}
-              e <strong className="text-ink">preço</strong> são obrigatórios.
+              e preencha um produto por linha. Só{' '}
+              <strong className="text-ink">nome</strong> e{' '}
+              <strong className="text-ink">preço</strong> são obrigatórios.
             </li>
             <li>
-              Produto com o mesmo <strong className="text-ink">código</strong> de
-              um que já existe é atualizado; sem código, vira produto novo.
+              Produto com o mesmo <strong className="text-ink">código</strong>{' '}
+              de um que já existe é atualizado; sem código, vira produto novo.
             </li>
             <li>
               Fotos: links começando com https://, separados por |. Categorias
@@ -207,7 +217,9 @@ export function ImportarPlanilha({
             <div className="space-y-3">
               <div className="grid grid-cols-3 gap-2 text-center text-sm">
                 <div className="border border-line px-2 py-2">
-                  <p className="text-xl font-bold text-[var(--ok)]">{previa.resumo.criar}</p>
+                  <p className="text-xl font-bold text-[var(--ok)]">
+                    {previa.resumo.criar}
+                  </p>
                   <p className="text-xs text-muted">novos</p>
                 </div>
                 <div className="border border-line px-2 py-2">
@@ -215,7 +227,9 @@ export function ImportarPlanilha({
                   <p className="text-xs text-muted">atualizados</p>
                 </div>
                 <div className="border border-line px-2 py-2">
-                  <p className={`text-xl font-bold ${previa.resumo.erros ? 'text-accent' : ''}`}>
+                  <p
+                    className={`text-xl font-bold ${previa.resumo.erros ? 'text-accent' : ''}`}
+                  >
                     {previa.resumo.erros}
                   </p>
                   <p className="text-xs text-muted">com erro</p>
@@ -241,17 +255,26 @@ export function ImportarPlanilha({
                     <tr>
                       <th className="px-2 py-1.5 font-semibold">Linha</th>
                       <th className="px-2 py-1.5 font-semibold">Produto</th>
-                      <th className="px-2 py-1.5 font-semibold">O que acontece</th>
+                      <th className="px-2 py-1.5 font-semibold">
+                        O que acontece
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {previa.linhas.slice(0, 300).map((l) => (
-                      <tr key={l.linha} className="border-t border-line align-top">
+                      <tr
+                        key={l.linha}
+                        className="border-t border-line align-top"
+                      >
                         <td className="px-2 py-1.5 text-muted">{l.linha}</td>
                         <td className="px-2 py-1.5">
-                          {l.nome || <span className="text-muted">sem nome</span>}
+                          {l.nome || (
+                            <span className="text-muted">sem nome</span>
+                          )}
                           {l.codigo ? (
-                            <span className="ml-1 text-xs text-muted">{l.codigo}</span>
+                            <span className="ml-1 text-xs text-muted">
+                              {l.codigo}
+                            </span>
                           ) : null}
                         </td>
                         <td className="px-2 py-1.5">
@@ -279,13 +302,19 @@ export function ImportarPlanilha({
               </div>
 
               <div className="flex flex-wrap justify-end gap-2">
-                <button type="button" className="btn btn-ghost" data-modal-cancel>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  data-modal-cancel
+                >
                   Cancelar
                 </button>
                 <button
                   type="button"
                   className="btn btn-accent"
-                  disabled={ocupado || gravaveis === 0 || Boolean(previa.limite?.passa)}
+                  disabled={
+                    ocupado || gravaveis === 0 || Boolean(previa.limite?.passa)
+                  }
                   onClick={() => void confirmar()}
                 >
                   {ocupado

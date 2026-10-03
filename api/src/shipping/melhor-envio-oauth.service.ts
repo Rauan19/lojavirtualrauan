@@ -71,7 +71,9 @@ export class MelhorEnvioOauthService {
     const clientSecret = this.config
       .get<string>(`${prefix}CLIENT_SECRET`)
       ?.trim();
-    const redirectUri = this.config.get<string>(`${prefix}REDIRECT_URI`)?.trim();
+    const redirectUri = this.config
+      .get<string>(`${prefix}REDIRECT_URI`)
+      ?.trim();
 
     if (!clientId || !clientSecret || !redirectUri) {
       throw new BadRequestException(
@@ -232,7 +234,9 @@ export class MelhorEnvioOauthService {
   }
 
   private expiresAtFrom(token: TokenResponse) {
-    return new Date(Date.now() + (token.expires_in ?? DEFAULT_EXPIRES_IN) * 1000);
+    return new Date(
+      Date.now() + (token.expires_in ?? DEFAULT_EXPIRES_IN) * 1000,
+    );
   }
 
   /** Troca o `code` da volta pelo par de tokens e guarda cifrado. */
@@ -249,7 +253,10 @@ export class MelhorEnvioOauthService {
       refresh_token: null,
     });
 
-    const conta = await this.fetchAccount(sandbox, token.access_token as string);
+    const conta = await this.fetchAccount(
+      sandbox,
+      token.access_token as string,
+    );
 
     await this.prisma.store.update({
       where: { id: storeId },

@@ -69,12 +69,17 @@ export default function AdminCategoriesPage() {
   async function load() {
     const { token, storeSlug } = auth();
     if (!token) return;
-    const data = await api<Category[]>('/admin/categories', { token, storeSlug });
+    const data = await api<Category[]>('/admin/categories', {
+      token,
+      storeSlug,
+    });
     setItems(data);
   }
 
   useEffect(() => {
-    load().catch((err) => setError(err instanceof Error ? err.message : 'Erro'));
+    load().catch((err) =>
+      setError(err instanceof Error ? err.message : 'Erro'),
+    );
   }, []);
 
   useEffect(() => {
@@ -214,7 +219,9 @@ export default function AdminCategoriesPage() {
 
   function row(cat: Category, isChild: boolean) {
     return (
-      <div className={`flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm ${isChild ? 'pl-12 sm:pl-16' : ''}`}>
+      <div
+        className={`flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm ${isChild ? 'pl-12 sm:pl-16' : ''}`}
+      >
         <div className="flex min-w-0 items-center gap-3">
           <div
             className={`shrink-0 overflow-hidden rounded-xl bg-[#f1f1f3] ${
@@ -231,12 +238,17 @@ export default function AdminCategoriesPage() {
             ) : null}
           </div>
           <div className="min-w-0">
-            <p className={isChild ? 'font-medium' : 'text-[15px] font-semibold'}>{cat.name}</p>
+            <p
+              className={isChild ? 'font-medium' : 'text-[15px] font-semibold'}
+            >
+              {cat.name}
+            </p>
             <p className="text-xs text-muted">/{cat.slug}</p>
           </div>
           {!isChild && childrenOf(cat.id).length > 0 ? (
             <Selo>
-              {childrenOf(cat.id).length} subcategoria{childrenOf(cat.id).length === 1 ? '' : 's'}
+              {childrenOf(cat.id).length} subcategoria
+              {childrenOf(cat.id).length === 1 ? '' : 's'}
             </Selo>
           ) : null}
           {cat.active ? null : <Selo tom="alerta">Oculta</Selo>}
@@ -294,83 +306,86 @@ export default function AdminCategoriesPage() {
       {message ? <p className="text-sm text-[var(--ok)]">{message}</p> : null}
 
       {criando ? (
-      <Modal
-        title="Nova categoria"
-        hint="Com foto, ela aparece em destaque na vitrine (Compre por categoria). Sem foto, fica só no menu."
-        erro={error}
-        onClose={() => setCriando(false)}
-      >
-      <form onSubmit={onCreate} className="form-grid">
-        <div>
-          <label className="label">Nome</label>
-          <input
-            className="field"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Ex: Esportes"
-            required
-          />
-        </div>
-        <div>
-          <label className="label">Imagem (opcional)</label>
-          <input
-            className="field"
-            type="file"
-            accept="image/*"
-            onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-          />
-          <p className="mt-1 text-[12px] text-muted">
-            Quadrada, <strong>600 × 600 px</strong>, até 5 MB. Aparece num bloco
-            quadrado com cantos arredondados; deixe o produto centralizado.
-          </p>
-        </div>
-        <div>
-          <label className="label">Dentro de</label>
-          <select
-            className="field"
-            value={parentId}
-            onChange={(e) => setParentId(e.target.value)}
-          >
-            <option value="">Departamento principal</option>
-            {departments.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="label">Cor do contorno quando selecionada</label>
-          <div className="flex items-center gap-1.5">
-            <input
-              className="field w-14 shrink-0 !px-1"
-              type="color"
-              value={borderColor || '#000000'}
-              onChange={(e) => setBorderColor(e.target.value)}
-            />
-            {borderColor ? (
-              <button
-                type="button"
-                className="btn btn-ghost py-1.5 text-[11px]"
-                onClick={() => setBorderColor('')}
+        <Modal
+          title="Nova categoria"
+          hint="Com foto, ela aparece em destaque na vitrine (Compre por categoria). Sem foto, fica só no menu."
+          erro={error}
+          onClose={() => setCriando(false)}
+        >
+          <form onSubmit={onCreate} className="form-grid">
+            <div>
+              <label className="label">Nome</label>
+              <input
+                className="field"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Ex: Esportes"
+                required
+              />
+            </div>
+            <div>
+              <label className="label">Imagem (opcional)</label>
+              <input
+                className="field"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+              />
+              <p className="mt-1 text-[12px] text-muted">
+                Quadrada, <strong>600 × 600 px</strong>, até 5 MB. Aparece num
+                bloco quadrado com cantos arredondados; deixe o produto
+                centralizado.
+              </p>
+            </div>
+            <div>
+              <label className="label">Dentro de</label>
+              <select
+                className="field"
+                value={parentId}
+                onChange={(e) => setParentId(e.target.value)}
               >
-                Usar a da loja
+                <option value="">Departamento principal</option>
+                {departments.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="label">
+                Cor do contorno quando selecionada
+              </label>
+              <div className="flex items-center gap-1.5">
+                <input
+                  className="field w-14 shrink-0 !px-1"
+                  type="color"
+                  value={borderColor || '#000000'}
+                  onChange={(e) => setBorderColor(e.target.value)}
+                />
+                {borderColor ? (
+                  <button
+                    type="button"
+                    className="btn btn-ghost py-1.5 text-[11px]"
+                    onClick={() => setBorderColor('')}
+                  >
+                    Usar a da loja
+                  </button>
+                ) : (
+                  <span className="text-[11px] text-muted">Cor da loja</span>
+                )}
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-line pt-3">
+              <button type="button" className="btn btn-ghost" data-modal-cancel>
+                Cancelar
               </button>
-            ) : (
-              <span className="text-[11px] text-muted">Cor da loja</span>
-            )}
-          </div>
-        </div>
-        <div className="flex justify-end gap-2 border-t border-line pt-3">
-          <button type="button" className="btn btn-ghost" data-modal-cancel>
-            Cancelar
-          </button>
-          <button type="submit" className="btn btn-accent" disabled={busy}>
-            {busy ? 'Salvando…' : 'Criar categoria'}
-          </button>
-        </div>
-      </form>
-      </Modal>
+              <button type="submit" className="btn btn-accent" disabled={busy}>
+                {busy ? 'Salvando…' : 'Criar categoria'}
+              </button>
+            </div>
+          </form>
+        </Modal>
       ) : null}
 
       {departments.length + orphans.length === 0 ? (
@@ -380,7 +395,11 @@ export default function AdminCategoriesPage() {
             titulo="Nenhuma categoria ainda"
             texto="Crie departamentos como Masculino ou Promoções para o cliente achar os produtos mais rápido."
             acao={
-              <button type="button" className="btn btn-ghost h-10 px-4" onClick={() => setCriando(true)}>
+              <button
+                type="button"
+                className="btn btn-ghost h-10 px-4"
+                onClick={() => setCriando(true)}
+              >
                 Criar a primeira categoria
               </button>
             }
@@ -418,7 +437,11 @@ export default function AdminCategoriesPage() {
           >
             <h2 className="text-base font-bold">Editar categoria</h2>
             <p className="mt-0.5 text-xs text-muted">/{editing.slug}</p>
-            {error ? <p role="alert" className="mt-2 text-sm text-accent">{error}</p> : null}
+            {error ? (
+              <p role="alert" className="mt-2 text-sm text-accent">
+                {error}
+              </p>
+            ) : null}
             <div className="mt-3">
               <label className="label">Nome</label>
               <input
@@ -477,9 +500,8 @@ export default function AdminCategoriesPage() {
                 )}
               </div>
               <p className="mt-1 text-[11px] text-muted">
-                É o círculo em volta da imagem na vitrine. Importa quando a
-                arte tem fundo transparente — sem ele, a categoria fica sem
-                contorno.
+                É o círculo em volta da imagem na vitrine. Importa quando a arte
+                tem fundo transparente — sem ele, a categoria fica sem contorno.
               </p>
             </div>
             <div className="mt-3">

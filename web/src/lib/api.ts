@@ -27,7 +27,10 @@ type RequestOptions = {
   formData?: FormData;
 };
 
-export async function api<T>(path: string, options: RequestOptions = {}): Promise<T> {
+export async function api<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
   const headers: Record<string, string> = {};
 
   if (options.token) {

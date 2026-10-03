@@ -81,7 +81,11 @@ describe('Devolução e reembolso (e2e)', () => {
       })
       .expect(201);
 
-    await orders.fulfillPaidOrder(res.body.id, seed.store.id, `mp-${res.body.id}`);
+    await orders.fulfillPaidOrder(
+      res.body.id,
+      seed.store.id,
+      `mp-${res.body.id}`,
+    );
     await prisma.order.update({
       where: { id: res.body.id },
       data: {
@@ -120,7 +124,9 @@ describe('Devolução e reembolso (e2e)', () => {
     it('aprovar não estorna nem devolve estoque enquanto o produto não volta', async () => {
       const id = await pedidoEntregue();
       const estoqueAntes = (
-        await prisma.product.findUniqueOrThrow({ where: { id: seed.product.id } })
+        await prisma.product.findUniqueOrThrow({
+          where: { id: seed.product.id },
+        })
       ).stock;
 
       await pedirReembolso(id, 'ARREPENDIMENTO').expect(201);
@@ -132,7 +138,9 @@ describe('Devolução e reembolso (e2e)', () => {
       expect(order.status).not.toBe(OrderStatus.REFUNDED);
 
       const estoqueDepois = (
-        await prisma.product.findUniqueOrThrow({ where: { id: seed.product.id } })
+        await prisma.product.findUniqueOrThrow({
+          where: { id: seed.product.id },
+        })
       ).stock;
       expect(estoqueDepois).toBe(estoqueAntes);
     });
@@ -140,7 +148,9 @@ describe('Devolução e reembolso (e2e)', () => {
     it('confirmar recebimento devolve o estoque', async () => {
       const id = await pedidoEntregue();
       const antes = (
-        await prisma.product.findUniqueOrThrow({ where: { id: seed.product.id } })
+        await prisma.product.findUniqueOrThrow({
+          where: { id: seed.product.id },
+        })
       ).stock;
 
       await pedirReembolso(id, 'ARREPENDIMENTO').expect(201);
@@ -153,7 +163,9 @@ describe('Devolução e reembolso (e2e)', () => {
       // o estorno em si depende do gateway; aqui basta o estoque liberado
       await orders.restockOrderItems(seed.store.id, id);
       const depois = (
-        await prisma.product.findUniqueOrThrow({ where: { id: seed.product.id } })
+        await prisma.product.findUniqueOrThrow({
+          where: { id: seed.product.id },
+        })
       ).stock;
       expect(depois).toBe(antes + 1);
     });
@@ -245,7 +257,9 @@ describe('Devolução e reembolso (e2e)', () => {
       await aprovar(id).expect(201);
       await esperarEmail('Devolução autorizada');
 
-      const email = sent.find((m) => m.subject.includes('Devolução autorizada'));
+      const email = sent.find((m) =>
+        m.subject.includes('Devolução autorizada'),
+      );
       expect(email).toBeDefined();
       expect(email!.text).toContain('sem sinais de uso');
     });

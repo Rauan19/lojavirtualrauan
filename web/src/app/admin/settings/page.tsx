@@ -8,10 +8,7 @@ import { BRAND } from '@/lib/brand';
 import { api, mediaUrl } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 import { formatPhoneBr } from '@/lib/contact';
-import {
-  FRETE_CARRIER_OPTIONS,
-  asCarrierIds,
-} from '@/lib/frete-carriers';
+import { FRETE_CARRIER_OPTIONS, asCarrierIds } from '@/lib/frete-carriers';
 import { STORE_CARD_RATIOS, STORE_FONTS } from '@/lib/store-theme';
 import { CabecalhoPagina } from '@/components/admin/Pagina';
 
@@ -103,7 +100,9 @@ type Store = {
 
 function asImages(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
-  return value.filter((v): v is string => typeof v === 'string' && v.length > 0);
+  return value.filter(
+    (v): v is string => typeof v === 'string' && v.length > 0,
+  );
 }
 
 function hasOriginAddress(store: Store | null): boolean {
@@ -141,7 +140,9 @@ function SettingsPanel({
     <section
       id={id}
       className={`scroll-mt-4 overflow-hidden rounded-2xl border bg-white transition-shadow ${
-        open ? 'border-[#cfdde1] shadow-[0_8px_24px_-18px_rgba(13,58,67,0.45)]' : 'border-line'
+        open
+          ? 'border-[#cfdde1] shadow-[0_8px_24px_-18px_rgba(13,58,67,0.45)]'
+          : 'border-line'
       }`}
     >
       <button
@@ -163,7 +164,13 @@ function SettingsPanel({
           aria-hidden
           className={`shrink-0 text-muted transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
         >
-          <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path
+            d="m6 9 6 6 6-6"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       </button>
       {open ? (
@@ -203,10 +210,8 @@ const ETIQUETA_REQUISITOS = [
     id: 'documento',
     rotulo: 'CPF ou CNPJ do lojista (remetente da etiqueta)',
     pronto: (s: Store) => Boolean(s.sellerDocument?.trim()),
-    resolver: (
-      _abrirFrete: (m: never) => void,
-      irParaDocumento: () => void,
-    ) => irParaDocumento(),
+    resolver: (_abrirFrete: (m: never) => void, irParaDocumento: () => void) =>
+      irParaDocumento(),
   },
 ] as const;
 
@@ -287,7 +292,8 @@ const PAGAMENTO_MODAL_TITULO: Record<string, string> = {
 };
 
 const PAGAMENTO_MODAL_HINT: Record<string, string> = {
-  modelo: 'Onde o cliente digita o cartão: dentro da sua loja ou no site do Mercado Pago.',
+  modelo:
+    'Onde o cliente digita o cartão: dentro da sua loja ou no site do Mercado Pago.',
   credenciais:
     'Da sua conta, não da plataforma — é para ela que o dinheiro das vendas vai.',
   webhook: 'A URL que o Mercado Pago chama para avisar que um pagamento mudou.',
@@ -414,7 +420,12 @@ function IconCartao() {
         strokeWidth="1.5"
       />
       <path d="M3 10h18" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M6.5 14.5h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path
+        d="M6.5 14.5h4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -439,8 +450,20 @@ function IconWebhook() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden>
       <circle cx="12" cy="7" r="2.6" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="6.5" cy="17" r="2.6" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="17.5" cy="17" r="2.6" stroke="currentColor" strokeWidth="1.5" />
+      <circle
+        cx="6.5"
+        cy="17"
+        r="2.6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <circle
+        cx="17.5"
+        cy="17"
+        r="2.6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
       <path
         d="m10.7 9.3-2.6 5.2M13.3 9.3l2.6 5.2M9.1 17h5.8"
         stroke="currentColor"
@@ -564,8 +587,20 @@ function IconRedes() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden>
       <circle cx="6" cy="12" r="2.4" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="17" cy="6.5" r="2.4" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="17" cy="17.5" r="2.4" stroke="currentColor" strokeWidth="1.5" />
+      <circle
+        cx="17"
+        cy="6.5"
+        r="2.4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <circle
+        cx="17"
+        cy="17.5"
+        r="2.4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
       <path
         d="m8.2 10.9 6.6-3.3M8.2 13.1l6.6 3.3"
         stroke="currentColor"
@@ -625,7 +660,13 @@ function IconOrigem() {
         strokeWidth="1.5"
         strokeLinejoin="round"
       />
-      <circle cx="12" cy="10.5" r="2.3" stroke="currentColor" strokeWidth="1.5" />
+      <circle
+        cx="12"
+        cy="10.5"
+        r="2.3"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
     </svg>
   );
 }
@@ -659,7 +700,13 @@ function IconEtiqueta() {
         strokeWidth="1.5"
         strokeLinejoin="round"
       />
-      <circle cx="16.2" cy="7.3" r="1.4" stroke="currentColor" strokeWidth="1.5" />
+      <circle
+        cx="16.2"
+        cy="7.3"
+        r="1.4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
     </svg>
   );
 }
@@ -830,7 +877,13 @@ function SettingsModal({
             onClick={() => void fechar()}
             aria-label="Fechar"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden
+            >
               <path
                 d="M6 6l12 12M18 6L6 18"
                 stroke="currentColor"
@@ -841,7 +894,10 @@ function SettingsModal({
           </button>
         </div>
         {erro ? (
-          <p role="alert" className="shrink-0 border-b border-accent/30 bg-[#fff5f6] px-4 py-2.5 text-sm text-accent">
+          <p
+            role="alert"
+            className="shrink-0 border-b border-accent/30 bg-[#fff5f6] px-4 py-2.5 text-sm text-accent"
+          >
             {erro}
           </p>
         ) : null}
@@ -883,7 +939,9 @@ export default function AdminSettingsPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [uploadingMarquee, setUploadingMarquee] = useState(false);
-  const [uploadingMarqueeMobile, setUploadingMarqueeMobile] = useState<string | null>(null);
+  const [uploadingMarqueeMobile, setUploadingMarqueeMobile] = useState<
+    string | null
+  >(null);
   const [originModalOpen, setOriginModalOpen] = useState(false);
   const [savingOrigin, setSavingOrigin] = useState(false);
   const [openSection, setOpenSection] = useState<
@@ -901,7 +959,16 @@ export default function AdminSettingsPage() {
   /* Link direto para uma seção: /admin/settings?secao=payments */
   useEffect(() => {
     const secao = new URLSearchParams(window.location.search).get('secao');
-    const validas = ['branding', 'marquee', 'shipping', 'payments', 'plan', 'profile', 'policies', 'nfe'] as const;
+    const validas = [
+      'branding',
+      'marquee',
+      'shipping',
+      'payments',
+      'plan',
+      'profile',
+      'policies',
+      'nfe',
+    ] as const;
     const alvo = validas.find((v) => v === secao);
     if (alvo) setOpenSection(alvo);
   }, []);
@@ -1082,7 +1149,9 @@ export default function AdminSettingsPage() {
       const s = await api<Store>('/stores/me', { token, storeSlug });
       const next = {
         ...s,
-        sellerPhone: s.sellerPhone ? formatPhoneBr(s.sellerPhone) : s.sellerPhone,
+        sellerPhone: s.sellerPhone
+          ? formatPhoneBr(s.sellerPhone)
+          : s.sellerPhone,
         marqueeEnabled: s.marqueeEnabled !== false,
         marqueeImages: asImages(s.marqueeImages),
         freteTransportadoras: asCarrierIds(s.freteTransportadoras),
@@ -1374,10 +1443,16 @@ export default function AdminSettingsPage() {
         secondaryColor: store.secondaryColor,
         accentColor: store.accentColor,
         customDomain: store.customDomain || undefined,
-        marqueeMobile: { ...(store.marqueeMobile || {}), [desktopPath]: uploaded.path },
+        marqueeMobile: {
+          ...(store.marqueeMobile || {}),
+          [desktopPath]: uploaded.path,
+        },
       });
       if (updated) {
-        setStore({ ...updated, marqueeImages: asImages(updated.marqueeImages) });
+        setStore({
+          ...updated,
+          marqueeImages: asImages(updated.marqueeImages),
+        });
       }
       setMessage('Versão para celular salva');
     } catch (err) {
@@ -1402,7 +1477,10 @@ export default function AdminSettingsPage() {
         marqueeMobile: resto,
       });
       if (updated) {
-        setStore({ ...updated, marqueeImages: asImages(updated.marqueeImages) });
+        setStore({
+          ...updated,
+          marqueeImages: asImages(updated.marqueeImages),
+        });
       }
       setMessage('Versão para celular removida');
     } catch (err) {
@@ -1533,7 +1611,8 @@ export default function AdminSettingsPage() {
               ...prev,
               freteRuaOrigem: data.logradouro || prev.freteRuaOrigem || '',
               freteBairroOrigem: data.bairro || prev.freteBairroOrigem || '',
-              freteCidadeOrigem: data.localidade || prev.freteCidadeOrigem || '',
+              freteCidadeOrigem:
+                data.localidade || prev.freteCidadeOrigem || '',
               freteUfOrigem: data.uf || prev.freteUfOrigem || '',
             }
           : prev,
@@ -1625,10 +1704,14 @@ export default function AdminSettingsPage() {
    * Resumo que cada linha da seção de frete mostra fechada. É o que responde
    * "está tudo certo?" sem precisar abrir formulário nenhum.
    */
-  const freteViaTransportadora = ['melhor_envio', 'frenet', 'superfrete'].includes(
-    store.freteModo || '',
+  const freteViaTransportadora = [
+    'melhor_envio',
+    'frenet',
+    'superfrete',
+  ].includes(store.freteModo || '');
+  const freteConectado = Boolean(
+    store.freteOauthConectado || store.freteTokenSet,
   );
-  const freteConectado = Boolean(store.freteOauthConectado || store.freteTokenSet);
   const transportadorasEscolhidas = asCarrierIds(store.freteTransportadoras);
 
   const identResumo = {
@@ -1641,17 +1724,18 @@ export default function AdminSettingsPage() {
         u?.trim(),
       ).length > 0
         ? `${
-            [store.instagramUrl, store.facebookUrl, store.tiktokUrl].filter((u) =>
-              u?.trim(),
+            [store.instagramUrl, store.facebookUrl, store.tiktokUrl].filter(
+              (u) => u?.trim(),
             ).length
           } rede(s) no rodapé`
         : 'Nenhuma cadastrada',
-    audiencia: [
-      store.analyticsGaId?.trim() ? 'Google Analytics' : null,
-      store.analyticsPixelId?.trim() ? 'Meta Pixel' : null,
-    ]
-      .filter(Boolean)
-      .join(' + ') || 'Não configurado · sem aviso de cookies',
+    audiencia:
+      [
+        store.analyticsGaId?.trim() ? 'Google Analytics' : null,
+        store.analyticsPixelId?.trim() ? 'Meta Pixel' : null,
+      ]
+        .filter(Boolean)
+        .join(' + ') || 'Não configurado · sem aviso de cookies',
   };
 
   /*
@@ -1675,8 +1759,9 @@ export default function AdminSettingsPage() {
         }`
       : 'Pendente — exigido para emitir nota',
     contato:
-      [store.sellerPhone, store.sellerEmail].filter((v) => v?.trim()).join(' · ') ||
-      'Nenhum contato informado',
+      [store.sellerPhone, store.sellerEmail]
+        .filter((v) => v?.trim())
+        .join(' · ') || 'Nenhum contato informado',
     endereco: store.sellerZipCode
       ? `${store.sellerStreet || ''}, ${store.sellerNumber || ''} · ${
           store.sellerCity || ''
@@ -1733,9 +1818,10 @@ export default function AdminSettingsPage() {
                 Cadastre o endereço da loja primeiro
               </h2>
               <p className="mt-1 text-xs leading-relaxed text-muted">
-                O frete no checkout é calculado entre o <strong>CEP de origem</strong>{' '}
-                (de onde você envia) e o <strong>CEP do cliente</strong>. Sem o
-                seu endereço, a cotação não funciona direito.
+                O frete no checkout é calculado entre o{' '}
+                <strong>CEP de origem</strong> (de onde você envia) e o{' '}
+                <strong>CEP do cliente</strong>. Sem o seu endereço, a cotação
+                não funciona direito.
               </p>
             </div>
 
@@ -1837,7 +1923,9 @@ export default function AdminSettingsPage() {
                   />
                 </div>
                 {error ? (
-                  <p role="alert" className="text-sm text-accent sm:col-span-2">{error}</p>
+                  <p role="alert" className="text-sm text-accent sm:col-span-2">
+                    {error}
+                  </p>
                 ) : null}
               </div>
 
@@ -1849,9 +1937,10 @@ export default function AdminSettingsPage() {
                     setOriginModalOpen(false);
                     setOpenSection('shipping');
                     requestAnimationFrame(() => {
-                      document
-                        .getElementById('origem-frete')
-                        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      document.getElementById('origem-frete')?.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start',
+                      });
                     });
                   }}
                 >
@@ -1901,2069 +1990,2222 @@ export default function AdminSettingsPage() {
       ) : null}
 
       <div className="flex flex-col gap-2">
-      <SettingsPanel
-        title="Identidade visual"
-        summary="Nome, logo, cores e domínio"
-        open={openSection === 'branding'}
-        onToggle={() => toggleSection('branding')}
-      >
-      <div className="flex flex-col gap-2">
-        <SettingsRow
-          icon={<IconLoja />}
-          iconTile="loja"
-          title="Nome e endereço"
-          value={`${store.name} · ${
-            store.customDomain?.trim() || `/loja/${store.slug}`
-          }`}
-          onEdit={() => setIdentModal('nome')}
-        />
-
-        <SettingsRow
-          icon={<IconImagem />}
-          iconTile="imagem"
-          title="Logo"
-          value={logo ? 'Definida' : 'Nenhuma logo ainda'}
-          tone={logo ? 'ok' : 'neutro'}
-          cta={logo ? 'Trocar' : 'Enviar'}
-          onEdit={() => setIdentModal('logo')}
-        />
-
-        <SettingsRow
-          iconTile="neutro"
-          icon={
-            <span className="flex gap-1">
-              <span
-                className="h-3.5 w-3.5 border border-black/15"
-                style={{ background: store.primaryColor }}
-              />
-              <span
-                className="h-3.5 w-3.5 border border-black/15"
-                style={{ background: store.accentColor }}
-              />
-            </span>
-          }
-          title="Cores da marca"
-          value={`${store.primaryColor} · ${store.accentColor}`}
-          onEdit={() => setIdentModal('cores')}
-        />
-
-        <SettingsRow
-          icon={<IconVitrine />}
-          iconTile="vitrine"
-          title="Aparência da vitrine"
-          value={identResumo.aparencia}
-          onEdit={() => setIdentModal('aparencia')}
-        />
-
-        <SettingsRow
-          icon={<IconRedes />}
-          iconTile="redes"
-          title="Redes sociais"
-          value={identResumo.redes}
-          onEdit={() => setIdentModal('redes')}
-        />
-
-        <SettingsRow
-          icon={<IconGrafico />}
-          iconTile="grafico"
-          title="Medição de audiência"
-          value={identResumo.audiencia}
-          onEdit={() => setIdentModal('audiencia')}
-        />
-      </div>
-
-      {identModal ? (
-        <SettingsModal
-          onDescartar={() => void carregarLoja()}
-          title={IDENT_MODAL_TITULO[identModal]}
-          hint={IDENT_MODAL_HINT[identModal]}
-          erro={error}
-            onClose={() => setIdentModal(null)}
+        <SettingsPanel
+          title="Identidade visual"
+          summary="Nome, logo, cores e domínio"
+          open={openSection === 'branding'}
+          onToggle={() => toggleSection('branding')}
         >
-          <form
-            onSubmit={async (e) => {
-              if (await saveBranding(e)) setIdentModal(null);
-            }}
-            className="flex min-h-0 flex-1 flex-col"
-          >
-            <div className="grid min-h-0 flex-1 gap-x-4 gap-y-4 overflow-y-auto px-4 py-4 md:grid-cols-2">
-              {identModal === 'nome' ? (
-                <>
-                  <div className="md:col-span-2">
-                    <label className="label">Nome da loja</label>
-                    <input
-                      className="field"
-                      value={store.name}
-                      onChange={(e) => setStore({ ...store, name: e.target.value })}
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="label">Domínio próprio</label>
-                    <input
-                      className="field"
-                      placeholder="minhaloja.com.br"
-                      value={store.customDomain || ''}
-                      onChange={(e) =>
-                        setStore({ ...store, customDomain: e.target.value })
-                      }
-                    />
-                    <p className="mt-1 text-[11px] leading-relaxed text-muted">
-                      Aponte o DNS (A/CNAME) para este app. Grave sem o www — o
-                      sistema normaliza. Vazio, a loja continua em{' '}
-                      <strong>/loja/{store.slug}</strong>.
-                    </p>
-                  </div>
-                </>
-              ) : null}
-
-              {identModal === 'logo' ? (
-                <div className="md:col-span-2">
-                  <label className="label">Arquivo</label>
-                  <p className="mb-1.5 text-xs leading-relaxed text-muted">
-                    PNG com fundo transparente. Tamanho ideal{' '}
-                    <strong>800 × 240 px</strong> (horizontal), até 5 MB.
-                  </p>
-                  <input
-                    className="field"
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      if (f)
-                        uploadLogo(f).catch((err) =>
-                          setError(err instanceof Error ? err.message : 'Erro'),
-                        );
-                    }}
-                  />
-                  {logo ? (
-                    <div className="mt-3 border border-line bg-[#fafafa] p-3">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={logo}
-                        alt="Logo da loja"
-                        className="h-14 object-contain"
-                      />
-                    </div>
-                  ) : (
-                    <p className="mt-2 text-xs text-muted">
-                      Sem logo, a vitrine mostra o nome da loja em texto.
-                    </p>
-                  )}
-                </div>
-              ) : null}
-
-              {identModal === 'cores' ? (
-                <>
-                  <div>
-                    <label className="label">Cor primária</label>
-                    <input
-                      className="field"
-                      type="color"
-                      value={store.primaryColor}
-                      onChange={(e) =>
-                        setStore({ ...store, primaryColor: e.target.value })
-                      }
-                    />
-                    <p className="mt-1 text-[11px] text-muted">
-                      Áreas escuras: cabeçalho, rodapé.
-                    </p>
-                  </div>
-                  <div>
-                    <label className="label">Cor de destaque</label>
-                    <input
-                      className="field"
-                      type="color"
-                      value={store.accentColor}
-                      onChange={(e) =>
-                        setStore({ ...store, accentColor: e.target.value })
-                      }
-                    />
-                    <p className="mt-1 text-[11px] text-muted">
-                      Botões de comprar e preços em promoção.
-                    </p>
-                  </div>
-                </>
-              ) : null}
-
-              {identModal === 'aparencia' ? (
-                <>
-                  <div className="md:col-span-2">
-                    <label className="label">Ramo da loja</label>
-                    <select
-                      className="field"
-                      value={store.storeType || 'GENERAL'}
-                      onChange={(e) =>
-                        setStore({ ...store, storeType: e.target.value })
-                      }
-                    >
-                      {Object.entries(STORE_TYPE_LABEL).map(([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
-                    <p className="mt-1 text-[11px] leading-relaxed text-muted">
-                      Define as sugestões de categoria e o estilo padrão. Os dois
-                      campos abaixo em “Automático” seguem o ramo — mexa neles só
-                      para fugir do preset.
-                    </p>
-                  </div>
-                  <div>
-                    <label className="label">Formato da foto do produto</label>
-                    <select
-                      className="field"
-                      value={store.storeCardRatio || ''}
-                      onChange={(e) =>
-                        setStore({ ...store, storeCardRatio: e.target.value })
-                      }
-                    >
-                      <option value="">Automático (pelo ramo)</option>
-                      {STORE_CARD_RATIOS.map((r) => (
-                        <option key={r.key} value={r.key}>
-                          {r.label} — {r.hint}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="label">Fonte da loja</label>
-                    <select
-                      className="field"
-                      value={store.storeFont || ''}
-                      onChange={(e) =>
-                        setStore({ ...store, storeFont: e.target.value })
-                      }
-                    >
-                      <option value="">Automático (pelo ramo)</option>
-                      {STORE_FONTS.map((f) => (
-                        <option key={f.key} value={f.key}>
-                          {f.label} — {f.hint}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="md:col-span-2">
-                    <a
-                      href={`/loja/${store.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-semibold text-accent underline-offset-4 hover:underline"
-                    >
-                      Ver como está na vitrine →
-                    </a>
-                  </div>
-                </>
-              ) : null}
-
-              {identModal === 'redes' ? (
-                <>
-                  <div className="md:col-span-2">
-                    <label className="label">Instagram</label>
-                    <input
-                      className="field"
-                      placeholder="https://instagram.com/sualoja"
-                      value={store.instagramUrl || ''}
-                      onChange={(e) =>
-                        setStore({ ...store, instagramUrl: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="label">Facebook</label>
-                    <input
-                      className="field"
-                      placeholder="https://facebook.com/sualoja"
-                      value={store.facebookUrl || ''}
-                      onChange={(e) =>
-                        setStore({ ...store, facebookUrl: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="label">TikTok</label>
-                    <input
-                      className="field"
-                      placeholder="https://tiktok.com/@sualoja"
-                      value={store.tiktokUrl || ''}
-                      onChange={(e) =>
-                        setStore({ ...store, tiktokUrl: e.target.value })
-                      }
-                    />
-                    <p className="mt-1 text-[11px] text-muted">
-                      Só as preenchidas aparecem no rodapé da loja.
-                    </p>
-                  </div>
-                </>
-              ) : null}
-
-              {identModal === 'audiencia' ? (
-                <>
-                  <div className="md:col-span-2 border border-line bg-[#fafafa] p-3 text-xs leading-relaxed text-muted">
-                    Preenchendo qualquer um dos dois, a vitrine passa a pedir
-                    consentimento de cookies, como manda a LGPD — e os scripts só
-                    carregam depois do aceite. Em branco, a loja usa só cookie
-                    essencial e nenhum aviso aparece.
-                  </div>
-                  <div>
-                    <label className="label">Google Analytics</label>
-                    <input
-                      className="field"
-                      placeholder="G-XXXXXXXXXX"
-                      value={store.analyticsGaId || ''}
-                      onChange={(e) =>
-                        setStore({ ...store, analyticsGaId: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="label">Meta Pixel</label>
-                    <input
-                      className="field"
-                      placeholder="123456789012345"
-                      value={store.analyticsPixelId || ''}
-                      onChange={(e) =>
-                        setStore({ ...store, analyticsPixelId: e.target.value })
-                      }
-                    />
-                  </div>
-                </>
-              ) : null}
-            </div>
-
-            <div className="flex shrink-0 flex-col gap-2 border-t border-line bg-[#fafafa] px-4 py-3 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                className="btn btn-ghost order-2 sm:order-1"
-                data-modal-cancel
-                onClick={() => setIdentModal(null)}
-              >
-                Cancelar
-              </button>
-              <button type="submit" className="btn btn-accent order-1 sm:order-2">
-                Salvar
-              </button>
-            </div>
-          </form>
-        </SettingsModal>
-      ) : null}
-      </SettingsPanel>
-
-      <SettingsPanel
-        title="Carrossel da vitrine"
-        summary="Banners em faixa no topo da loja"
-        badge={
-          <StatusPill
-            ok={store.marqueeEnabled !== false && marquee.length > 0}
-            okLabel={`${marquee.length} foto${marquee.length === 1 ? '' : 's'}`}
-            badLabel={store.marqueeEnabled === false ? 'Off' : 'Sem fotos'}
-          />
-        }
-        open={openSection === 'marquee'}
-        onToggle={() => toggleSection('marquee')}
-      >
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-3 border border-line bg-white px-3.5 py-3">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-line text-muted">
-              <IconCarrossel />
-            </span>
-            <div>
-              <p className="text-sm font-bold text-ink">Exibir na vitrine</p>
-              <p className="mt-0.5 text-xs text-muted">
-                {marquee.length === 0
-                  ? 'Sem fotos próprias, a vitrine usa imagens dos produtos.'
-                  : `${marquee.length} de 12 banners`}
-              </p>
-            </div>
-          </div>
-          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
-            <input
-              type="checkbox"
-              checked={store.marqueeEnabled !== false}
-              onChange={async (e) => {
-                const enabled = e.target.checked;
-                setStore({ ...store, marqueeEnabled: enabled });
-                try {
-                  await patchBranding({
-                    name: store.name,
-                    logoUrl: store.logoUrl,
-                    primaryColor: store.primaryColor,
-                    secondaryColor: store.secondaryColor,
-                    accentColor: store.accentColor,
-                    customDomain: store.customDomain || undefined,
-                    marqueeEnabled: enabled,
-                    marqueeImages: marquee,
-                  });
-                  setMessage(enabled ? 'Carrossel ativado' : 'Carrossel desativado');
-                } catch (err) {
-                  setError(err instanceof Error ? err.message : 'Erro');
-                }
-              }}
+          <div className="flex flex-col gap-2">
+            <SettingsRow
+              icon={<IconLoja />}
+              iconTile="loja"
+              title="Nome e endereço"
+              value={`${store.name} · ${
+                store.customDomain?.trim() || `/loja/${store.slug}`
+              }`}
+              onEdit={() => setIdentModal('nome')}
             />
-            {store.marqueeEnabled !== false ? 'Ativo' : 'Desativado'}
-          </label>
-        </div>
 
-        <p className="text-xs leading-relaxed text-muted">
-          Banners grandes passando no topo — lookbook, promoção, coleção. Como na
-          Shopify e na Nuvemshop, cada banner pode ter duas versões:{' '}
-          <strong className="text-ink">computador 1920 × 640 px</strong> (bem
-          largo) e <strong className="text-ink">celular 1080 × 1080 px</strong>{' '}
-          (quadrado, opcional). Sem a versão de celular, o celular mostra a do
-          computador, menor. JPG ou PNG até 5 MB, de 1 a 12 banners.
-        </p>
+            <SettingsRow
+              icon={<IconImagem />}
+              iconTile="imagem"
+              title="Logo"
+              value={logo ? 'Definida' : 'Nenhuma logo ainda'}
+              tone={logo ? 'ok' : 'neutro'}
+              cta={logo ? 'Trocar' : 'Enviar'}
+              onEdit={() => setIdentModal('logo')}
+            />
 
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-          {marquee.map((path) => {
-            const src = mediaUrl(path);
-            return (
-              <div key={path} className="flex flex-col gap-1.5">
-                <div className="group relative aspect-[21/9] overflow-hidden rounded-lg border border-line bg-[#eee]">
-                  {src ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={src} alt="Banner (computador)" className="h-full w-full object-cover" />
+            <SettingsRow
+              iconTile="neutro"
+              icon={
+                <span className="flex gap-1">
+                  <span
+                    className="h-3.5 w-3.5 border border-black/15"
+                    style={{ background: store.primaryColor }}
+                  />
+                  <span
+                    className="h-3.5 w-3.5 border border-black/15"
+                    style={{ background: store.accentColor }}
+                  />
+                </span>
+              }
+              title="Cores da marca"
+              value={`${store.primaryColor} · ${store.accentColor}`}
+              onEdit={() => setIdentModal('cores')}
+            />
+
+            <SettingsRow
+              icon={<IconVitrine />}
+              iconTile="vitrine"
+              title="Aparência da vitrine"
+              value={identResumo.aparencia}
+              onEdit={() => setIdentModal('aparencia')}
+            />
+
+            <SettingsRow
+              icon={<IconRedes />}
+              iconTile="redes"
+              title="Redes sociais"
+              value={identResumo.redes}
+              onEdit={() => setIdentModal('redes')}
+            />
+
+            <SettingsRow
+              icon={<IconGrafico />}
+              iconTile="grafico"
+              title="Medição de audiência"
+              value={identResumo.audiencia}
+              onEdit={() => setIdentModal('audiencia')}
+            />
+          </div>
+
+          {identModal ? (
+            <SettingsModal
+              onDescartar={() => void carregarLoja()}
+              title={IDENT_MODAL_TITULO[identModal]}
+              hint={IDENT_MODAL_HINT[identModal]}
+              erro={error}
+              onClose={() => setIdentModal(null)}
+            >
+              <form
+                onSubmit={async (e) => {
+                  if (await saveBranding(e)) setIdentModal(null);
+                }}
+                className="flex min-h-0 flex-1 flex-col"
+              >
+                <div className="grid min-h-0 flex-1 gap-x-4 gap-y-4 overflow-y-auto px-4 py-4 md:grid-cols-2">
+                  {identModal === 'nome' ? (
+                    <>
+                      <div className="md:col-span-2">
+                        <label className="label">Nome da loja</label>
+                        <input
+                          className="field"
+                          value={store.name}
+                          onChange={(e) =>
+                            setStore({ ...store, name: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="label">Domínio próprio</label>
+                        <input
+                          className="field"
+                          placeholder="minhaloja.com.br"
+                          value={store.customDomain || ''}
+                          onChange={(e) =>
+                            setStore({ ...store, customDomain: e.target.value })
+                          }
+                        />
+                        <p className="mt-1 text-[11px] leading-relaxed text-muted">
+                          Aponte o DNS (A/CNAME) para este app. Grave sem o www
+                          — o sistema normaliza. Vazio, a loja continua em{' '}
+                          <strong>/loja/{store.slug}</strong>.
+                        </p>
+                      </div>
+                    </>
                   ) : null}
+
+                  {identModal === 'logo' ? (
+                    <div className="md:col-span-2">
+                      <label className="label">Arquivo</label>
+                      <p className="mb-1.5 text-xs leading-relaxed text-muted">
+                        PNG com fundo transparente. Tamanho ideal{' '}
+                        <strong>800 × 240 px</strong> (horizontal), até 5 MB.
+                      </p>
+                      <input
+                        className="field"
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f)
+                            uploadLogo(f).catch((err) =>
+                              setError(
+                                err instanceof Error ? err.message : 'Erro',
+                              ),
+                            );
+                        }}
+                      />
+                      {logo ? (
+                        <div className="mt-3 border border-line bg-[#fafafa] p-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={logo}
+                            alt="Logo da loja"
+                            className="h-14 object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <p className="mt-2 text-xs text-muted">
+                          Sem logo, a vitrine mostra o nome da loja em texto.
+                        </p>
+                      )}
+                    </div>
+                  ) : null}
+
+                  {identModal === 'cores' ? (
+                    <>
+                      <div>
+                        <label className="label">Cor primária</label>
+                        <input
+                          className="field"
+                          type="color"
+                          value={store.primaryColor}
+                          onChange={(e) =>
+                            setStore({ ...store, primaryColor: e.target.value })
+                          }
+                        />
+                        <p className="mt-1 text-[11px] text-muted">
+                          Áreas escuras: cabeçalho, rodapé.
+                        </p>
+                      </div>
+                      <div>
+                        <label className="label">Cor de destaque</label>
+                        <input
+                          className="field"
+                          type="color"
+                          value={store.accentColor}
+                          onChange={(e) =>
+                            setStore({ ...store, accentColor: e.target.value })
+                          }
+                        />
+                        <p className="mt-1 text-[11px] text-muted">
+                          Botões de comprar e preços em promoção.
+                        </p>
+                      </div>
+                    </>
+                  ) : null}
+
+                  {identModal === 'aparencia' ? (
+                    <>
+                      <div className="md:col-span-2">
+                        <label className="label">Ramo da loja</label>
+                        <select
+                          className="field"
+                          value={store.storeType || 'GENERAL'}
+                          onChange={(e) =>
+                            setStore({ ...store, storeType: e.target.value })
+                          }
+                        >
+                          {Object.entries(STORE_TYPE_LABEL).map(
+                            ([value, label]) => (
+                              <option key={value} value={value}>
+                                {label}
+                              </option>
+                            ),
+                          )}
+                        </select>
+                        <p className="mt-1 text-[11px] leading-relaxed text-muted">
+                          Define as sugestões de categoria e o estilo padrão. Os
+                          dois campos abaixo em “Automático” seguem o ramo —
+                          mexa neles só para fugir do preset.
+                        </p>
+                      </div>
+                      <div>
+                        <label className="label">
+                          Formato da foto do produto
+                        </label>
+                        <select
+                          className="field"
+                          value={store.storeCardRatio || ''}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              storeCardRatio: e.target.value,
+                            })
+                          }
+                        >
+                          <option value="">Automático (pelo ramo)</option>
+                          {STORE_CARD_RATIOS.map((r) => (
+                            <option key={r.key} value={r.key}>
+                              {r.label} — {r.hint}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="label">Fonte da loja</label>
+                        <select
+                          className="field"
+                          value={store.storeFont || ''}
+                          onChange={(e) =>
+                            setStore({ ...store, storeFont: e.target.value })
+                          }
+                        >
+                          <option value="">Automático (pelo ramo)</option>
+                          {STORE_FONTS.map((f) => (
+                            <option key={f.key} value={f.key}>
+                              {f.label} — {f.hint}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="md:col-span-2">
+                        <a
+                          href={`/loja/${store.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-semibold text-accent underline-offset-4 hover:underline"
+                        >
+                          Ver como está na vitrine →
+                        </a>
+                      </div>
+                    </>
+                  ) : null}
+
+                  {identModal === 'redes' ? (
+                    <>
+                      <div className="md:col-span-2">
+                        <label className="label">Instagram</label>
+                        <input
+                          className="field"
+                          placeholder="https://instagram.com/sualoja"
+                          value={store.instagramUrl || ''}
+                          onChange={(e) =>
+                            setStore({ ...store, instagramUrl: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="label">Facebook</label>
+                        <input
+                          className="field"
+                          placeholder="https://facebook.com/sualoja"
+                          value={store.facebookUrl || ''}
+                          onChange={(e) =>
+                            setStore({ ...store, facebookUrl: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="label">TikTok</label>
+                        <input
+                          className="field"
+                          placeholder="https://tiktok.com/@sualoja"
+                          value={store.tiktokUrl || ''}
+                          onChange={(e) =>
+                            setStore({ ...store, tiktokUrl: e.target.value })
+                          }
+                        />
+                        <p className="mt-1 text-[11px] text-muted">
+                          Só as preenchidas aparecem no rodapé da loja.
+                        </p>
+                      </div>
+                    </>
+                  ) : null}
+
+                  {identModal === 'audiencia' ? (
+                    <>
+                      <div className="md:col-span-2 border border-line bg-[#fafafa] p-3 text-xs leading-relaxed text-muted">
+                        Preenchendo qualquer um dos dois, a vitrine passa a
+                        pedir consentimento de cookies, como manda a LGPD — e os
+                        scripts só carregam depois do aceite. Em branco, a loja
+                        usa só cookie essencial e nenhum aviso aparece.
+                      </div>
+                      <div>
+                        <label className="label">Google Analytics</label>
+                        <input
+                          className="field"
+                          placeholder="G-XXXXXXXXXX"
+                          value={store.analyticsGaId || ''}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              analyticsGaId: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="label">Meta Pixel</label>
+                        <input
+                          className="field"
+                          placeholder="123456789012345"
+                          value={store.analyticsPixelId || ''}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              analyticsPixelId: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+
+                <div className="flex shrink-0 flex-col gap-2 border-t border-line bg-[#fafafa] px-4 py-3 sm:flex-row sm:justify-end">
                   <button
                     type="button"
-                    className="absolute right-1 top-1 rounded bg-black/70 px-1.5 py-0.5 text-[11px] font-bold text-white opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100"
-                    onClick={() => removeMarqueeImage(path)}
+                    className="btn btn-ghost order-2 sm:order-1"
+                    data-modal-cancel
+                    onClick={() => setIdentModal(null)}
                   >
-                    Remover
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-accent order-1 sm:order-2"
+                  >
+                    Salvar
                   </button>
                 </div>
-                {store.marqueeMobile?.[path] ? (
-                  <div className="flex items-center gap-2 text-[12px]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={mediaUrl(store.marqueeMobile[path]) || ''}
-                      alt="Banner (celular)"
-                      className="h-10 w-10 shrink-0 rounded border border-line object-cover"
-                    />
-                    <span className="min-w-0 flex-1 text-muted">Celular ok</span>
-                    <button
-                      type="button"
-                      className="font-semibold text-accent hover:underline"
-                      onClick={() => removeMarqueeMobile(path)}
-                    >
-                      Tirar
-                    </button>
-                  </div>
-                ) : (
-                  <label
-                    className={`flex h-10 cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-line text-[12px] font-semibold text-muted transition hover:border-ink/30 hover:bg-[#fafafa] ${
-                      uploadingMarqueeMobile === path ? 'pointer-events-none opacity-60' : ''
-                    }`}
-                  >
-                    {uploadingMarqueeMobile === path ? 'Enviando…' : '+ Versão para celular'}
-                    <input
-                      type="file"
-                      className="sr-only"
-                      accept="image/png,image/jpeg,image/webp"
-                      onChange={(e) => {
-                        const arquivo = e.target.files?.[0];
-                        e.target.value = '';
-                        if (arquivo) uploadMarqueeMobile(path, arquivo).catch(() => undefined);
-                      }}
-                    />
-                  </label>
-                )}
-              </div>
-            );
-          })}
+              </form>
+            </SettingsModal>
+          ) : null}
+        </SettingsPanel>
 
-          {/*
+        <SettingsPanel
+          title="Carrossel da vitrine"
+          summary="Banners em faixa no topo da loja"
+          badge={
+            <StatusPill
+              ok={store.marqueeEnabled !== false && marquee.length > 0}
+              okLabel={`${marquee.length} foto${marquee.length === 1 ? '' : 's'}`}
+              badLabel={store.marqueeEnabled === false ? 'Off' : 'Sem fotos'}
+            />
+          }
+          open={openSection === 'marquee'}
+          onToggle={() => toggleSection('marquee')}
+        >
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 border border-line bg-white px-3.5 py-3">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-line text-muted">
+                  <IconCarrossel />
+                </span>
+                <div>
+                  <p className="text-sm font-bold text-ink">
+                    Exibir na vitrine
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted">
+                    {marquee.length === 0
+                      ? 'Sem fotos próprias, a vitrine usa imagens dos produtos.'
+                      : `${marquee.length} de 12 banners`}
+                  </p>
+                </div>
+              </div>
+              <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
+                <input
+                  type="checkbox"
+                  checked={store.marqueeEnabled !== false}
+                  onChange={async (e) => {
+                    const enabled = e.target.checked;
+                    setStore({ ...store, marqueeEnabled: enabled });
+                    try {
+                      await patchBranding({
+                        name: store.name,
+                        logoUrl: store.logoUrl,
+                        primaryColor: store.primaryColor,
+                        secondaryColor: store.secondaryColor,
+                        accentColor: store.accentColor,
+                        customDomain: store.customDomain || undefined,
+                        marqueeEnabled: enabled,
+                        marqueeImages: marquee,
+                      });
+                      setMessage(
+                        enabled ? 'Carrossel ativado' : 'Carrossel desativado',
+                      );
+                    } catch (err) {
+                      setError(err instanceof Error ? err.message : 'Erro');
+                    }
+                  }}
+                />
+                {store.marqueeEnabled !== false ? 'Ativo' : 'Desativado'}
+              </label>
+            </div>
+
+            <p className="text-xs leading-relaxed text-muted">
+              Banners grandes passando no topo — lookbook, promoção, coleção.
+              Como na Shopify e na Nuvemshop, cada banner pode ter duas versões:{' '}
+              <strong className="text-ink">computador 1920 × 640 px</strong>{' '}
+              (bem largo) e{' '}
+              <strong className="text-ink">celular 1080 × 1080 px</strong>{' '}
+              (quadrado, opcional). Sem a versão de celular, o celular mostra a
+              do computador, menor. JPG ou PNG até 5 MB, de 1 a 12 banners.
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+              {marquee.map((path) => {
+                const src = mediaUrl(path);
+                return (
+                  <div key={path} className="flex flex-col gap-1.5">
+                    <div className="group relative aspect-[21/9] overflow-hidden rounded-lg border border-line bg-[#eee]">
+                      {src ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={src}
+                          alt="Banner (computador)"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : null}
+                      <button
+                        type="button"
+                        className="absolute right-1 top-1 rounded bg-black/70 px-1.5 py-0.5 text-[11px] font-bold text-white opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100"
+                        onClick={() => removeMarqueeImage(path)}
+                      >
+                        Remover
+                      </button>
+                    </div>
+                    {store.marqueeMobile?.[path] ? (
+                      <div className="flex items-center gap-2 text-[12px]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={mediaUrl(store.marqueeMobile[path]) || ''}
+                          alt="Banner (celular)"
+                          className="h-10 w-10 shrink-0 rounded border border-line object-cover"
+                        />
+                        <span className="min-w-0 flex-1 text-muted">
+                          Celular ok
+                        </span>
+                        <button
+                          type="button"
+                          className="font-semibold text-accent hover:underline"
+                          onClick={() => removeMarqueeMobile(path)}
+                        >
+                          Tirar
+                        </button>
+                      </div>
+                    ) : (
+                      <label
+                        className={`flex h-10 cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-line text-[12px] font-semibold text-muted transition hover:border-ink/30 hover:bg-[#fafafa] ${
+                          uploadingMarqueeMobile === path
+                            ? 'pointer-events-none opacity-60'
+                            : ''
+                        }`}
+                      >
+                        {uploadingMarqueeMobile === path
+                          ? 'Enviando…'
+                          : '+ Versão para celular'}
+                        <input
+                          type="file"
+                          className="sr-only"
+                          accept="image/png,image/jpeg,image/webp"
+                          onChange={(e) => {
+                            const arquivo = e.target.files?.[0];
+                            e.target.value = '';
+                            if (arquivo)
+                              uploadMarqueeMobile(path, arquivo).catch(
+                                () => undefined,
+                              );
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/*
             O "adicionar" é a última peça da grade, não um campo de arquivo
             solto acima dela: fica no lugar onde o banner vai aparecer, e a
             grade inteira lê como uma coisa só.
           */}
-          {marquee.length < 12 ? (
-            <label
-              className={`flex aspect-[21/9] cursor-pointer flex-col items-center justify-center gap-1 border border-dashed border-line text-xs font-semibold text-muted transition hover:border-ink/30 hover:bg-[#fafafa] ${
-                uploadingMarquee ? 'pointer-events-none opacity-60' : ''
-              }`}
-            >
-              <IconMais />
-              {uploadingMarquee ? 'Enviando…' : 'Adicionar foto'}
-              <input
-                type="file"
-                className="sr-only"
-                accept="image/png,image/jpeg,image/webp"
-                disabled={uploadingMarquee}
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  e.target.value = '';
-                  if (f) uploadMarquee(f).catch(() => undefined);
-                }}
-              />
-            </label>
-          ) : null}
-        </div>
-      </div>
-      </SettingsPanel>
-
-      <SettingsPanel
-        id="origem-frete"
-        title="Frete e endereço de origem"
-        summary="CEP da loja + cotação no checkout do cliente"
-        badge={
-          <StatusPill
-            ok={originReady}
-            okLabel="Origem ok"
-            badLabel="Falta endereço"
-          />
-        }
-        open={openSection === 'shipping'}
-        onToggle={() => toggleSection('shipping')}
-      >
-        {freteViaTransportadora ? (
-          <div className="mb-3 border border-line">
-            <div className="border-b border-line px-3.5 py-2.5">
-              <p className="text-[13px] font-bold text-ink">
-                {etiquetaPendencias.length === 0
-                  ? 'Pronto para emitir etiqueta'
-                  : `Falta ${etiquetaPendencias.length} item para emitir etiqueta`}
-              </p>
-              <p className="mt-0.5 text-xs leading-relaxed text-muted">
-                {etiquetaPendencias.length === 0
-                  ? 'Confira só o saldo da sua conta no Melhor Envio — a etiqueta é comprada com ele.'
-                  : 'Sem estes dados o botão “Gerar etiqueta” recusa o pedido.'}
-              </p>
+              {marquee.length < 12 ? (
+                <label
+                  className={`flex aspect-[21/9] cursor-pointer flex-col items-center justify-center gap-1 border border-dashed border-line text-xs font-semibold text-muted transition hover:border-ink/30 hover:bg-[#fafafa] ${
+                    uploadingMarquee ? 'pointer-events-none opacity-60' : ''
+                  }`}
+                >
+                  <IconMais />
+                  {uploadingMarquee ? 'Enviando…' : 'Adicionar foto'}
+                  <input
+                    type="file"
+                    className="sr-only"
+                    accept="image/png,image/jpeg,image/webp"
+                    disabled={uploadingMarquee}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      e.target.value = '';
+                      if (f) uploadMarquee(f).catch(() => undefined);
+                    }}
+                  />
+                </label>
+              ) : null}
             </div>
+          </div>
+        </SettingsPanel>
 
-            <ul>
-              {ETIQUETA_REQUISITOS.map((req) => {
-                const ok = req.pronto(store, originReady);
-                return (
-                  <li key={req.id} className="border-b border-line last:border-b-0">
-                    <button
-                      type="button"
-                      className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left transition hover:bg-[#fafafa] disabled:cursor-default disabled:hover:bg-transparent"
-                      disabled={ok}
-                      onClick={() => req.resolver(setFreteModal, irParaDocumento)}
+        <SettingsPanel
+          id="origem-frete"
+          title="Frete e endereço de origem"
+          summary="CEP da loja + cotação no checkout do cliente"
+          badge={
+            <StatusPill
+              ok={originReady}
+              okLabel="Origem ok"
+              badLabel="Falta endereço"
+            />
+          }
+          open={openSection === 'shipping'}
+          onToggle={() => toggleSection('shipping')}
+        >
+          {freteViaTransportadora ? (
+            <div className="mb-3 border border-line">
+              <div className="border-b border-line px-3.5 py-2.5">
+                <p className="text-[13px] font-bold text-ink">
+                  {etiquetaPendencias.length === 0
+                    ? 'Pronto para emitir etiqueta'
+                    : `Falta ${etiquetaPendencias.length} item para emitir etiqueta`}
+                </p>
+                <p className="mt-0.5 text-xs leading-relaxed text-muted">
+                  {etiquetaPendencias.length === 0
+                    ? 'Confira só o saldo da sua conta no Melhor Envio — a etiqueta é comprada com ele.'
+                    : 'Sem estes dados o botão “Gerar etiqueta” recusa o pedido.'}
+                </p>
+              </div>
+
+              <ul>
+                {ETIQUETA_REQUISITOS.map((req) => {
+                  const ok = req.pronto(store, originReady);
+                  return (
+                    <li
+                      key={req.id}
+                      className="border-b border-line last:border-b-0"
                     >
-                      <span
-                        className={`flex h-4 w-4 shrink-0 items-center justify-center border text-[11px] font-bold ${
-                          ok
-                            ? 'border-[var(--ok)] text-[var(--ok)]'
-                            : 'border-accent text-accent'
-                        }`}
-                        aria-hidden
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left transition hover:bg-[#fafafa] disabled:cursor-default disabled:hover:bg-transparent"
+                        disabled={ok}
+                        onClick={() =>
+                          req.resolver(setFreteModal, irParaDocumento)
+                        }
                       >
-                        {ok ? '✓' : '!'}
-                      </span>
-                      <span
-                        className={`flex-1 text-[13px] ${
-                          ok ? 'text-muted line-through' : 'font-semibold text-ink'
-                        }`}
-                      >
-                        {req.rotulo}
-                      </span>
-                      {ok ? null : (
-                        <span className="shrink-0 text-xs font-semibold text-accent">
-                          Resolver
+                        <span
+                          className={`flex h-4 w-4 shrink-0 items-center justify-center border text-[11px] font-bold ${
+                            ok
+                              ? 'border-[var(--ok)] text-[var(--ok)]'
+                              : 'border-accent text-accent'
+                          }`}
+                          aria-hidden
+                        >
+                          {ok ? '✓' : '!'}
                         </span>
-                      )}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+                        <span
+                          className={`flex-1 text-[13px] ${
+                            ok
+                              ? 'text-muted line-through'
+                              : 'font-semibold text-ink'
+                          }`}
+                        >
+                          {req.rotulo}
+                        </span>
+                        {ok ? null : (
+                          <span className="shrink-0 text-xs font-semibold text-accent">
+                            Resolver
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
 
-            {/*
+              {/*
               Saldo não dá para verificar daqui — só o Melhor Envio sabe, e a
               consulta gastaria uma chamada a cada abertura da tela. Fica como
               aviso, porque é a causa nº 1 de "configurei tudo e não emite".
             */}
-            <p className="border-t border-line bg-[#fafafa] px-3.5 py-2.5 text-[11px] leading-relaxed text-muted">
-              Conectar a conta não coloca dinheiro nela. Cada etiqueta é
-              comprada com o <strong className="text-ink">saldo da sua conta
-              no Melhor Envio</strong> — sem saldo, a emissão falha mesmo com
-              tudo acima resolvido.
-            </p>
+              <p className="border-t border-line bg-[#fafafa] px-3.5 py-2.5 text-[11px] leading-relaxed text-muted">
+                Conectar a conta não coloca dinheiro nela. Cada etiqueta é
+                comprada com o{' '}
+                <strong className="text-ink">
+                  saldo da sua conta no Melhor Envio
+                </strong>{' '}
+                — sem saldo, a emissão falha mesmo com tudo acima resolvido.
+              </p>
+            </div>
+          ) : null}
+          <div className="flex flex-col gap-2">
+            <SettingsRow
+              icon={<IconCalculo />}
+              iconTile="calculo"
+              title="Como calcular o frete"
+              value={freteResumo.calculo}
+              onEdit={() => setFreteModal('calculo')}
+            />
+
+            <SettingsRow
+              icon={<IconOrigem />}
+              iconTile="origem"
+              title="Endereço de origem"
+              value={freteResumo.origem}
+              tone={originReady ? 'ok' : 'pendente'}
+              cta={originReady ? 'Ajustar' : 'Cadastrar'}
+              onEdit={() => setFreteModal('origem')}
+            />
+
+            {freteViaTransportadora ? (
+              <>
+                <SettingsRow
+                  icon={<IconPacote />}
+                  iconTile="pacote"
+                  title={
+                    store.freteModo === 'melhor_envio'
+                      ? 'Melhor Envio'
+                      : 'Conta da transportadora'
+                  }
+                  value={freteResumo.conexao}
+                  tone={freteConectado ? 'ok' : 'pendente'}
+                  cta={freteConectado ? 'Gerenciar' : 'Conectar'}
+                  onEdit={() => setFreteModal('conexao')}
+                />
+
+                <SettingsRow
+                  icon={<IconEtiqueta />}
+                  iconTile="etiqueta"
+                  title="Etiqueta e transportadoras"
+                  value={freteResumo.etiqueta}
+                  onEdit={() => setFreteModal('etiqueta')}
+                />
+              </>
+            ) : null}
           </div>
-        ) : null}
-      <div className="flex flex-col gap-2">
-        <SettingsRow
-          icon={<IconCalculo />}
-          iconTile="calculo"
-          title="Como calcular o frete"
-          value={freteResumo.calculo}
-          onEdit={() => setFreteModal('calculo')}
-        />
 
-        <SettingsRow
-          icon={<IconOrigem />}
-          iconTile="origem"
-          title="Endereço de origem"
-          value={freteResumo.origem}
-          tone={originReady ? 'ok' : 'pendente'}
-          cta={originReady ? 'Ajustar' : 'Cadastrar'}
-          onEdit={() => setFreteModal('origem')}
-        />
-
-        {freteViaTransportadora ? (
-          <>
-            <SettingsRow
-              icon={<IconPacote />}
-              iconTile="pacote"
-              title={
-                store.freteModo === 'melhor_envio'
-                  ? 'Melhor Envio'
-                  : 'Conta da transportadora'
-              }
-              value={freteResumo.conexao}
-              tone={freteConectado ? 'ok' : 'pendente'}
-              cta={freteConectado ? 'Gerenciar' : 'Conectar'}
-              onEdit={() => setFreteModal('conexao')}
-            />
-
-            <SettingsRow
-              icon={<IconEtiqueta />}
-              iconTile="etiqueta"
-              title="Etiqueta e transportadoras"
-              value={freteResumo.etiqueta}
-              onEdit={() => setFreteModal('etiqueta')}
-            />
-          </>
-        ) : null}
-      </div>
-
-      {freteModal ? (
-        <SettingsModal
-          onDescartar={() => void carregarLoja()}
-          title={FRETE_MODAL_TITULO[freteModal]}
-          hint={FRETE_MODAL_HINT[freteModal]}
-          erro={error}
-            onClose={() => setFreteModal(null)}
-        >
-          <form
-            onSubmit={async (e) => {
-              if (await saveShipping(e)) setFreteModal(null);
-            }}
-            className="flex min-h-0 flex-1 flex-col"
-          >
-            <div className="grid min-h-0 flex-1 gap-x-4 gap-y-4 overflow-y-auto px-4 py-4 md:grid-cols-2">
-              {freteModal === 'calculo' ? (
-                <>
-                  <div className="md:col-span-2">
-                    <label className="label">Provedor de frete</label>
-                    <select
-                      className="field"
-                      value={store.freteModo || 'manual'}
-                      onChange={(e) =>
-                        setStore({ ...store, freteModo: e.target.value })
-                      }
-                    >
-                      <option value="manual">Tabela própria (valor fixo)</option>
-                      <option value="gratis">Sempre grátis</option>
-                      <option value="melhor_envio">
-                        Melhor Envio (cotação real)
-                      </option>
-                      {/*
+          {freteModal ? (
+            <SettingsModal
+              onDescartar={() => void carregarLoja()}
+              title={FRETE_MODAL_TITULO[freteModal]}
+              hint={FRETE_MODAL_HINT[freteModal]}
+              erro={error}
+              onClose={() => setFreteModal(null)}
+            >
+              <form
+                onSubmit={async (e) => {
+                  if (await saveShipping(e)) setFreteModal(null);
+                }}
+                className="flex min-h-0 flex-1 flex-col"
+              >
+                <div className="grid min-h-0 flex-1 gap-x-4 gap-y-4 overflow-y-auto px-4 py-4 md:grid-cols-2">
+                  {freteModal === 'calculo' ? (
+                    <>
+                      <div className="md:col-span-2">
+                        <label className="label">Provedor de frete</label>
+                        <select
+                          className="field"
+                          value={store.freteModo || 'manual'}
+                          onChange={(e) =>
+                            setStore({ ...store, freteModo: e.target.value })
+                          }
+                        >
+                          <option value="manual">
+                            Tabela própria (valor fixo)
+                          </option>
+                          <option value="gratis">Sempre grátis</option>
+                          <option value="melhor_envio">
+                            Melhor Envio (cotação real)
+                          </option>
+                          {/*
                         Frenet e SuperFrete continuam existindo na API, mas
                         saíram daqui: ninguém usa, e oferecer integração sem
                         suporte só gera lojista travado. Uma loja que já esteja
                         num deles segue funcionando e aparece abaixo.
                       */}
-                      {store.freteModo === 'frenet' ? (
-                        <option value="frenet">Frenet</option>
-                      ) : null}
-                      {store.freteModo === 'superfrete' ? (
-                        <option value="superfrete">SuperFrete</option>
-                      ) : null}
-                    </select>
-                    <p className="mt-1 text-[11px] leading-relaxed text-muted">
-                      No Melhor Envio o preço vem da cotação real, por peso e
-                      dimensão de cada produto. Nas outras duas quem define o
-                      valor é você.
-                    </p>
-                  </div>
-
-                  {store.freteModo === 'manual' ? (
-                    <div>
-                      <label className="label">Valor base PAC (R$)</label>
-                      <input
-                        className="field"
-                        type="number"
-                        step="0.01"
-                        value={store.freteValorFixo ?? '25'}
-                        onChange={(e) =>
-                          setStore({ ...store, freteValorFixo: e.target.value })
-                        }
-                      />
-                    </div>
-                  ) : null}
-
-                  {store.freteModo !== 'gratis' ? (
-                    <div
-                      className={store.freteModo === 'manual' ? '' : 'md:col-span-2'}
-                    >
-                      <label className="label">Frete grátis acima de (R$)</label>
-                      <input
-                        className="field"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={store.freteGratisAcima ?? ''}
-                        onChange={(e) =>
-                          setStore({ ...store, freteGratisAcima: e.target.value })
-                        }
-                        placeholder="Opcional — vazio, sempre cobra"
-                      />
-                      <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
-                        {freteViaTransportadora
-                          ? 'O checkout continua cotando as transportadoras e zera o preço quando o carrinho passa desse valor.'
-                          : 'Vazio ou 0 desliga a regra.'}
-                      </p>
-                    </div>
-                  ) : null}
-                </>
-              ) : null}
-
-              {freteModal === 'origem' ? (
-                <>
-                  <div>
-                    <label className="label">CEP de origem</label>
-                    <input
-                      className="field"
-                      value={store.freteCepOrigem ?? ''}
-                      onChange={(e) => {
-                        const raw = e.target.value;
-                        const digits = raw.replace(/\D/g, '').slice(0, 8);
-                        setStore({ ...store, freteCepOrigem: raw });
-                        void lookupOriginCep(digits);
-                      }}
-                      placeholder="00000-000"
-                      inputMode="numeric"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="label">Número</label>
-                    <input
-                      className="field"
-                      value={store.freteNumeroOrigem ?? ''}
-                      onChange={(e) =>
-                        setStore({ ...store, freteNumeroOrigem: e.target.value })
-                      }
-                      placeholder="123"
-                      required
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="label">Rua / logradouro</label>
-                    <input
-                      className="field"
-                      value={store.freteRuaOrigem ?? ''}
-                      onChange={(e) =>
-                        setStore({ ...store, freteRuaOrigem: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="label">Complemento</label>
-                    <input
-                      className="field"
-                      value={store.freteComplementoOrigem ?? ''}
-                      onChange={(e) =>
-                        setStore({
-                          ...store,
-                          freteComplementoOrigem: e.target.value,
-                        })
-                      }
-                      placeholder="Opcional"
-                    />
-                  </div>
-                  <div>
-                    <label className="label">Bairro</label>
-                    <input
-                      className="field"
-                      value={store.freteBairroOrigem ?? ''}
-                      onChange={(e) =>
-                        setStore({ ...store, freteBairroOrigem: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="label">Cidade</label>
-                    <input
-                      className="field"
-                      value={store.freteCidadeOrigem ?? ''}
-                      onChange={(e) =>
-                        setStore({ ...store, freteCidadeOrigem: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="label">UF</label>
-                    <input
-                      className="field"
-                      value={store.freteUfOrigem ?? ''}
-                      onChange={(e) =>
-                        setStore({
-                          ...store,
-                          freteUfOrigem: e.target.value.toUpperCase().slice(0, 2),
-                        })
-                      }
-                      placeholder="SP"
-                      maxLength={2}
-                      required
-                    />
-                  </div>
-                </>
-              ) : null}
-
-              {freteModal === 'conexao' ? (
-                <>
-                  {store.freteModo === 'melhor_envio' ? (
-                    <div className="md:col-span-2 border border-line bg-[#f7f9fb] p-4">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="flex items-start gap-3">
-                          <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-line bg-white text-[#0B1F33]">
-                            <IconPacote />
-                          </span>
-                          <div>
-                            <p className="text-sm font-bold text-ink">
-                              Melhor Envio
-                            </p>
-                            {freteConectado ? (
-                              <p className="mt-0.5 text-[13px] leading-relaxed text-muted">
-                                Conectado como{' '}
-                                <strong className="text-[var(--ok)]">
-                                  {store.freteContaNome || 'conta autorizada'}
-                                </strong>
-                                {store.freteContaEmail
-                                  ? ` · ${store.freteContaEmail}`
-                                  : ''}
-                                . O acesso se renova sozinho.
-                              </p>
-                            ) : (
-                              <p className="mt-0.5 max-w-[52ch] text-[13px] leading-relaxed text-muted">
-                                Entre na sua conta e autorize — sem copiar
-                                token. O acesso passa a se renovar sozinho; o
-                                token colado na mão vence em 30 dias e o frete
-                                para de cotar sem aviso.
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          className={freteConectado ? 'btn btn-ghost' : 'btn btn-accent'}
-                          onClick={
-                            freteConectado
-                              ? desconectarMelhorEnvio
-                              : conectarMelhorEnvio
-                          }
-                          disabled={meBusy}
-                        >
-                          {meBusy
-                            ? 'Aguarde…'
-                            : freteConectado
-                              ? 'Desconectar'
-                              : 'Conectar conta'}
-                        </button>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  <div className="md:col-span-2">
-                    <label className="label">
-                      Token da API
-                      {store.freteTokenSet ? (
-                        <span className="ml-1 font-normal text-[var(--ok)]">
-                          (já configurado)
-                        </span>
-                      ) : null}
-                    </label>
-                    <input
-                      className="field"
-                      type="password"
-                      value={freteToken}
-                      onChange={(e) => setFreteToken(e.target.value)}
-                      placeholder={
-                        store.freteTokenSet
-                          ? 'Deixe em branco para manter'
-                          : 'Cole o token'
-                      }
-                      required={!store.freteTokenSet && !freteConectado}
-                    />
-                    <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
-                      Alternativa à conexão acima, para quem prefere colar o
-                      token na mão. Conectando a conta, este campo não é
-                      necessário.
-                    </p>
-                  </div>
-
-                  {store.freteModo === 'melhor_envio' ? (
-                    <>
-                      <div>
-                        <label className="label">Ambiente Melhor Envio</label>
-                        <select
-                          className="field"
-                          value={store.freteSandbox === true ? 'sandbox' : 'prod'}
-                          onChange={(e) =>
-                            setStore({
-                              ...store,
-                              freteSandbox: e.target.value === 'sandbox',
-                            })
-                          }
-                        >
-                          <option value="prod">Produção</option>
-                          <option value="sandbox">Sandbox</option>
+                          {store.freteModo === 'frenet' ? (
+                            <option value="frenet">Frenet</option>
+                          ) : null}
+                          {store.freteModo === 'superfrete' ? (
+                            <option value="superfrete">SuperFrete</option>
+                          ) : null}
                         </select>
-                        <p className="mt-0.5 text-[11px] text-muted">
-                          Sandbox só para teste — não gera etiqueta válida.
+                        <p className="mt-1 text-[11px] leading-relaxed text-muted">
+                          No Melhor Envio o preço vem da cotação real, por peso
+                          e dimensão de cada produto. Nas outras duas quem
+                          define o valor é você.
                         </p>
                       </div>
+
+                      {store.freteModo === 'manual' ? (
+                        <div>
+                          <label className="label">Valor base PAC (R$)</label>
+                          <input
+                            className="field"
+                            type="number"
+                            step="0.01"
+                            value={store.freteValorFixo ?? '25'}
+                            onChange={(e) =>
+                              setStore({
+                                ...store,
+                                freteValorFixo: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      ) : null}
+
+                      {store.freteModo !== 'gratis' ? (
+                        <div
+                          className={
+                            store.freteModo === 'manual' ? '' : 'md:col-span-2'
+                          }
+                        >
+                          <label className="label">
+                            Frete grátis acima de (R$)
+                          </label>
+                          <input
+                            className="field"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={store.freteGratisAcima ?? ''}
+                            onChange={(e) =>
+                              setStore({
+                                ...store,
+                                freteGratisAcima: e.target.value,
+                              })
+                            }
+                            placeholder="Opcional — vazio, sempre cobra"
+                          />
+                          <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
+                            {freteViaTransportadora
+                              ? 'O checkout continua cotando as transportadoras e zera o preço quando o carrinho passa desse valor.'
+                              : 'Vazio ou 0 desliga a regra.'}
+                          </p>
+                        </div>
+                      ) : null}
+                    </>
+                  ) : null}
+
+                  {freteModal === 'origem' ? (
+                    <>
                       <div>
-                        <label className="label">E-mail de contato</label>
+                        <label className="label">CEP de origem</label>
                         <input
                           className="field"
-                          type="email"
-                          value={store.freteEmailContato ?? ''}
+                          value={store.freteCepOrigem ?? ''}
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            const digits = raw.replace(/\D/g, '').slice(0, 8);
+                            setStore({ ...store, freteCepOrigem: raw });
+                            void lookupOriginCep(digits);
+                          }}
+                          placeholder="00000-000"
+                          inputMode="numeric"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="label">Número</label>
+                        <input
+                          className="field"
+                          value={store.freteNumeroOrigem ?? ''}
                           onChange={(e) =>
                             setStore({
                               ...store,
-                              freteEmailContato: e.target.value,
+                              freteNumeroOrigem: e.target.value,
+                            })
+                          }
+                          placeholder="123"
+                          required
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="label">Rua / logradouro</label>
+                        <input
+                          className="field"
+                          value={store.freteRuaOrigem ?? ''}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              freteRuaOrigem: e.target.value,
                             })
                           }
                           required
                         />
-                        <p className="mt-0.5 text-[11px] text-muted">
-                          Exigido pelo Melhor Envio em toda cotação.
-                        </p>
                       </div>
-
-                      <div className="md:col-span-2 border-t border-line pt-4">
-                        <button
-                          type="button"
-                          className="text-xs font-semibold text-muted underline-offset-4 hover:underline"
-                          onClick={() => setMeHelpOpen((v) => !v)}
-                        >
-                          {meHelpOpen
-                            ? 'Fechar o passo a passo'
-                            : 'Prefere colar o token na mão? Ver o passo a passo'}
-                        </button>
-
-                        {meHelpOpen ? (
-                          <ol className="mt-3 list-decimal space-y-2 pl-4 text-xs leading-relaxed text-muted">
-                            <li>
-                              Entre em{' '}
-                              <a
-                                href="https://melhorenvio.com.br"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="font-semibold text-ink underline"
-                              >
-                                melhorenvio.com.br
-                              </a>{' '}
-                              e vá em <strong>Integrações → Área Dev.</strong>
-                            </li>
-                            <li>
-                              Gere um token e marque só as permissões de
-                              cotação, carrinho, etiqueta e rastreio.
-                            </li>
-                            <li>
-                              Cole no campo acima e informe o e-mail de contato.
-                            </li>
-                            <li>
-                              Lembre que esse token vence em 30 dias. Conectando
-                              a conta, a renovação é automática.
-                            </li>
-                          </ol>
-                        ) : null}
+                      <div>
+                        <label className="label">Complemento</label>
+                        <input
+                          className="field"
+                          value={store.freteComplementoOrigem ?? ''}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              freteComplementoOrigem: e.target.value,
+                            })
+                          }
+                          placeholder="Opcional"
+                        />
+                      </div>
+                      <div>
+                        <label className="label">Bairro</label>
+                        <input
+                          className="field"
+                          value={store.freteBairroOrigem ?? ''}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              freteBairroOrigem: e.target.value,
+                            })
+                          }
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="label">Cidade</label>
+                        <input
+                          className="field"
+                          value={store.freteCidadeOrigem ?? ''}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              freteCidadeOrigem: e.target.value,
+                            })
+                          }
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="label">UF</label>
+                        <input
+                          className="field"
+                          value={store.freteUfOrigem ?? ''}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              freteUfOrigem: e.target.value
+                                .toUpperCase()
+                                .slice(0, 2),
+                            })
+                          }
+                          placeholder="SP"
+                          maxLength={2}
+                          required
+                        />
                       </div>
                     </>
                   ) : null}
-                </>
-              ) : null}
 
-              {freteModal === 'etiqueta' ? (
-                <>
-                  <div className="md:col-span-2 border border-line p-3">
-                    <label className="flex cursor-pointer items-start gap-2">
-                      <input
-                        type="checkbox"
-                        className="mt-1"
-                        checked={store.freteEtiquetaAuto === true}
-                        onChange={(e) =>
-                          setStore({
-                            ...store,
-                            freteEtiquetaAuto: e.target.checked,
-                          })
-                        }
-                      />
-                      <span>
-                        <span className="text-sm font-bold">
-                          Gerar etiqueta automaticamente
-                        </span>
-                        <span className="mt-0.5 block text-xs leading-relaxed text-muted">
-                          Assim que o pagamento é aprovado, a etiqueta é
-                          comprada e emitida, e o rastreio entra sozinho no
-                          pedido.{' '}
-                          <strong>Isso gasta o saldo da sua conta.</strong>{' '}
-                          Desligado, você emite pelo botão em cada pedido.
-                        </span>
-                      </span>
-                    </label>
-                  </div>
+                  {freteModal === 'conexao' ? (
+                    <>
+                      {store.freteModo === 'melhor_envio' ? (
+                        <div className="md:col-span-2 border border-line bg-[#f7f9fb] p-4">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div className="flex items-start gap-3">
+                              <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-line bg-white text-[#0B1F33]">
+                                <IconPacote />
+                              </span>
+                              <div>
+                                <p className="text-sm font-bold text-ink">
+                                  Melhor Envio
+                                </p>
+                                {freteConectado ? (
+                                  <p className="mt-0.5 text-[13px] leading-relaxed text-muted">
+                                    Conectado como{' '}
+                                    <strong className="text-[var(--ok)]">
+                                      {store.freteContaNome ||
+                                        'conta autorizada'}
+                                    </strong>
+                                    {store.freteContaEmail
+                                      ? ` · ${store.freteContaEmail}`
+                                      : ''}
+                                    . O acesso se renova sozinho.
+                                  </p>
+                                ) : (
+                                  <p className="mt-0.5 max-w-[52ch] text-[13px] leading-relaxed text-muted">
+                                    Entre na sua conta e autorize — sem copiar
+                                    token. O acesso passa a se renovar sozinho;
+                                    o token colado na mão vence em 30 dias e o
+                                    frete para de cotar sem aviso.
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              className={
+                                freteConectado
+                                  ? 'btn btn-ghost'
+                                  : 'btn btn-accent'
+                              }
+                              onClick={
+                                freteConectado
+                                  ? desconectarMelhorEnvio
+                                  : conectarMelhorEnvio
+                              }
+                              disabled={meBusy}
+                            >
+                              {meBusy
+                                ? 'Aguarde…'
+                                : freteConectado
+                                  ? 'Desconectar'
+                                  : 'Conectar conta'}
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
 
-                  <div className="md:col-span-2">
-                    <p className="text-sm font-bold text-ink">
-                      Transportadoras no checkout
-                    </p>
-                    <p className="mt-0.5 text-xs leading-relaxed text-muted">
-                      Marque só as que o cliente pode escolher. Nenhuma marcada
-                      = mostra todas que a cotação devolver.
-                    </p>
-                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                      {FRETE_CARRIER_OPTIONS.map((c) => {
-                        const selected = asCarrierIds(store.freteTransportadoras);
-                        const checked = selected.includes(c.id);
-                        return (
-                          <label
-                            key={c.id}
-                            className="flex cursor-pointer items-center gap-2 border border-line px-2.5 py-2 text-sm hover:bg-[#fafafa]"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() =>
+                      <div className="md:col-span-2">
+                        <label className="label">
+                          Token da API
+                          {store.freteTokenSet ? (
+                            <span className="ml-1 font-normal text-[var(--ok)]">
+                              (já configurado)
+                            </span>
+                          ) : null}
+                        </label>
+                        <input
+                          className="field"
+                          type="password"
+                          value={freteToken}
+                          onChange={(e) => setFreteToken(e.target.value)}
+                          placeholder={
+                            store.freteTokenSet
+                              ? 'Deixe em branco para manter'
+                              : 'Cole o token'
+                          }
+                          required={!store.freteTokenSet && !freteConectado}
+                        />
+                        <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
+                          Alternativa à conexão acima, para quem prefere colar o
+                          token na mão. Conectando a conta, este campo não é
+                          necessário.
+                        </p>
+                      </div>
+
+                      {store.freteModo === 'melhor_envio' ? (
+                        <>
+                          <div>
+                            <label className="label">
+                              Ambiente Melhor Envio
+                            </label>
+                            <select
+                              className="field"
+                              value={
+                                store.freteSandbox === true ? 'sandbox' : 'prod'
+                              }
+                              onChange={(e) =>
                                 setStore({
                                   ...store,
-                                  freteTransportadoras: checked
-                                    ? selected.filter((id) => id !== c.id)
-                                    : [...selected, c.id],
+                                  freteSandbox: e.target.value === 'sandbox',
                                 })
                               }
+                            >
+                              <option value="prod">Produção</option>
+                              <option value="sandbox">Sandbox</option>
+                            </select>
+                            <p className="mt-0.5 text-[11px] text-muted">
+                              Sandbox só para teste — não gera etiqueta válida.
+                            </p>
+                          </div>
+                          <div>
+                            <label className="label">E-mail de contato</label>
+                            <input
+                              className="field"
+                              type="email"
+                              value={store.freteEmailContato ?? ''}
+                              onChange={(e) =>
+                                setStore({
+                                  ...store,
+                                  freteEmailContato: e.target.value,
+                                })
+                              }
+                              required
                             />
-                            <span>{c.label}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        className="btn btn-ghost py-1 text-xs"
-                        onClick={() =>
-                          setStore({
-                            ...store,
-                            freteTransportadoras: FRETE_CARRIER_OPTIONS.map(
-                              (c) => c.id,
-                            ),
-                          })
-                        }
-                      >
-                        Marcar todas
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-ghost py-1 text-xs"
-                        onClick={() =>
-                          setStore({ ...store, freteTransportadoras: [] })
-                        }
-                      >
-                        Limpar
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-ghost py-1 text-xs"
-                        onClick={() =>
-                          setStore({
-                            ...store,
-                            freteTransportadoras: ['correios'],
-                          })
-                        }
-                      >
-                        Só Correios
-                      </button>
-                    </div>
-                  </div>
-                </>
-              ) : null}
-            </div>
+                            <p className="mt-0.5 text-[11px] text-muted">
+                              Exigido pelo Melhor Envio em toda cotação.
+                            </p>
+                          </div>
 
-            <div className="flex shrink-0 flex-col gap-2 border-t border-line bg-[#fafafa] px-4 py-3 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                className="btn btn-ghost order-2 sm:order-1"
-                data-modal-cancel
-                onClick={() => setFreteModal(null)}
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="btn btn-accent order-1 sm:order-2"
-              >
-                Salvar
-              </button>
-            </div>
-          </form>
-        </SettingsModal>
-      ) : null}
-      </SettingsPanel>
+                          <div className="md:col-span-2 border-t border-line pt-4">
+                            <button
+                              type="button"
+                              className="text-xs font-semibold text-muted underline-offset-4 hover:underline"
+                              onClick={() => setMeHelpOpen((v) => !v)}
+                            >
+                              {meHelpOpen
+                                ? 'Fechar o passo a passo'
+                                : 'Prefere colar o token na mão? Ver o passo a passo'}
+                            </button>
 
-      {/* Recebimentos e taxas: só o dono (a equipe não mexe em dinheiro) */}
-      {souDono ? (
-      <>
-      <SettingsPanel
-        title="Recebimentos (Mercado Pago)"
-        summary="Onde você recebe o dinheiro das vendas"
-        badge={
-          <StatusPill
-            ok={Boolean(store.mpAccessTokenSet && store.mpPublicKey)}
-            okLabel="Configurado"
-            badLabel="Pendente"
-          />
-        }
-        open={openSection === 'payments'}
-        onToggle={() => toggleSection('payments')}
-      >
-      <p className="mb-3 rounded-lg bg-[#e6f7fd] px-3.5 py-3 text-[13px] leading-relaxed text-[#0b4f6c]">
-        <strong>O dinheiro das vendas cai direto na sua conta do Mercado Pago.</strong>{' '}
-        Pix, cartão e boleto: o cliente paga na sua loja e o valor vai para a
-        conta que você conectar aqui. De lá você transfere para o seu banco
-        quando quiser.
-      </p>
-      <div className="flex flex-col gap-2">
-        <SettingsRow
-          icon={<IconMercadoPago />}
-          iconTile="marca"
-          title="Conta que recebe as vendas"
-          value={
-            store.mpOauthConectado
-              ? `Conectada${store.mpUserId ? ` · conta ${store.mpUserId}` : ''} · as vendas caem nesta conta${
-                  store.mpLiveMode === false ? ' (modo de teste)' : ''
-                }`
-              : store.mpAccessTokenSet
-                ? 'Recebendo por token colado à mão · conecte para não precisar trocar'
-                : 'Nenhuma conta conectada · a loja ainda não recebe pagamentos'
-          }
-          tone={store.mpOauthConectado ? 'ok' : 'pendente'}
-          cta={
-            mpBusy
-              ? 'Aguarde…'
-              : store.mpOauthConectado
-                ? 'Desconectar'
-                : 'Conectar'
-          }
-          onEdit={() => {
-            if (mpBusy) return;
-            void (store.mpOauthConectado
-              ? desconectarMercadoPago()
-              : conectarMercadoPago());
-          }}
-        />
-        {!store.mpOauthConectado ? (
-          <p className="px-1 text-[12px] leading-relaxed text-muted">
-            Vai conectar uma conta diferente? Saia do Mercado Pago neste
-            navegador antes (ou use uma janela anônima). Se ele estiver
-            logado, a autorização usa a conta que está aberta, sem perguntar.
-          </p>
-        ) : null}
-
-        <SettingsRow
-          icon={<IconCartao />}
-          iconTile="cartao"
-          title="Token manual (avançado)"
-          value={
-            store.mpAccessTokenSet && !store.mpOauthConectado
-              ? `Em uso · ${store.mpAccessTokenHint || 'token salvo'}`
-              : 'Para quem já integrou colando Access Token e Public Key'
-          }
-          cta={store.mpAccessTokenSet && !store.mpOauthConectado ? 'Gerenciar' : 'Abrir'}
-          onEdit={() => setPagamentoModal('credenciais')}
-        />
-
-        <SettingsRow
-          icon={<IconCheckout />}
-          iconTile="checkout"
-          title="Tela de pagamento do cliente"
-          value={
-            store.checkoutMode === 'pro'
-              ? 'Checkout Pro · cliente vai para o site do Mercado Pago'
-              : `Brick na loja · cliente paga sem sair da vitrine${
-                  Number(store.pixDiscountPercent || 0) > 0
-                    ? ` · ${String(Number(store.pixDiscountPercent)).replace('.', ',')}% de desconto no Pix`
-                    : ''
-                }`
-          }
-          onEdit={() => setPagamentoModal('modelo')}
-        />
-
-        {store.mpWebhookUrl ? (
-          <SettingsRow
-            icon={<IconWebhook />}
-            iconTile="webhook"
-            title="Aviso automático de pagamento (webhook)"
-            value={store.mpWebhookUrl}
-            cta="Ver URL"
-            onEdit={() => setPagamentoModal('webhook')}
-          />
-        ) : null}
-      </div>
-
-      {pagamentoModal ? (
-        <SettingsModal
-          onDescartar={() => void carregarLoja()}
-          title={PAGAMENTO_MODAL_TITULO[pagamentoModal]}
-          hint={PAGAMENTO_MODAL_HINT[pagamentoModal]}
-          erro={error}
-            onClose={() => setPagamentoModal(null)}
-        >
-          <form
-            onSubmit={async (e) => {
-              if (await saveMp(e)) setPagamentoModal(null);
-            }}
-            className="flex min-h-0 flex-1 flex-col"
-          >
-            <div className="grid min-h-0 flex-1 gap-x-4 gap-y-4 overflow-y-auto px-4 py-4">
-              {pagamentoModal === 'modelo' ? (
-                <>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <label
-                    className={`cursor-pointer border px-3 py-3 text-sm ${
-                      (store.checkoutMode || 'personalized') !== 'pro'
-                        ? 'border-accent bg-[#fff8f9]'
-                        : 'border-line'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      className="mr-2"
-                      name="checkoutMode"
-                      checked={(store.checkoutMode || 'personalized') !== 'pro'}
-                      onChange={() =>
-                        setStore({ ...store, checkoutMode: 'personalized' })
-                      }
-                    />
-                    <span className="font-semibold">Brick na loja</span>
-                    <p className="mt-1 text-[11px] leading-relaxed text-muted">
-                      Cartão e Pix na própria loja. O cliente não sai da sua
-                      vitrine — costuma converter melhor.
-                    </p>
-                  </label>
-                  <label
-                    className={`cursor-pointer border px-3 py-3 text-sm ${
-                      store.checkoutMode === 'pro'
-                        ? 'border-accent bg-[#fff8f9]'
-                        : 'border-line'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      className="mr-2"
-                      name="checkoutMode"
-                      checked={store.checkoutMode === 'pro'}
-                      onChange={() => setStore({ ...store, checkoutMode: 'pro' })}
-                    />
-                    <span className="font-semibold">Checkout Pro</span>
-                    <p className="mt-1 text-[11px] leading-relaxed text-muted">
-                      Redireciona para a página do Mercado Pago e volta depois
-                      do pagamento.
-                    </p>
-                  </label>
-                </div>
-
-                <div className="border-t border-line pt-4">
-                  <label className="label" htmlFor="pix-desconto">
-                    Desconto no Pix (%)
-                  </label>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <input
-                      id="pix-desconto"
-                      className="field w-28"
-                      inputMode="decimal"
-                      placeholder="Ex.: 5"
-                      disabled={store.checkoutMode === 'pro'}
-                      value={String(store.pixDiscountPercent ?? '').replace(/\.00$/, '')}
-                      onChange={(e) =>
-                        setStore({ ...store, pixDiscountPercent: e.target.value })
-                      }
-                    />
-                    <p className="min-w-0 flex-1 text-[12px] leading-relaxed text-muted">
-                      {store.checkoutMode === 'pro'
-                        ? 'Disponível só com o pagamento na loja (Brick): na página do Mercado Pago o preço é um só.'
-                        : 'Vale sobre os produtos (o frete não entra). A vitrine mostra "R$ X no Pix" e o cliente escolhe Pix ou cartão antes de pagar. Vazio ou 0 = sem desconto.'}
-                    </p>
-                  </div>
-                </div>
-                </>
-              ) : null}
-
-              {pagamentoModal === 'credenciais' ? (
-                <>
-                  {!store.mpAccessTokenSet || !store.mpPublicKey ? (
-                    <p className="border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
-                      O pagamento fica desligado até Access Token e Public Key
-                      estarem salvos.
-                    </p>
+                            {meHelpOpen ? (
+                              <ol className="mt-3 list-decimal space-y-2 pl-4 text-xs leading-relaxed text-muted">
+                                <li>
+                                  Entre em{' '}
+                                  <a
+                                    href="https://melhorenvio.com.br"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="font-semibold text-ink underline"
+                                  >
+                                    melhorenvio.com.br
+                                  </a>{' '}
+                                  e vá em{' '}
+                                  <strong>Integrações → Área Dev.</strong>
+                                </li>
+                                <li>
+                                  Gere um token e marque só as permissões de
+                                  cotação, carrinho, etiqueta e rastreio.
+                                </li>
+                                <li>
+                                  Cole no campo acima e informe o e-mail de
+                                  contato.
+                                </li>
+                                <li>
+                                  Lembre que esse token vence em 30 dias.
+                                  Conectando a conta, a renovação é automática.
+                                </li>
+                              </ol>
+                            ) : null}
+                          </div>
+                        </>
+                      ) : null}
+                    </>
                   ) : null}
 
-                  <div>
-                    <label className="label">
-                      Access Token
-                      {store.mpAccessTokenSet ? (
-                        <span className="ml-1 font-normal text-[var(--ok)]">
-                          (salvo no servidor)
-                        </span>
-                      ) : null}
-                    </label>
-                    {store.mpAccessTokenSet && store.mpAccessTokenHint ? (
-                      <p className="mb-1.5 border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-xs text-emerald-900">
-                        Token atual: <code>{store.mpAccessTokenHint}</code> — o
-                        campo abaixo fica vazio de propósito. Só cole de novo se
-                        for trocar.
-                      </p>
-                    ) : null}
-                    <input
-                      className="field"
-                      type="password"
-                      value={mpAccessToken}
-                      onChange={(e) => setMpAccessToken(e.target.value)}
-                      placeholder={
-                        store.mpAccessTokenSet
-                          ? 'Cole um novo só se quiser substituir'
-                          : 'Cole o Access Token (teste ou produção)'
-                      }
-                      required={!store.mpAccessTokenSet}
-                      autoComplete="off"
-                    />
-                  </div>
+                  {freteModal === 'etiqueta' ? (
+                    <>
+                      <div className="md:col-span-2 border border-line p-3">
+                        <label className="flex cursor-pointer items-start gap-2">
+                          <input
+                            type="checkbox"
+                            className="mt-1"
+                            checked={store.freteEtiquetaAuto === true}
+                            onChange={(e) =>
+                              setStore({
+                                ...store,
+                                freteEtiquetaAuto: e.target.checked,
+                              })
+                            }
+                          />
+                          <span>
+                            <span className="text-sm font-bold">
+                              Gerar etiqueta automaticamente
+                            </span>
+                            <span className="mt-0.5 block text-xs leading-relaxed text-muted">
+                              Assim que o pagamento é aprovado, a etiqueta é
+                              comprada e emitida, e o rastreio entra sozinho no
+                              pedido.{' '}
+                              <strong>Isso gasta o saldo da sua conta.</strong>{' '}
+                              Desligado, você emite pelo botão em cada pedido.
+                            </span>
+                          </span>
+                        </label>
+                      </div>
 
-                  <div>
-                    <label className="label">Public Key</label>
-                    {store.mpPublicKeyHint ? (
-                      <p className="mb-1 text-[11px] text-muted">
-                        Salva: <code>{store.mpPublicKeyHint}</code>
-                      </p>
-                    ) : null}
-                    <input
-                      className="field"
-                      value={mpPublicKey}
-                      onChange={(e) => setMpPublicKey(e.target.value)}
-                      placeholder="Cole a Public Key (mesmo bloco do token)"
-                      required={!store.mpPublicKey && !mpPublicKey}
-                      autoComplete="off"
-                    />
-                  </div>
+                      <div className="md:col-span-2">
+                        <p className="text-sm font-bold text-ink">
+                          Transportadoras no checkout
+                        </p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-muted">
+                          Marque só as que o cliente pode escolher. Nenhuma
+                          marcada = mostra todas que a cotação devolver.
+                        </p>
+                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                          {FRETE_CARRIER_OPTIONS.map((c) => {
+                            const selected = asCarrierIds(
+                              store.freteTransportadoras,
+                            );
+                            const checked = selected.includes(c.id);
+                            return (
+                              <label
+                                key={c.id}
+                                className="flex cursor-pointer items-center gap-2 border border-line px-2.5 py-2 text-sm hover:bg-[#fafafa]"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() =>
+                                    setStore({
+                                      ...store,
+                                      freteTransportadoras: checked
+                                        ? selected.filter((id) => id !== c.id)
+                                        : [...selected, c.id],
+                                    })
+                                  }
+                                />
+                                <span>{c.label}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            className="btn btn-ghost py-1 text-xs"
+                            onClick={() =>
+                              setStore({
+                                ...store,
+                                freteTransportadoras: FRETE_CARRIER_OPTIONS.map(
+                                  (c) => c.id,
+                                ),
+                              })
+                            }
+                          >
+                            Marcar todas
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-ghost py-1 text-xs"
+                            onClick={() =>
+                              setStore({ ...store, freteTransportadoras: [] })
+                            }
+                          >
+                            Limpar
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-ghost py-1 text-xs"
+                            onClick={() =>
+                              setStore({
+                                ...store,
+                                freteTransportadoras: ['correios'],
+                              })
+                            }
+                          >
+                            Só Correios
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  ) : null}
+                </div>
 
-                  <div className="border border-line bg-[#fafafa] p-3 text-[11px] leading-relaxed text-muted">
-                    <p className="font-bold text-ink">
-                      Public Key não é o Access Token
-                    </p>
-                    <p className="mt-1">
-                      As duas saem do mesmo bloco. Para testar, entre na conta{' '}
-                      <strong className="text-ink">real do vendedor</strong>{' '}
-                      (e-mail/CPF normal, <strong>nunca</strong> no TESTUSER) →
-                      Developers → Suas integrações → app →{' '}
-                      <strong className="text-ink">Credenciais de teste</strong>.
-                      Token de TESTUSER é rejeitado no teste abaixo.
-                    </p>
-                  </div>
-
-                  <div>
-                    <button
-                      type="button"
-                      className="btn btn-ghost"
-                      onClick={() => void testMp()}
-                      disabled={!store.mpAccessTokenSet}
-                    >
-                      Testar credenciais no Mercado Pago
-                    </button>
-                  </div>
-                </>
-              ) : null}
-
-              {pagamentoModal === 'webhook' ? (
-                <div>
-                  <p className="text-xs leading-relaxed text-muted">
-                    O Mercado Pago avisa esta URL quando o cliente paga por Pix
-                    ou cartão, e quando um pagamento é reembolsado. É ela que faz
-                    o pedido mudar de status sozinho.
-                  </p>
-                  <code className="mt-3 block break-all border border-line bg-[#fafafa] px-2 py-2 text-[11px]">
-                    {store.mpWebhookUrl}
-                  </code>
+                <div className="flex shrink-0 flex-col gap-2 border-t border-line bg-[#fafafa] px-4 py-3 sm:flex-row sm:justify-end">
                   <button
                     type="button"
-                    className="btn btn-ghost mt-2 text-xs"
-                    onClick={() => {
-                      void navigator.clipboard.writeText(store.mpWebhookUrl || '');
-                      setMessage('URL do webhook copiada');
-                    }}
+                    className="btn btn-ghost order-2 sm:order-1"
+                    data-modal-cancel
+                    onClick={() => setFreteModal(null)}
                   >
-                    Copiar URL
+                    Cancelar
                   </button>
-                  <p className="mt-3 text-[11px] leading-relaxed text-muted">
-                    Em produção o <code>PUBLIC_URL</code> do <code>.env</code> da
-                    API precisa ser um HTTPS público — localhost não recebe
-                    notificação.
-                  </p>
-                </div>
-              ) : null}
-            </div>
-
-            <div className="flex shrink-0 flex-col gap-2 border-t border-line bg-[#fafafa] px-4 py-3 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                className="btn btn-ghost order-2 sm:order-1"
-                data-modal-cancel
-                onClick={() => setPagamentoModal(null)}
-              >
-                {pagamentoModal === 'webhook' ? 'Fechar' : 'Cancelar'}
-              </button>
-              {pagamentoModal === 'webhook' ? null : (
-                <button
-                  type="submit"
-                  className="btn btn-accent order-1 sm:order-2"
-                >
-                  Salvar
-                </button>
-              )}
-            </div>
-          </form>
-        </SettingsModal>
-      ) : null}
-      </SettingsPanel>
-      </>
-      ) : null}
-
-      <SettingsPanel
-        title="Perfil da loja / documento"
-        summary="CPF/CNPJ e endereço do emitente"
-        badge={
-          <StatusPill
-            ok={Boolean(store.sellerDocument && store.sellerDocType)}
-            okLabel="Documento ok"
-            badLabel="Documento pendente"
-          />
-        }
-        open={openSection === 'profile'}
-        onToggle={() => toggleSection('profile')}
-      >
-        <div className="flex flex-col gap-2">
-          <SettingsRow
-            icon={<IconIdentidade />}
-            iconTile="identidade"
-            title="Quem emite a venda"
-            value={perfilResumo.documento}
-            tone={store.sellerDocument && store.sellerDocType ? 'ok' : 'pendente'}
-            cta={store.sellerDocument ? 'Ajustar' : 'Preencher'}
-            onEdit={() => setPerfilModal('documento')}
-          />
-
-          <SettingsRow
-            icon={<IconContato />}
-            iconTile="contato"
-            title="Contato"
-            value={perfilResumo.contato}
-            onEdit={() => setPerfilModal('contato')}
-          />
-
-          <SettingsRow
-            icon={<IconOrigem />}
-            iconTile="origem"
-            title="Endereço do emitente"
-            value={perfilResumo.endereco}
-            tone={store.sellerZipCode ? 'ok' : 'neutro'}
-            onEdit={() => setPerfilModal('endereco')}
-          />
-        </div>
-
-        {perfilModal ? (
-          <SettingsModal
-          onDescartar={() => void carregarLoja()}
-            title={PERFIL_MODAL_TITULO[perfilModal]}
-            hint={PERFIL_MODAL_HINT[perfilModal]}
-            erro={error}
-            onClose={() => setPerfilModal(null)}
-          >
-            <form
-              onSubmit={async (e) => {
-                if (await saveProfile(e)) setPerfilModal(null);
-              }}
-              className="flex min-h-0 flex-1 flex-col"
-            >
-              <div className="grid min-h-0 flex-1 gap-x-4 gap-y-4 overflow-y-auto px-4 py-4 md:grid-cols-2">
-                {perfilModal === 'documento' ? (
-                  <>
-                    <div>
-                      <label className="label">Tipo de documento</label>
-                      <select
-                        className="field"
-                        value={store.sellerDocType || ''}
-                        onChange={(e) =>
-                          setStore({
-                            ...store,
-                            sellerDocType: (e.target.value || null) as
-                              | 'CPF'
-                              | 'CNPJ'
-                              | null,
-                          })
-                        }
-                      >
-                        <option value="">Selecione…</option>
-                        <option value="CPF">CPF — pessoa física</option>
-                        <option value="CNPJ">CNPJ — empresa</option>
-                      </select>
-                      <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
-                        Loja pequena pode operar como pessoa física. Não precisa
-                        ser CNPJ.
-                      </p>
-                    </div>
-                    <div>
-                      <label className="label">
-                        {store.sellerDocType === 'CNPJ' ? 'CNPJ' : 'CPF'}
-                      </label>
-                      <input
-                        className="field"
-                        value={store.sellerDocument || ''}
-                        onChange={(e) =>
-                          setStore({ ...store, sellerDocument: e.target.value })
-                        }
-                        placeholder={
-                          store.sellerDocType === 'CNPJ'
-                            ? '00.000.000/0000-00'
-                            : '000.000.000-00'
-                        }
-                        autoComplete="off"
-                      />
-                    </div>
-                    <div>
-                      <label className="label">Razão social / nome completo</label>
-                      <input
-                        className="field"
-                        value={store.sellerLegalName || ''}
-                        onChange={(e) =>
-                          setStore({ ...store, sellerLegalName: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label className="label">Nome fantasia (opcional)</label>
-                      <input
-                        className="field"
-                        value={store.sellerTradeName || ''}
-                        onChange={(e) =>
-                          setStore({ ...store, sellerTradeName: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="label">IE — inscrição estadual</label>
-                      <input
-                        className="field"
-                        value={store.sellerIe || ''}
-                        onChange={(e) =>
-                          setStore({ ...store, sellerIe: e.target.value })
-                        }
-                        placeholder="Opcional · ou ISENTO"
-                      />
-                    </div>
-                  </>
-                ) : null}
-
-                {perfilModal === 'contato' ? (
-                  <>
-                    <div>
-                      <label className="label">WhatsApp da loja / responsável</label>
-                      <input
-                        className="field"
-                        value={store.sellerPhone || ''}
-                        onChange={(e) =>
-                          setStore({
-                            ...store,
-                            sellerPhone: formatPhoneBr(e.target.value),
-                          })
-                        }
-                        placeholder="(11) 99999-9999"
-                        inputMode="tel"
-                        autoComplete="tel"
-                        maxLength={15}
-                      />
-                      <p className="mt-1 text-[11px] leading-relaxed text-muted">
-                        Usado no botão “Conversar com vendedor” na vitrine e na
-                        NFC-e.
-                      </p>
-                    </div>
-                    <div>
-                      <label className="label">E-mail fiscal</label>
-                      <input
-                        className="field"
-                        type="email"
-                        value={store.sellerEmail || ''}
-                        onChange={(e) =>
-                          setStore({ ...store, sellerEmail: e.target.value })
-                        }
-                      />
-                    </div>
-                  </>
-                ) : null}
-
-                {perfilModal === 'endereco' ? (
-                  <>
-                    <div>
-                      <label className="label">CEP</label>
-                      <input
-                        className="field"
-                        value={store.sellerZipCode || ''}
-                        onChange={(e) =>
-                          setStore({ ...store, sellerZipCode: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label className="label">UF</label>
-                      <input
-                        className="field"
-                        maxLength={2}
-                        value={store.sellerState || ''}
-                        onChange={(e) =>
-                          setStore({
-                            ...store,
-                            sellerState: e.target.value.toUpperCase().slice(0, 2),
-                          })
-                        }
-                        placeholder="SP"
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="label">Rua</label>
-                      <input
-                        className="field"
-                        value={store.sellerStreet || ''}
-                        onChange={(e) =>
-                          setStore({ ...store, sellerStreet: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label className="label">Número</label>
-                      <input
-                        className="field"
-                        value={store.sellerNumber || ''}
-                        onChange={(e) =>
-                          setStore({ ...store, sellerNumber: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label className="label">Bairro</label>
-                      <input
-                        className="field"
-                        value={store.sellerNeighborhood || ''}
-                        onChange={(e) =>
-                          setStore({
-                            ...store,
-                            sellerNeighborhood: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="label">Cidade</label>
-                      <input
-                        className="field"
-                        value={store.sellerCity || ''}
-                        onChange={(e) =>
-                          setStore({ ...store, sellerCity: e.target.value })
-                        }
-                      />
-                    </div>
-                  </>
-                ) : null}
-              </div>
-
-              <div className="flex shrink-0 flex-col gap-2 border-t border-line bg-[#fafafa] px-4 py-3 sm:flex-row sm:justify-end">
-                <button
-                  type="button"
-                  className="btn btn-ghost order-2 sm:order-1"
-                  data-modal-cancel
-                  onClick={() => setPerfilModal(null)}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-accent order-1 sm:order-2"
-                >
-                  Salvar
-                </button>
-              </div>
-            </form>
-          </SettingsModal>
-        ) : null}
-      </SettingsPanel>
-
-      <SettingsPanel
-        title="Políticas"
-        summary="Termos, privacidade e trocas (páginas públicas da loja)"
-        open={openSection === 'policies'}
-        onToggle={() => toggleSection('policies')}
-      >
-        <div className="flex flex-col gap-2">
-          {POLITICAS.map((pol) => (
-            <SettingsRow
-              key={pol.campo}
-              icon={<IconDocumento />}
-              iconTile="documento"
-              title={pol.titulo}
-              value={
-                (store[pol.campo] || '').trim()
-                  ? `Texto próprio · ${
-                      (store[pol.campo] || '').replace(/<[^>]*>/g, '').trim()
-                        .length
-                    } caracteres`
-                  : 'Usando o texto padrão da plataforma'
-              }
-              tone={(store[pol.campo] || '').trim() ? 'ok' : 'neutro'}
-              cta={(store[pol.campo] || '').trim() ? 'Editar' : 'Escrever'}
-              onEdit={() => setPoliticaModal(pol.campo)}
-            />
-          ))}
-        </div>
-
-        {politicaModal ? (
-          <SettingsModal
-          onDescartar={() => void carregarLoja()}
-            title={
-              POLITICAS.find((p) => p.campo === politicaModal)?.titulo ||
-              'Política'
-            }
-            hint={POLITICAS.find((p) => p.campo === politicaModal)?.hint}
-            erro={error}
-            onClose={() => setPoliticaModal(null)}
-          >
-            <form
-              onSubmit={async (e) => {
-                if (await savePolicies(e)) setPoliticaModal(null);
-              }}
-              className="flex min-h-0 flex-1 flex-col"
-            >
-              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-                <textarea
-                  className="field min-h-[320px] w-full resize-y font-mono text-xs leading-relaxed"
-                  value={store[politicaModal] || ''}
-                  onChange={(e) =>
-                    setStore({ ...store, [politicaModal]: e.target.value })
-                  }
-                  placeholder={
-                    POLITICAS.find((p) => p.campo === politicaModal)?.exemplo
-                  }
-                />
-                <p className="mt-2 text-[11px] leading-relaxed text-muted">
-                  Aceita HTML simples (parágrafos, listas, negrito). Deixando em
-                  branco, a loja mostra o texto padrão da plataforma.{' '}
-                  <a
-                    href={`/loja/${store.slug}/politicas/${
-                      POLITICAS.find((p) => p.campo === politicaModal)?.rota
-                    }`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold text-accent underline-offset-4 hover:underline"
+                  <button
+                    type="submit"
+                    className="btn btn-accent order-1 sm:order-2"
                   >
-                    Ver a página pública →
-                  </a>
-                </p>
-              </div>
+                    Salvar
+                  </button>
+                </div>
+              </form>
+            </SettingsModal>
+          ) : null}
+        </SettingsPanel>
 
-              <div className="flex shrink-0 flex-col gap-2 border-t border-line bg-[#fafafa] px-4 py-3 sm:flex-row sm:justify-end">
-                <button
-                  type="button"
-                  className="btn btn-ghost order-2 sm:order-1"
-                  data-modal-cancel
-                  onClick={() => setPoliticaModal(null)}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-accent order-1 sm:order-2"
-                >
-                  Salvar
-                </button>
-              </div>
-            </form>
-          </SettingsModal>
-        ) : null}
-      </SettingsPanel>
-
-      <SettingsPanel
-        title="Nota fiscal (NFC-e)"
-        summary="Emissão automática via Focus NFe"
-        badge={
-          <StatusPill
-            ok={!!store.nfeEnabled && !!store.nfeApiTokenSet}
-            okLabel={store.nfeEnabled ? 'NFC-e ativa' : 'Desligada'}
-            badLabel="Não configurada"
-          />
-        }
-        open={openSection === 'nfe'}
-        onToggle={() => toggleSection('nfe')}
-      >
-        <div className="flex flex-col gap-2">
-          <SettingsRow
-            icon={<IconNota />}
-            iconTile="nota"
-            title="Emissão"
-            value={
-              store.nfeEnabled
-                ? `Ligada · ambiente ${
-                    store.nfeEnvironment === 'producao'
-                      ? 'produção'
-                      : 'homologação'
-                  }`
-                : 'Desligada — nenhum pedido gera nota'
-            }
-            tone={
-              store.nfeEnabled && store.nfeEnvironment === 'producao'
-                ? 'ok'
-                : 'neutro'
-            }
-            onEdit={() => setNfeModal('emissao')}
-          />
-
-          <SettingsRow
-            icon={<IconChave />}
-            iconTile="chave"
-            title="Credenciais da Focus NFe"
-            value={
-              store.nfeApiTokenSet
-                ? 'Token salvo no servidor'
-                : 'Pendente — sem token a nota não sai'
-            }
-            tone={store.nfeApiTokenSet ? 'ok' : 'pendente'}
-            cta={store.nfeApiTokenSet ? 'Gerenciar' : 'Configurar'}
-            onEdit={() => setNfeModal('credenciais')}
-          />
-        </div>
-
-        {nfeModal ? (
-          <SettingsModal
-          onDescartar={() => void carregarLoja()}
-            title={
-              nfeModal === 'emissao'
-                ? 'Emissão de NFC-e'
-                : 'Credenciais da Focus NFe'
-            }
-            hint={
-              nfeModal === 'emissao'
-                ? 'Quando a nota é emitida e em qual ambiente. Homologação não vale como documento fiscal.'
-                : 'Tokens da sua conta na Focus. Ficam cifrados e nunca voltam para a tela depois de salvos.'
-            }
-            erro={error}
-            onClose={() => setNfeModal(null)}
-          >
-            <form
-              onSubmit={async (e) => {
-                if (await saveNfe(e)) setNfeModal(null);
-              }}
-              className="flex min-h-0 flex-1 flex-col"
+        {/* Recebimentos e taxas: só o dono (a equipe não mexe em dinheiro) */}
+        {souDono ? (
+          <>
+            <SettingsPanel
+              title="Recebimentos (Mercado Pago)"
+              summary="Onde você recebe o dinheiro das vendas"
+              badge={
+                <StatusPill
+                  ok={Boolean(store.mpAccessTokenSet && store.mpPublicKey)}
+                  okLabel="Configurado"
+                  badLabel="Pendente"
+                />
+              }
+              open={openSection === 'payments'}
+              onToggle={() => toggleSection('payments')}
             >
-              <div className="grid min-h-0 flex-1 gap-x-4 gap-y-4 overflow-y-auto px-4 py-4 md:grid-cols-2">
-                {nfeModal === 'emissao' ? (
-                  <>
-                    <div className="md:col-span-2 border border-line p-3">
-                      <label className="flex cursor-pointer items-start gap-2">
-                        <input
-                          type="checkbox"
-                          className="mt-1"
-                          checked={!!store.nfeEnabled}
-                          onChange={(e) =>
-                            setStore({ ...store, nfeEnabled: e.target.checked })
-                          }
-                        />
-                        <span>
-                          <span className="text-sm font-bold">
-                            Emitir NFC-e nos pedidos pagos
-                          </span>
-                          <span className="mt-0.5 block text-xs leading-relaxed text-muted">
-                            A nota sai sozinha assim que o pagamento é aprovado.
-                          </span>
-                        </span>
-                      </label>
-                    </div>
-
-                    <div>
-                      <label className="label">Ambiente</label>
-                      <select
-                        className="field"
-                        value={store.nfeEnvironment || 'homologacao'}
-                        onChange={(e) =>
-                          setStore({ ...store, nfeEnvironment: e.target.value })
-                        }
-                      >
-                        <option value="homologacao">Homologação</option>
-                        <option value="producao">Produção</option>
-                      </select>
-                      <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
-                        Homologação é teste — a nota não tem valor fiscal. Vire
-                        para produção só depois de validar.
-                      </p>
-                    </div>
-                    <div>
-                      <label className="label">Série</label>
-                      <input
-                        className="field"
-                        value={store.nfeSeries || ''}
-                        onChange={(e) =>
-                          setStore({ ...store, nfeSeries: e.target.value })
-                        }
-                        placeholder="1"
-                      />
-                      <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
-                        Precisa bater com a série cadastrada na SEFAZ.
-                      </p>
-                    </div>
-                  </>
+              <p className="mb-3 rounded-lg bg-[#e6f7fd] px-3.5 py-3 text-[13px] leading-relaxed text-[#0b4f6c]">
+                <strong>
+                  O dinheiro das vendas cai direto na sua conta do Mercado Pago.
+                </strong>{' '}
+                Pix, cartão e boleto: o cliente paga na sua loja e o valor vai
+                para a conta que você conectar aqui. De lá você transfere para o
+                seu banco quando quiser.
+              </p>
+              <div className="flex flex-col gap-2">
+                <SettingsRow
+                  icon={<IconMercadoPago />}
+                  iconTile="marca"
+                  title="Conta que recebe as vendas"
+                  value={
+                    store.mpOauthConectado
+                      ? `Conectada${store.mpUserId ? ` · conta ${store.mpUserId}` : ''} · as vendas caem nesta conta${
+                          store.mpLiveMode === false ? ' (modo de teste)' : ''
+                        }`
+                      : store.mpAccessTokenSet
+                        ? 'Recebendo por token colado à mão · conecte para não precisar trocar'
+                        : 'Nenhuma conta conectada · a loja ainda não recebe pagamentos'
+                  }
+                  tone={store.mpOauthConectado ? 'ok' : 'pendente'}
+                  cta={
+                    mpBusy
+                      ? 'Aguarde…'
+                      : store.mpOauthConectado
+                        ? 'Desconectar'
+                        : 'Conectar'
+                  }
+                  onEdit={() => {
+                    if (mpBusy) return;
+                    void (store.mpOauthConectado
+                      ? desconectarMercadoPago()
+                      : conectarMercadoPago());
+                  }}
+                />
+                {!store.mpOauthConectado ? (
+                  <p className="px-1 text-[12px] leading-relaxed text-muted">
+                    Vai conectar uma conta diferente? Saia do Mercado Pago neste
+                    navegador antes (ou use uma janela anônima). Se ele estiver
+                    logado, a autorização usa a conta que está aberta, sem
+                    perguntar.
+                  </p>
                 ) : null}
 
-                {nfeModal === 'credenciais' ? (
-                  <>
-                    <div className="md:col-span-2">
-                      <label className="label">Token API</label>
-                      <input
-                        className="field"
-                        type="password"
-                        value={nfeApiToken}
-                        onChange={(e) => setNfeApiToken(e.target.value)}
-                        placeholder={
-                          store.nfeApiTokenSet
-                            ? 'Já configurado · deixe em branco para manter'
-                            : 'Cole o token da Focus NFe'
-                        }
-                        autoComplete="new-password"
-                      />
-                      {store.nfeApiTokenSet ? (
-                        <p className="mt-0.5 text-[11px] text-[var(--ok)]">
-                          Token já salvo na loja.
-                        </p>
+                <SettingsRow
+                  icon={<IconCartao />}
+                  iconTile="cartao"
+                  title="Token manual (avançado)"
+                  value={
+                    store.mpAccessTokenSet && !store.mpOauthConectado
+                      ? `Em uso · ${store.mpAccessTokenHint || 'token salvo'}`
+                      : 'Para quem já integrou colando Access Token e Public Key'
+                  }
+                  cta={
+                    store.mpAccessTokenSet && !store.mpOauthConectado
+                      ? 'Gerenciar'
+                      : 'Abrir'
+                  }
+                  onEdit={() => setPagamentoModal('credenciais')}
+                />
+
+                <SettingsRow
+                  icon={<IconCheckout />}
+                  iconTile="checkout"
+                  title="Tela de pagamento do cliente"
+                  value={
+                    store.checkoutMode === 'pro'
+                      ? 'Checkout Pro · cliente vai para o site do Mercado Pago'
+                      : `Brick na loja · cliente paga sem sair da vitrine${
+                          Number(store.pixDiscountPercent || 0) > 0
+                            ? ` · ${String(Number(store.pixDiscountPercent)).replace('.', ',')}% de desconto no Pix`
+                            : ''
+                        }`
+                  }
+                  onEdit={() => setPagamentoModal('modelo')}
+                />
+
+                {store.mpWebhookUrl ? (
+                  <SettingsRow
+                    icon={<IconWebhook />}
+                    iconTile="webhook"
+                    title="Aviso automático de pagamento (webhook)"
+                    value={store.mpWebhookUrl}
+                    cta="Ver URL"
+                    onEdit={() => setPagamentoModal('webhook')}
+                  />
+                ) : null}
+              </div>
+
+              {pagamentoModal ? (
+                <SettingsModal
+                  onDescartar={() => void carregarLoja()}
+                  title={PAGAMENTO_MODAL_TITULO[pagamentoModal]}
+                  hint={PAGAMENTO_MODAL_HINT[pagamentoModal]}
+                  erro={error}
+                  onClose={() => setPagamentoModal(null)}
+                >
+                  <form
+                    onSubmit={async (e) => {
+                      if (await saveMp(e)) setPagamentoModal(null);
+                    }}
+                    className="flex min-h-0 flex-1 flex-col"
+                  >
+                    <div className="grid min-h-0 flex-1 gap-x-4 gap-y-4 overflow-y-auto px-4 py-4">
+                      {pagamentoModal === 'modelo' ? (
+                        <>
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            <label
+                              className={`cursor-pointer border px-3 py-3 text-sm ${
+                                (store.checkoutMode || 'personalized') !== 'pro'
+                                  ? 'border-accent bg-[#fff8f9]'
+                                  : 'border-line'
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                className="mr-2"
+                                name="checkoutMode"
+                                checked={
+                                  (store.checkoutMode || 'personalized') !==
+                                  'pro'
+                                }
+                                onChange={() =>
+                                  setStore({
+                                    ...store,
+                                    checkoutMode: 'personalized',
+                                  })
+                                }
+                              />
+                              <span className="font-semibold">
+                                Brick na loja
+                              </span>
+                              <p className="mt-1 text-[11px] leading-relaxed text-muted">
+                                Cartão e Pix na própria loja. O cliente não sai
+                                da sua vitrine — costuma converter melhor.
+                              </p>
+                            </label>
+                            <label
+                              className={`cursor-pointer border px-3 py-3 text-sm ${
+                                store.checkoutMode === 'pro'
+                                  ? 'border-accent bg-[#fff8f9]'
+                                  : 'border-line'
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                className="mr-2"
+                                name="checkoutMode"
+                                checked={store.checkoutMode === 'pro'}
+                                onChange={() =>
+                                  setStore({ ...store, checkoutMode: 'pro' })
+                                }
+                              />
+                              <span className="font-semibold">
+                                Checkout Pro
+                              </span>
+                              <p className="mt-1 text-[11px] leading-relaxed text-muted">
+                                Redireciona para a página do Mercado Pago e
+                                volta depois do pagamento.
+                              </p>
+                            </label>
+                          </div>
+
+                          <div className="border-t border-line pt-4">
+                            <label className="label" htmlFor="pix-desconto">
+                              Desconto no Pix (%)
+                            </label>
+                            <div className="flex flex-wrap items-center gap-3">
+                              <input
+                                id="pix-desconto"
+                                className="field w-28"
+                                inputMode="decimal"
+                                placeholder="Ex.: 5"
+                                disabled={store.checkoutMode === 'pro'}
+                                value={String(
+                                  store.pixDiscountPercent ?? '',
+                                ).replace(/\.00$/, '')}
+                                onChange={(e) =>
+                                  setStore({
+                                    ...store,
+                                    pixDiscountPercent: e.target.value,
+                                  })
+                                }
+                              />
+                              <p className="min-w-0 flex-1 text-[12px] leading-relaxed text-muted">
+                                {store.checkoutMode === 'pro'
+                                  ? 'Disponível só com o pagamento na loja (Brick): na página do Mercado Pago o preço é um só.'
+                                  : 'Vale sobre os produtos (o frete não entra). A vitrine mostra "R$ X no Pix" e o cliente escolhe Pix ou cartão antes de pagar. Vazio ou 0 = sem desconto.'}
+                              </p>
+                            </div>
+                          </div>
+                        </>
+                      ) : null}
+
+                      {pagamentoModal === 'credenciais' ? (
+                        <>
+                          {!store.mpAccessTokenSet || !store.mpPublicKey ? (
+                            <p className="border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
+                              O pagamento fica desligado até Access Token e
+                              Public Key estarem salvos.
+                            </p>
+                          ) : null}
+
+                          <div>
+                            <label className="label">
+                              Access Token
+                              {store.mpAccessTokenSet ? (
+                                <span className="ml-1 font-normal text-[var(--ok)]">
+                                  (salvo no servidor)
+                                </span>
+                              ) : null}
+                            </label>
+                            {store.mpAccessTokenSet &&
+                            store.mpAccessTokenHint ? (
+                              <p className="mb-1.5 border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-xs text-emerald-900">
+                                Token atual:{' '}
+                                <code>{store.mpAccessTokenHint}</code> — o campo
+                                abaixo fica vazio de propósito. Só cole de novo
+                                se for trocar.
+                              </p>
+                            ) : null}
+                            <input
+                              className="field"
+                              type="password"
+                              value={mpAccessToken}
+                              onChange={(e) => setMpAccessToken(e.target.value)}
+                              placeholder={
+                                store.mpAccessTokenSet
+                                  ? 'Cole um novo só se quiser substituir'
+                                  : 'Cole o Access Token (teste ou produção)'
+                              }
+                              required={!store.mpAccessTokenSet}
+                              autoComplete="off"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="label">Public Key</label>
+                            {store.mpPublicKeyHint ? (
+                              <p className="mb-1 text-[11px] text-muted">
+                                Salva: <code>{store.mpPublicKeyHint}</code>
+                              </p>
+                            ) : null}
+                            <input
+                              className="field"
+                              value={mpPublicKey}
+                              onChange={(e) => setMpPublicKey(e.target.value)}
+                              placeholder="Cole a Public Key (mesmo bloco do token)"
+                              required={!store.mpPublicKey && !mpPublicKey}
+                              autoComplete="off"
+                            />
+                          </div>
+
+                          <div className="border border-line bg-[#fafafa] p-3 text-[11px] leading-relaxed text-muted">
+                            <p className="font-bold text-ink">
+                              Public Key não é o Access Token
+                            </p>
+                            <p className="mt-1">
+                              As duas saem do mesmo bloco. Para testar, entre na
+                              conta{' '}
+                              <strong className="text-ink">
+                                real do vendedor
+                              </strong>{' '}
+                              (e-mail/CPF normal, <strong>nunca</strong> no
+                              TESTUSER) → Developers → Suas integrações → app →{' '}
+                              <strong className="text-ink">
+                                Credenciais de teste
+                              </strong>
+                              . Token de TESTUSER é rejeitado no teste abaixo.
+                            </p>
+                          </div>
+
+                          <div>
+                            <button
+                              type="button"
+                              className="btn btn-ghost"
+                              onClick={() => void testMp()}
+                              disabled={!store.mpAccessTokenSet}
+                            >
+                              Testar credenciais no Mercado Pago
+                            </button>
+                          </div>
+                        </>
+                      ) : null}
+
+                      {pagamentoModal === 'webhook' ? (
+                        <div>
+                          <p className="text-xs leading-relaxed text-muted">
+                            O Mercado Pago avisa esta URL quando o cliente paga
+                            por Pix ou cartão, e quando um pagamento é
+                            reembolsado. É ela que faz o pedido mudar de status
+                            sozinho.
+                          </p>
+                          <code className="mt-3 block break-all border border-line bg-[#fafafa] px-2 py-2 text-[11px]">
+                            {store.mpWebhookUrl}
+                          </code>
+                          <button
+                            type="button"
+                            className="btn btn-ghost mt-2 text-xs"
+                            onClick={() => {
+                              void navigator.clipboard.writeText(
+                                store.mpWebhookUrl || '',
+                              );
+                              setMessage('URL do webhook copiada');
+                            }}
+                          >
+                            Copiar URL
+                          </button>
+                          <p className="mt-3 text-[11px] leading-relaxed text-muted">
+                            Em produção o <code>PUBLIC_URL</code> do{' '}
+                            <code>.env</code> da API precisa ser um HTTPS
+                            público — localhost não recebe notificação.
+                          </p>
+                        </div>
                       ) : null}
                     </div>
-                    <div>
-                      <label className="label">CSC ID (opcional)</label>
-                      <input
-                        className="field"
-                        value={store.nfeCscId || ''}
-                        onChange={(e) =>
-                          setStore({ ...store, nfeCscId: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label className="label">CSC Token (opcional)</label>
-                      <input
-                        className="field"
-                        type="password"
-                        value={nfeCscToken}
-                        onChange={(e) => setNfeCscToken(e.target.value)}
-                        placeholder={
-                          store.nfeCscTokenSet
-                            ? 'Já configurado · em branco para manter'
-                            : undefined
-                        }
-                        autoComplete="new-password"
-                      />
-                    </div>
-                    <p className="md:col-span-2 text-[11px] leading-relaxed text-muted">
-                      O CSC só é exigido por parte dos estados. Se a Focus não
-                      pediu, pode deixar vazio.
-                    </p>
-                  </>
-                ) : null}
-              </div>
 
-              <div className="flex shrink-0 flex-col gap-2 border-t border-line bg-[#fafafa] px-4 py-3 sm:flex-row sm:justify-end">
-                <button
-                  type="button"
-                  className="btn btn-ghost order-2 sm:order-1"
-                  data-modal-cancel
-                  onClick={() => setNfeModal(null)}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-accent order-1 sm:order-2"
-                >
-                  Salvar
-                </button>
-              </div>
-            </form>
-          </SettingsModal>
+                    <div className="flex shrink-0 flex-col gap-2 border-t border-line bg-[#fafafa] px-4 py-3 sm:flex-row sm:justify-end">
+                      <button
+                        type="button"
+                        className="btn btn-ghost order-2 sm:order-1"
+                        data-modal-cancel
+                        onClick={() => setPagamentoModal(null)}
+                      >
+                        {pagamentoModal === 'webhook' ? 'Fechar' : 'Cancelar'}
+                      </button>
+                      {pagamentoModal === 'webhook' ? null : (
+                        <button
+                          type="submit"
+                          className="btn btn-accent order-1 sm:order-2"
+                        >
+                          Salvar
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </SettingsModal>
+              ) : null}
+            </SettingsPanel>
+          </>
         ) : null}
-      </SettingsPanel>
 
-      <SettingsPanel
-        title="Seu plano na plataforma"
-        summary="Mensalidade que você paga pelo sistema"
-        open={openSection === 'plan'}
-        onToggle={() => toggleSection('plan')}
-      >
-      <div className="grid gap-x-4 gap-y-4 md:grid-cols-2">
-        <p className="text-xs text-muted md:col-span-2">
-          Isso é o que <strong>você, dono da loja</strong>, paga — não é o
-          pagamento dos seus clientes.
-        </p>
-        <div>
-          <p className="text-[11px] font-bold uppercase text-muted">Plano</p>
-          <p className="mt-1 font-semibold">{store.planName || '—'}</p>
-        </div>
-        <div>
-          <p className="text-[11px] font-bold uppercase text-muted">Status</p>
-          <p className="mt-1 font-semibold">
-            {store.status === 'ACTIVE'
-              ? 'Ativa'
-              : store.status === 'TRIAL'
-                ? 'Trial'
-                : store.status === 'PAST_DUE'
-                  ? 'Em atraso'
-                  : store.status === 'SUSPENDED'
-                    ? 'Suspensa'
-                    : store.status || '—'}
-          </p>
-        </div>
-        <div>
-          <p className="text-[11px] font-bold uppercase text-muted">
-            Mensalidade
-          </p>
-          <p className="mt-1 text-lg font-bold">
-            {store.monthlyFee != null && store.monthlyFee !== ''
-              ? `R$ ${Number(store.monthlyFee).toFixed(2).replace('.', ',')}`
-              : 'A definir'}
-          </p>
-        </div>
-        <div>
-          <p className="text-[11px] font-bold uppercase text-muted">
-            Próximo vencimento
-          </p>
-          <p className="mt-1 font-semibold">
-            {store.planDueAt
-              ? new Date(store.planDueAt).toLocaleDateString('pt-BR')
-              : '—'}
-            {store.daysLeft != null ? (
-              <span className="ml-2 text-xs font-normal text-muted">
-                ({store.daysLeft < 0
-                  ? 'vencido'
-                  : `${store.daysLeft} dia${store.daysLeft === 1 ? '' : 's'}`})
-              </span>
-            ) : null}
-          </p>
-        </div>
-        <div className="md:col-span-2">
-          <Link href="/admin/settings/planos" className="btn inline-flex">
-            Ver planos e pagar mensalidade
-          </Link>
-        </div>
-      </div>
-      </SettingsPanel>
+        <SettingsPanel
+          title="Perfil da loja / documento"
+          summary="CPF/CNPJ e endereço do emitente"
+          badge={
+            <StatusPill
+              ok={Boolean(store.sellerDocument && store.sellerDocType)}
+              okLabel="Documento ok"
+              badLabel="Documento pendente"
+            />
+          }
+          open={openSection === 'profile'}
+          onToggle={() => toggleSection('profile')}
+        >
+          <div className="flex flex-col gap-2">
+            <SettingsRow
+              icon={<IconIdentidade />}
+              iconTile="identidade"
+              title="Quem emite a venda"
+              value={perfilResumo.documento}
+              tone={
+                store.sellerDocument && store.sellerDocType ? 'ok' : 'pendente'
+              }
+              cta={store.sellerDocument ? 'Ajustar' : 'Preencher'}
+              onEdit={() => setPerfilModal('documento')}
+            />
+
+            <SettingsRow
+              icon={<IconContato />}
+              iconTile="contato"
+              title="Contato"
+              value={perfilResumo.contato}
+              onEdit={() => setPerfilModal('contato')}
+            />
+
+            <SettingsRow
+              icon={<IconOrigem />}
+              iconTile="origem"
+              title="Endereço do emitente"
+              value={perfilResumo.endereco}
+              tone={store.sellerZipCode ? 'ok' : 'neutro'}
+              onEdit={() => setPerfilModal('endereco')}
+            />
+          </div>
+
+          {perfilModal ? (
+            <SettingsModal
+              onDescartar={() => void carregarLoja()}
+              title={PERFIL_MODAL_TITULO[perfilModal]}
+              hint={PERFIL_MODAL_HINT[perfilModal]}
+              erro={error}
+              onClose={() => setPerfilModal(null)}
+            >
+              <form
+                onSubmit={async (e) => {
+                  if (await saveProfile(e)) setPerfilModal(null);
+                }}
+                className="flex min-h-0 flex-1 flex-col"
+              >
+                <div className="grid min-h-0 flex-1 gap-x-4 gap-y-4 overflow-y-auto px-4 py-4 md:grid-cols-2">
+                  {perfilModal === 'documento' ? (
+                    <>
+                      <div>
+                        <label className="label">Tipo de documento</label>
+                        <select
+                          className="field"
+                          value={store.sellerDocType || ''}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              sellerDocType: (e.target.value || null) as
+                                'CPF' | 'CNPJ' | null,
+                            })
+                          }
+                        >
+                          <option value="">Selecione…</option>
+                          <option value="CPF">CPF — pessoa física</option>
+                          <option value="CNPJ">CNPJ — empresa</option>
+                        </select>
+                        <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
+                          Loja pequena pode operar como pessoa física. Não
+                          precisa ser CNPJ.
+                        </p>
+                      </div>
+                      <div>
+                        <label className="label">
+                          {store.sellerDocType === 'CNPJ' ? 'CNPJ' : 'CPF'}
+                        </label>
+                        <input
+                          className="field"
+                          value={store.sellerDocument || ''}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              sellerDocument: e.target.value,
+                            })
+                          }
+                          placeholder={
+                            store.sellerDocType === 'CNPJ'
+                              ? '00.000.000/0000-00'
+                              : '000.000.000-00'
+                          }
+                          autoComplete="off"
+                        />
+                      </div>
+                      <div>
+                        <label className="label">
+                          Razão social / nome completo
+                        </label>
+                        <input
+                          className="field"
+                          value={store.sellerLegalName || ''}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              sellerLegalName: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="label">
+                          Nome fantasia (opcional)
+                        </label>
+                        <input
+                          className="field"
+                          value={store.sellerTradeName || ''}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              sellerTradeName: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="label">IE — inscrição estadual</label>
+                        <input
+                          className="field"
+                          value={store.sellerIe || ''}
+                          onChange={(e) =>
+                            setStore({ ...store, sellerIe: e.target.value })
+                          }
+                          placeholder="Opcional · ou ISENTO"
+                        />
+                      </div>
+                    </>
+                  ) : null}
+
+                  {perfilModal === 'contato' ? (
+                    <>
+                      <div>
+                        <label className="label">
+                          WhatsApp da loja / responsável
+                        </label>
+                        <input
+                          className="field"
+                          value={store.sellerPhone || ''}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              sellerPhone: formatPhoneBr(e.target.value),
+                            })
+                          }
+                          placeholder="(11) 99999-9999"
+                          inputMode="tel"
+                          autoComplete="tel"
+                          maxLength={15}
+                        />
+                        <p className="mt-1 text-[11px] leading-relaxed text-muted">
+                          Usado no botão “Conversar com vendedor” na vitrine e
+                          na NFC-e.
+                        </p>
+                      </div>
+                      <div>
+                        <label className="label">E-mail fiscal</label>
+                        <input
+                          className="field"
+                          type="email"
+                          value={store.sellerEmail || ''}
+                          onChange={(e) =>
+                            setStore({ ...store, sellerEmail: e.target.value })
+                          }
+                        />
+                      </div>
+                    </>
+                  ) : null}
+
+                  {perfilModal === 'endereco' ? (
+                    <>
+                      <div>
+                        <label className="label">CEP</label>
+                        <input
+                          className="field"
+                          value={store.sellerZipCode || ''}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              sellerZipCode: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="label">UF</label>
+                        <input
+                          className="field"
+                          maxLength={2}
+                          value={store.sellerState || ''}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              sellerState: e.target.value
+                                .toUpperCase()
+                                .slice(0, 2),
+                            })
+                          }
+                          placeholder="SP"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="label">Rua</label>
+                        <input
+                          className="field"
+                          value={store.sellerStreet || ''}
+                          onChange={(e) =>
+                            setStore({ ...store, sellerStreet: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="label">Número</label>
+                        <input
+                          className="field"
+                          value={store.sellerNumber || ''}
+                          onChange={(e) =>
+                            setStore({ ...store, sellerNumber: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="label">Bairro</label>
+                        <input
+                          className="field"
+                          value={store.sellerNeighborhood || ''}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              sellerNeighborhood: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="label">Cidade</label>
+                        <input
+                          className="field"
+                          value={store.sellerCity || ''}
+                          onChange={(e) =>
+                            setStore({ ...store, sellerCity: e.target.value })
+                          }
+                        />
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+
+                <div className="flex shrink-0 flex-col gap-2 border-t border-line bg-[#fafafa] px-4 py-3 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    className="btn btn-ghost order-2 sm:order-1"
+                    data-modal-cancel
+                    onClick={() => setPerfilModal(null)}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-accent order-1 sm:order-2"
+                  >
+                    Salvar
+                  </button>
+                </div>
+              </form>
+            </SettingsModal>
+          ) : null}
+        </SettingsPanel>
+
+        <SettingsPanel
+          title="Políticas"
+          summary="Termos, privacidade e trocas (páginas públicas da loja)"
+          open={openSection === 'policies'}
+          onToggle={() => toggleSection('policies')}
+        >
+          <div className="flex flex-col gap-2">
+            {POLITICAS.map((pol) => (
+              <SettingsRow
+                key={pol.campo}
+                icon={<IconDocumento />}
+                iconTile="documento"
+                title={pol.titulo}
+                value={
+                  (store[pol.campo] || '').trim()
+                    ? `Texto próprio · ${
+                        (store[pol.campo] || '').replace(/<[^>]*>/g, '').trim()
+                          .length
+                      } caracteres`
+                    : 'Usando o texto padrão da plataforma'
+                }
+                tone={(store[pol.campo] || '').trim() ? 'ok' : 'neutro'}
+                cta={(store[pol.campo] || '').trim() ? 'Editar' : 'Escrever'}
+                onEdit={() => setPoliticaModal(pol.campo)}
+              />
+            ))}
+          </div>
+
+          {politicaModal ? (
+            <SettingsModal
+              onDescartar={() => void carregarLoja()}
+              title={
+                POLITICAS.find((p) => p.campo === politicaModal)?.titulo ||
+                'Política'
+              }
+              hint={POLITICAS.find((p) => p.campo === politicaModal)?.hint}
+              erro={error}
+              onClose={() => setPoliticaModal(null)}
+            >
+              <form
+                onSubmit={async (e) => {
+                  if (await savePolicies(e)) setPoliticaModal(null);
+                }}
+                className="flex min-h-0 flex-1 flex-col"
+              >
+                <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+                  <textarea
+                    className="field min-h-[320px] w-full resize-y font-mono text-xs leading-relaxed"
+                    value={store[politicaModal] || ''}
+                    onChange={(e) =>
+                      setStore({ ...store, [politicaModal]: e.target.value })
+                    }
+                    placeholder={
+                      POLITICAS.find((p) => p.campo === politicaModal)?.exemplo
+                    }
+                  />
+                  <p className="mt-2 text-[11px] leading-relaxed text-muted">
+                    Aceita HTML simples (parágrafos, listas, negrito). Deixando
+                    em branco, a loja mostra o texto padrão da plataforma.{' '}
+                    <a
+                      href={`/loja/${store.slug}/politicas/${
+                        POLITICAS.find((p) => p.campo === politicaModal)?.rota
+                      }`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-accent underline-offset-4 hover:underline"
+                    >
+                      Ver a página pública →
+                    </a>
+                  </p>
+                </div>
+
+                <div className="flex shrink-0 flex-col gap-2 border-t border-line bg-[#fafafa] px-4 py-3 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    className="btn btn-ghost order-2 sm:order-1"
+                    data-modal-cancel
+                    onClick={() => setPoliticaModal(null)}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-accent order-1 sm:order-2"
+                  >
+                    Salvar
+                  </button>
+                </div>
+              </form>
+            </SettingsModal>
+          ) : null}
+        </SettingsPanel>
+
+        <SettingsPanel
+          title="Nota fiscal (NFC-e)"
+          summary="Emissão automática via Focus NFe"
+          badge={
+            <StatusPill
+              ok={!!store.nfeEnabled && !!store.nfeApiTokenSet}
+              okLabel={store.nfeEnabled ? 'NFC-e ativa' : 'Desligada'}
+              badLabel="Não configurada"
+            />
+          }
+          open={openSection === 'nfe'}
+          onToggle={() => toggleSection('nfe')}
+        >
+          <div className="flex flex-col gap-2">
+            <SettingsRow
+              icon={<IconNota />}
+              iconTile="nota"
+              title="Emissão"
+              value={
+                store.nfeEnabled
+                  ? `Ligada · ambiente ${
+                      store.nfeEnvironment === 'producao'
+                        ? 'produção'
+                        : 'homologação'
+                    }`
+                  : 'Desligada — nenhum pedido gera nota'
+              }
+              tone={
+                store.nfeEnabled && store.nfeEnvironment === 'producao'
+                  ? 'ok'
+                  : 'neutro'
+              }
+              onEdit={() => setNfeModal('emissao')}
+            />
+
+            <SettingsRow
+              icon={<IconChave />}
+              iconTile="chave"
+              title="Credenciais da Focus NFe"
+              value={
+                store.nfeApiTokenSet
+                  ? 'Token salvo no servidor'
+                  : 'Pendente — sem token a nota não sai'
+              }
+              tone={store.nfeApiTokenSet ? 'ok' : 'pendente'}
+              cta={store.nfeApiTokenSet ? 'Gerenciar' : 'Configurar'}
+              onEdit={() => setNfeModal('credenciais')}
+            />
+          </div>
+
+          {nfeModal ? (
+            <SettingsModal
+              onDescartar={() => void carregarLoja()}
+              title={
+                nfeModal === 'emissao'
+                  ? 'Emissão de NFC-e'
+                  : 'Credenciais da Focus NFe'
+              }
+              hint={
+                nfeModal === 'emissao'
+                  ? 'Quando a nota é emitida e em qual ambiente. Homologação não vale como documento fiscal.'
+                  : 'Tokens da sua conta na Focus. Ficam cifrados e nunca voltam para a tela depois de salvos.'
+              }
+              erro={error}
+              onClose={() => setNfeModal(null)}
+            >
+              <form
+                onSubmit={async (e) => {
+                  if (await saveNfe(e)) setNfeModal(null);
+                }}
+                className="flex min-h-0 flex-1 flex-col"
+              >
+                <div className="grid min-h-0 flex-1 gap-x-4 gap-y-4 overflow-y-auto px-4 py-4 md:grid-cols-2">
+                  {nfeModal === 'emissao' ? (
+                    <>
+                      <div className="md:col-span-2 border border-line p-3">
+                        <label className="flex cursor-pointer items-start gap-2">
+                          <input
+                            type="checkbox"
+                            className="mt-1"
+                            checked={!!store.nfeEnabled}
+                            onChange={(e) =>
+                              setStore({
+                                ...store,
+                                nfeEnabled: e.target.checked,
+                              })
+                            }
+                          />
+                          <span>
+                            <span className="text-sm font-bold">
+                              Emitir NFC-e nos pedidos pagos
+                            </span>
+                            <span className="mt-0.5 block text-xs leading-relaxed text-muted">
+                              A nota sai sozinha assim que o pagamento é
+                              aprovado.
+                            </span>
+                          </span>
+                        </label>
+                      </div>
+
+                      <div>
+                        <label className="label">Ambiente</label>
+                        <select
+                          className="field"
+                          value={store.nfeEnvironment || 'homologacao'}
+                          onChange={(e) =>
+                            setStore({
+                              ...store,
+                              nfeEnvironment: e.target.value,
+                            })
+                          }
+                        >
+                          <option value="homologacao">Homologação</option>
+                          <option value="producao">Produção</option>
+                        </select>
+                        <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
+                          Homologação é teste — a nota não tem valor fiscal.
+                          Vire para produção só depois de validar.
+                        </p>
+                      </div>
+                      <div>
+                        <label className="label">Série</label>
+                        <input
+                          className="field"
+                          value={store.nfeSeries || ''}
+                          onChange={(e) =>
+                            setStore({ ...store, nfeSeries: e.target.value })
+                          }
+                          placeholder="1"
+                        />
+                        <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
+                          Precisa bater com a série cadastrada na SEFAZ.
+                        </p>
+                      </div>
+                    </>
+                  ) : null}
+
+                  {nfeModal === 'credenciais' ? (
+                    <>
+                      <div className="md:col-span-2">
+                        <label className="label">Token API</label>
+                        <input
+                          className="field"
+                          type="password"
+                          value={nfeApiToken}
+                          onChange={(e) => setNfeApiToken(e.target.value)}
+                          placeholder={
+                            store.nfeApiTokenSet
+                              ? 'Já configurado · deixe em branco para manter'
+                              : 'Cole o token da Focus NFe'
+                          }
+                          autoComplete="new-password"
+                        />
+                        {store.nfeApiTokenSet ? (
+                          <p className="mt-0.5 text-[11px] text-[var(--ok)]">
+                            Token já salvo na loja.
+                          </p>
+                        ) : null}
+                      </div>
+                      <div>
+                        <label className="label">CSC ID (opcional)</label>
+                        <input
+                          className="field"
+                          value={store.nfeCscId || ''}
+                          onChange={(e) =>
+                            setStore({ ...store, nfeCscId: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="label">CSC Token (opcional)</label>
+                        <input
+                          className="field"
+                          type="password"
+                          value={nfeCscToken}
+                          onChange={(e) => setNfeCscToken(e.target.value)}
+                          placeholder={
+                            store.nfeCscTokenSet
+                              ? 'Já configurado · em branco para manter'
+                              : undefined
+                          }
+                          autoComplete="new-password"
+                        />
+                      </div>
+                      <p className="md:col-span-2 text-[11px] leading-relaxed text-muted">
+                        O CSC só é exigido por parte dos estados. Se a Focus não
+                        pediu, pode deixar vazio.
+                      </p>
+                    </>
+                  ) : null}
+                </div>
+
+                <div className="flex shrink-0 flex-col gap-2 border-t border-line bg-[#fafafa] px-4 py-3 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    className="btn btn-ghost order-2 sm:order-1"
+                    data-modal-cancel
+                    onClick={() => setNfeModal(null)}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-accent order-1 sm:order-2"
+                  >
+                    Salvar
+                  </button>
+                </div>
+              </form>
+            </SettingsModal>
+          ) : null}
+        </SettingsPanel>
+
+        <SettingsPanel
+          title="Seu plano na plataforma"
+          summary="Mensalidade que você paga pelo sistema"
+          open={openSection === 'plan'}
+          onToggle={() => toggleSection('plan')}
+        >
+          <div className="grid gap-x-4 gap-y-4 md:grid-cols-2">
+            <p className="text-xs text-muted md:col-span-2">
+              Isso é o que <strong>você, dono da loja</strong>, paga — não é o
+              pagamento dos seus clientes.
+            </p>
+            <div>
+              <p className="text-[11px] font-bold uppercase text-muted">
+                Plano
+              </p>
+              <p className="mt-1 font-semibold">{store.planName || '—'}</p>
+            </div>
+            <div>
+              <p className="text-[11px] font-bold uppercase text-muted">
+                Status
+              </p>
+              <p className="mt-1 font-semibold">
+                {store.status === 'ACTIVE'
+                  ? 'Ativa'
+                  : store.status === 'TRIAL'
+                    ? 'Trial'
+                    : store.status === 'PAST_DUE'
+                      ? 'Em atraso'
+                      : store.status === 'SUSPENDED'
+                        ? 'Suspensa'
+                        : store.status || '—'}
+              </p>
+            </div>
+            <div>
+              <p className="text-[11px] font-bold uppercase text-muted">
+                Mensalidade
+              </p>
+              <p className="mt-1 text-lg font-bold">
+                {store.monthlyFee != null && store.monthlyFee !== ''
+                  ? `R$ ${Number(store.monthlyFee).toFixed(2).replace('.', ',')}`
+                  : 'A definir'}
+              </p>
+            </div>
+            <div>
+              <p className="text-[11px] font-bold uppercase text-muted">
+                Próximo vencimento
+              </p>
+              <p className="mt-1 font-semibold">
+                {store.planDueAt
+                  ? new Date(store.planDueAt).toLocaleDateString('pt-BR')
+                  : '—'}
+                {store.daysLeft != null ? (
+                  <span className="ml-2 text-xs font-normal text-muted">
+                    (
+                    {store.daysLeft < 0
+                      ? 'vencido'
+                      : `${store.daysLeft} dia${store.daysLeft === 1 ? '' : 's'}`}
+                    )
+                  </span>
+                ) : null}
+              </p>
+            </div>
+            <div className="md:col-span-2">
+              <Link href="/admin/settings/planos" className="btn inline-flex">
+                Ver planos e pagar mensalidade
+              </Link>
+            </div>
+          </div>
+        </SettingsPanel>
       </div>
     </div>
   );

@@ -47,9 +47,7 @@ export function PlanRestrictionModal({
           id="plan-restriction-title"
           className="mt-1 text-lg font-bold text-ink"
         >
-          {suspended
-            ? 'Loja suspensa'
-            : 'Mensalidade vencida'}
+          {suspended ? 'Loja suspensa' : 'Mensalidade vencida'}
         </h2>
         <p
           id="plan-restriction-desc"
@@ -61,7 +59,10 @@ export function PlanRestrictionModal({
         </p>
 
         <div className="mt-5 flex flex-col gap-2">
-          <Link href="/admin/settings/planos" className="btn btn-accent text-center">
+          <Link
+            href="/admin/settings/planos"
+            className="btn btn-accent text-center"
+          >
             Renovar mensalidade
           </Link>
           {supportHref ? (

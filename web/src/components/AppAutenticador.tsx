@@ -49,10 +49,20 @@ export function AppAutenticador({ compacto = false }: { compacto?: boolean }) {
         </p>
         {!compacto ? (
           <p className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[13px] font-semibold">
-            <a href={ANDROID} target="_blank" rel="noopener noreferrer" className="text-[#2b7f8e] underline-offset-2 hover:underline">
+            <a
+              href={ANDROID}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#2b7f8e] underline-offset-2 hover:underline"
+            >
               Baixar para Android
             </a>
-            <a href={IPHONE} target="_blank" rel="noopener noreferrer" className="text-[#2b7f8e] underline-offset-2 hover:underline">
+            <a
+              href={IPHONE}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#2b7f8e] underline-offset-2 hover:underline"
+            >
               Baixar para iPhone
             </a>
           </p>

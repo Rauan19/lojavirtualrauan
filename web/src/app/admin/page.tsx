@@ -15,15 +15,20 @@ const carregandoGrafico = () => (
   <div className="h-48 animate-pulse bg-[#f3f4f6]" aria-hidden />
 );
 const RevenueAreaChart = dynamic(
-  () => import('@/components/admin/DashboardCharts').then((m) => m.RevenueAreaChart),
+  () =>
+    import('@/components/admin/DashboardCharts').then(
+      (m) => m.RevenueAreaChart,
+    ),
   { ssr: false, loading: carregandoGrafico },
 );
 const OrdersBarChart = dynamic(
-  () => import('@/components/admin/DashboardCharts').then((m) => m.OrdersBarChart),
+  () =>
+    import('@/components/admin/DashboardCharts').then((m) => m.OrdersBarChart),
   { ssr: false, loading: carregandoGrafico },
 );
 const StatusBarChart = dynamic(
-  () => import('@/components/admin/DashboardCharts').then((m) => m.StatusBarChart),
+  () =>
+    import('@/components/admin/DashboardCharts').then((m) => m.StatusBarChart),
   { ssr: false, loading: carregandoGrafico },
 );
 
@@ -144,7 +149,12 @@ function PainelDoDono() {
   const byStatus = data?.byStatus ?? [];
 
   const rangeLabel = useMemo(
-    () => formatRangeLabel(data?.from, data?.to, data?.date || specificDate || null),
+    () =>
+      formatRangeLabel(
+        data?.from,
+        data?.to,
+        data?.date || specificDate || null,
+      ),
     [data?.from, data?.to, data?.date, specificDate],
   );
 
@@ -173,7 +183,11 @@ function PainelDoDono() {
           }
         />
         <div className="flex flex-wrap items-center gap-1.5">
-          <div className="inline-flex rounded-xl border border-line bg-white p-1" role="group" aria-label="Período">
+          <div
+            className="inline-flex rounded-xl border border-line bg-white p-1"
+            role="group"
+            aria-label="Período"
+          >
             {periods.map((p) => {
               const ativo = !usingSpecificDate && period === p.id;
               return (
@@ -235,7 +249,11 @@ function PainelDoDono() {
       {error ? (
         <div className="card !p-3">
           <p className="text-sm text-accent">{error}</p>
-          <button type="button" className="btn btn-ghost mt-2" onClick={() => void load()}>
+          <button
+            type="button"
+            className="btn btn-ghost mt-2"
+            onClick={() => void load()}
+          >
             Tentar de novo
           </button>
         </div>
@@ -248,10 +266,25 @@ function PainelDoDono() {
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {(
               [
-                ['Faturamento', money(data.revenue), 'M12 3v18M16.5 7.5c0-1.7-2-3-4.5-3s-4.5 1.3-4.5 3 2 2.6 4.5 3 4.5 1.3 4.5 3-2 3-4.5 3-4.5-1.3-4.5-3', true],
-                ['Pedidos', String(data.ordersCount), 'M6 3.5h12v17l-3-2-3 2-3-2-3 2v-17ZM9 8h6M9 12h6', false],
+                [
+                  'Faturamento',
+                  money(data.revenue),
+                  'M12 3v18M16.5 7.5c0-1.7-2-3-4.5-3s-4.5 1.3-4.5 3 2 2.6 4.5 3 4.5 1.3 4.5 3-2 3-4.5 3-4.5-1.3-4.5-3',
+                  true,
+                ],
+                [
+                  'Pedidos',
+                  String(data.ordersCount),
+                  'M6 3.5h12v17l-3-2-3 2-3-2-3 2v-17ZM9 8h6M9 12h6',
+                  false,
+                ],
                 ['Pagos', String(data.paidOrders), 'M20 6 9 17l-5-5', false],
-                ['Ticket médio', money(data.ticketMedio), 'M4 19V5M4 19h16M8 15l3-4 3 2 4-6', false],
+                [
+                  'Ticket médio',
+                  money(data.ticketMedio),
+                  'M4 19V5M4 19h16M8 15l3-4 3 2 4-6',
+                  false,
+                ],
               ] as const
             ).map(([label, value, icone, destaque]) => (
               <article
@@ -260,16 +293,29 @@ function PainelDoDono() {
               >
                 <span
                   className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
-                    destaque ? 'bg-white/15' : 'bg-[#e9f1f3] text-[var(--brand-deep)]'
+                    destaque
+                      ? 'bg-white/15'
+                      : 'bg-[#e9f1f3] text-[var(--brand-deep)]'
                   }`}
                   aria-hidden
                 >
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d={icone} />
                   </svg>
                 </span>
                 <span className="min-w-0">
-                  <span className={`block text-[13px] ${destaque ? 'text-white/75' : 'text-muted'}`}>
+                  <span
+                    className={`block text-[13px] ${destaque ? 'text-white/75' : 'text-muted'}`}
+                  >
                     {label}
                   </span>
                   <span className="block truncate text-[24px] font-bold leading-tight tabular-nums">
@@ -283,7 +329,10 @@ function PainelDoDono() {
           {data.ordersCount === 0 ? (
             <p className="rounded border border-line bg-white px-3 py-2 text-sm text-muted">
               Nenhum pedido neste período. Troque o filtro acima ou confira em{' '}
-              <Link href="/admin/orders" className="font-medium text-ink underline">
+              <Link
+                href="/admin/orders"
+                className="font-medium text-ink underline"
+              >
                 Pedidos
               </Link>
               .
@@ -378,7 +427,10 @@ const ATALHOS: Record<string, { titulo: string; links: [string, string][] }> = {
       ['/admin/reviews', 'Avaliações'],
     ],
   },
-  clientes: { titulo: 'Clientes', links: [['/admin/customers', 'Ver clientes']] },
+  clientes: {
+    titulo: 'Clientes',
+    links: [['/admin/customers', 'Ver clientes']],
+  },
   marketing: {
     titulo: 'Marketing',
     links: [

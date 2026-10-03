@@ -4,7 +4,11 @@ import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { useCustomer } from '@/components/CustomerProvider';
 import { StarRating, StarRatingInput } from '@/components/StarRating';
-import { createReview, fetchReviews, type ReviewsResponse } from '@/lib/reviews';
+import {
+  createReview,
+  fetchReviews,
+  type ReviewsResponse,
+} from '@/lib/reviews';
 
 type Props = {
   storeSlug: string;
@@ -54,7 +58,9 @@ export function ProductReviews({ storeSlug, productId, idOrSlug }: Props) {
       setRating(0);
       load();
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Erro ao enviar avaliação');
+      setFormError(
+        err instanceof Error ? err.message : 'Erro ao enviar avaliação',
+      );
     } finally {
       setSubmitting(false);
     }
@@ -68,7 +74,8 @@ export function ProductReviews({ storeSlug, productId, idOrSlug }: Props) {
           <div className="flex items-center gap-1.5">
             <StarRating value={data.avgRating} size={14} />
             <span className="text-xs text-muted">
-              {data.avgRating.toFixed(1)} · {data.total} avaliaç{data.total === 1 ? 'ão' : 'ões'}
+              {data.avgRating.toFixed(1)} · {data.total} avaliaç
+              {data.total === 1 ? 'ão' : 'ões'}
             </span>
           </div>
         ) : null}
@@ -76,9 +83,14 @@ export function ProductReviews({ storeSlug, productId, idOrSlug }: Props) {
 
       {customer ? (
         done ? (
-          <p className="mt-3 text-sm text-[var(--ok)]">Obrigado! Sua avaliação foi publicada.</p>
+          <p className="mt-3 text-sm text-[var(--ok)]">
+            Obrigado! Sua avaliação foi publicada.
+          </p>
         ) : (
-          <form onSubmit={onSubmit} className="mt-3 space-y-2 border border-line bg-[#fafafa] p-3">
+          <form
+            onSubmit={onSubmit}
+            className="mt-3 space-y-2 border border-line bg-[#fafafa] p-3"
+          >
             <p className="label">Sua nota</p>
             <StarRatingInput value={rating} onChange={setRating} />
             <textarea
@@ -89,15 +101,24 @@ export function ProductReviews({ storeSlug, productId, idOrSlug }: Props) {
               onChange={(e) => setComment(e.target.value)}
               maxLength={1000}
             />
-            {formError ? <p className="text-xs text-accent">{formError}</p> : null}
-            <button type="submit" className="btn btn-accent px-3 py-1.5 text-xs" disabled={submitting}>
+            {formError ? (
+              <p className="text-xs text-accent">{formError}</p>
+            ) : null}
+            <button
+              type="submit"
+              className="btn btn-accent px-3 py-1.5 text-xs"
+              disabled={submitting}
+            >
               {submitting ? 'Enviando…' : 'Publicar avaliação'}
             </button>
           </form>
         )
       ) : (
         <p className="mt-3 text-xs text-muted">
-          <Link href={`/loja/${storeSlug}/conta/entrar`} className="font-semibold underline">
+          <Link
+            href={`/loja/${storeSlug}/conta/entrar`}
+            className="font-semibold underline"
+          >
             Entre na sua conta
           </Link>{' '}
           para avaliar este produto.
@@ -116,16 +137,22 @@ export function ProductReviews({ storeSlug, productId, idOrSlug }: Props) {
                     Compra verificada
                   </span>
                 ) : null}
-                <span className="text-[11px] text-muted">{formatDate(r.createdAt)}</span>
+                <span className="text-[11px] text-muted">
+                  {formatDate(r.createdAt)}
+                </span>
               </div>
               {r.comment ? (
-                <p className="mt-1.5 text-sm leading-relaxed text-[#333]">{r.comment}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-[#333]">
+                  {r.comment}
+                </p>
               ) : null}
             </li>
           ))}
         </ul>
       ) : data ? (
-        <p className="mt-4 text-xs text-muted">Nenhuma avaliação ainda. Seja o primeiro a avaliar.</p>
+        <p className="mt-4 text-xs text-muted">
+          Nenhuma avaliação ainda. Seja o primeiro a avaliar.
+        </p>
       ) : null}
     </div>
   );

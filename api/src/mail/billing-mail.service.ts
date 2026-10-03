@@ -78,7 +78,8 @@ export class BillingMailService {
       }
 
       const graceDays = Number(this.config.get<string>('BILLING_GRACE_DAYS'));
-      const carencia = Number.isFinite(graceDays) && graceDays >= 0 ? graceDays : 7;
+      const carencia =
+        Number.isFinite(graceDays) && graceDays >= 0 ? graceDays : 7;
       const suspendeEm = invoice.dueAt
         ? new Date(invoice.dueAt.getTime() + carencia * 24 * 60 * 60 * 1000)
         : null;

@@ -28,7 +28,13 @@ export function PaymentStatusScreen({
     return (
       <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 py-10 text-center">
         <div className="pay-success-pop flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <svg
+            width="40"
+            height="40"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden
+          >
             <path
               d="M5 12.5l4.5 4.5L19 7.5"
               stroke="currentColor"
@@ -70,7 +76,13 @@ export function PaymentStatusScreen({
     return (
       <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 py-10 text-center">
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-rose-100 text-rose-600">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <svg
+            width="36"
+            height="36"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden
+          >
             <path
               d="M6 6l12 12M18 6L6 18"
               stroke="currentColor"
@@ -143,8 +155,8 @@ export function PaymentStatusScreen({
         Estamos confirmando seu pagamento
       </h1>
       <p className="mt-2 max-w-md text-sm text-muted">
-        Assim que o pagamento for aprovado, sua compra aparece aqui na hora.
-        Não feche esta página.
+        Assim que o pagamento for aprovado, sua compra aparece aqui na hora. Não
+        feche esta página.
       </p>
 
       <div className="mt-6 flex items-center gap-1.5" aria-hidden>

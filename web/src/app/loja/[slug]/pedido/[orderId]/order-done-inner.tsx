@@ -5,7 +5,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCart } from '@/components/CartProvider';
 import { useCustomer } from '@/components/CustomerProvider';
-import { MpPaymentBrick, type BrickPayerAddress } from '@/components/MpPaymentBrick';
+import {
+  MpPaymentBrick,
+  type BrickPayerAddress,
+} from '@/components/MpPaymentBrick';
 import {
   OfflinePaymentPanel,
   type OfflinePaymentInfo,
@@ -107,8 +110,7 @@ export function OrderDoneInner({
     ['PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED'].includes(
       order?.status || '',
     );
-  const rejected =
-    order?.paymentStatus === 'REJECTED' && !retryPay;
+  const rejected = order?.paymentStatus === 'REJECTED' && !retryPay;
   const pendingPay =
     order &&
     ((order.paymentStatus === 'PENDING' && order.status === 'PENDING') ||
@@ -196,7 +198,11 @@ export function OrderDoneInner({
 
       const ship = order?.shippingAddress;
       const payerAddress: BrickPayerAddress | undefined =
-        ship?.zipCode && ship.street && ship.city && ship.state && ship.neighborhood
+        ship?.zipCode &&
+        ship.street &&
+        ship.city &&
+        ship.state &&
+        ship.neighborhood
           ? {
               zipCode: ship.zipCode,
               street: ship.street,
@@ -333,8 +339,8 @@ export function OrderDoneInner({
               Pagar pedido #{order.orderNumber}
             </h1>
             <p className="text-sm text-muted">
-              Total {money(order.total)}. Escolha Pix ou cartão no
-              checkout real do Mercado Pago.
+              Total {money(order.total)}. Escolha Pix ou cartão no checkout real
+              do Mercado Pago.
             </p>
 
             {payError ? (
@@ -371,92 +377,92 @@ export function OrderDoneInner({
                 ) : null}
 
                 {!offlinePay ? (
-                <MpPaymentBrick
-                  publicKey={paySession.publicKey}
-                  amount={paySession.amount}
-                  payerEmail={paySession.payerEmail}
-                  payerName={paySession.payerName}
-                  payerAddress={paySession.payerAddress}
-                  onError={(msg) => setPayError(msg)}
-                  onSubmit={async (formData) => {
-                    setBusy(true);
-                    setPayError('');
-                    try {
-                      const result = await api<{
-                        id?: number;
-                        paymentId?: number;
-                        approved?: boolean;
-                        status?: string;
-                        status_detail?: string;
-                        orderId: string;
-                        qrCode?: string | null;
-                        qrCodeBase64?: string | null;
-                        ticketUrl?: string | null;
-                        digitableLine?: string | null;
-                        barcode?: string | null;
-                      }>(`/checkout/orders/${orderId}/pay-brick`, {
-                        method: 'POST',
-                        storeSlug: slug,
-                        token,
-                        body: { formData },
-                      });
-
-                      const paymentId = result.id ?? result.paymentId;
-                      const status = result.status || '';
-
-                      if (result.approved || status === 'approved') {
-                        // Aprovado na hora (cartão): sucesso imediato, sem esperar webhook
-                        setOfflinePay(null);
-                        setWatchingPayment(false);
-                        setAwaitingWebhook(false);
-                        setRetryPay(false);
-                        if (!clearedCart.current) {
-                          cart.clear();
-                          clearedCart.current = true;
-                        }
-                        await loadOrder();
-                      } else if (
-                        status === 'pending' ||
-                        status === 'in_process'
-                      ) {
-                        setOfflinePay({
-                          paymentId,
-                          status,
-                          qrCode: result.qrCode,
-                          qrCodeBase64: result.qrCodeBase64,
-                          ticketUrl: result.ticketUrl,
-                          digitableLine: result.digitableLine,
-                          barcode: result.barcode,
+                  <MpPaymentBrick
+                    publicKey={paySession.publicKey}
+                    amount={paySession.amount}
+                    payerEmail={paySession.payerEmail}
+                    payerName={paySession.payerName}
+                    payerAddress={paySession.payerAddress}
+                    onError={(msg) => setPayError(msg)}
+                    onSubmit={async (formData) => {
+                      setBusy(true);
+                      setPayError('');
+                      try {
+                        const result = await api<{
+                          id?: number;
+                          paymentId?: number;
+                          approved?: boolean;
+                          status?: string;
+                          status_detail?: string;
+                          orderId: string;
+                          qrCode?: string | null;
+                          qrCodeBase64?: string | null;
+                          ticketUrl?: string | null;
+                          digitableLine?: string | null;
+                          barcode?: string | null;
+                        }>(`/checkout/orders/${orderId}/pay-brick`, {
+                          method: 'POST',
+                          storeSlug: slug,
+                          token,
+                          body: { formData },
                         });
-                        setWatchingPayment(true);
-                        setAwaitingWebhook(true);
-                        await loadOrder();
-                      } else if (status === 'rejected') {
-                        setRetryPay(false);
-                        setPayError(
-                          result.status_detail ||
-                            'Pagamento recusado. Tente outro meio.',
-                        );
-                        await loadOrder();
-                      }
 
-                      setBusy(false);
-                      return {
-                        id: paymentId,
-                        status,
-                        status_detail: result.status_detail,
-                      };
-                    } catch (err) {
-                      const msg =
-                        err instanceof Error
-                          ? err.message
-                          : 'Pagamento recusado';
-                      setPayError(msg);
-                      setBusy(false);
-                      throw err;
-                    }
-                  }}
-                />
+                        const paymentId = result.id ?? result.paymentId;
+                        const status = result.status || '';
+
+                        if (result.approved || status === 'approved') {
+                          // Aprovado na hora (cartão): sucesso imediato, sem esperar webhook
+                          setOfflinePay(null);
+                          setWatchingPayment(false);
+                          setAwaitingWebhook(false);
+                          setRetryPay(false);
+                          if (!clearedCart.current) {
+                            cart.clear();
+                            clearedCart.current = true;
+                          }
+                          await loadOrder();
+                        } else if (
+                          status === 'pending' ||
+                          status === 'in_process'
+                        ) {
+                          setOfflinePay({
+                            paymentId,
+                            status,
+                            qrCode: result.qrCode,
+                            qrCodeBase64: result.qrCodeBase64,
+                            ticketUrl: result.ticketUrl,
+                            digitableLine: result.digitableLine,
+                            barcode: result.barcode,
+                          });
+                          setWatchingPayment(true);
+                          setAwaitingWebhook(true);
+                          await loadOrder();
+                        } else if (status === 'rejected') {
+                          setRetryPay(false);
+                          setPayError(
+                            result.status_detail ||
+                              'Pagamento recusado. Tente outro meio.',
+                          );
+                          await loadOrder();
+                        }
+
+                        setBusy(false);
+                        return {
+                          id: paymentId,
+                          status,
+                          status_detail: result.status_detail,
+                        };
+                      } catch (err) {
+                        const msg =
+                          err instanceof Error
+                            ? err.message
+                            : 'Pagamento recusado';
+                        setPayError(msg);
+                        setBusy(false);
+                        throw err;
+                      }
+                    }}
+                  />
                 ) : null}
                 {busy ? (
                   <p className="text-xs text-muted">

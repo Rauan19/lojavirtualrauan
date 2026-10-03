@@ -79,7 +79,10 @@ export class StorefrontController {
   /** LGPD art. 18, II e V: o cliente baixa o que a loja guarda sobre ele. */
   @Get('account/dados-pessoais')
   @UseGuards(CustomerJwtGuard)
-  exportOwnData(@CurrentStore() store: TenantStore, @CurrentUser() user: AuthUser) {
+  exportOwnData(
+    @CurrentStore() store: TenantStore,
+    @CurrentUser() user: AuthUser,
+  ) {
     return this.storefrontService.exportOwnData(store.id, user.id);
   }
 

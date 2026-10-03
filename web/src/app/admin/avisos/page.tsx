@@ -178,13 +178,18 @@ export default function AvisosPage() {
         titulo="Avisos no celular"
         descricao={
           <>
-            Receba &quot;Você vendeu!&quot; na hora em que um pagamento é aprovado, mesmo com o painel fechado. Ligue em cada aparelho que você usa. Grátis, sem instalar app de loja.
+            Receba &quot;Você vendeu!&quot; na hora em que um pagamento é
+            aprovado, mesmo com o painel fechado. Ligue em cada aparelho que
+            você usa. Grátis, sem instalar app de loja.
           </>
         }
       />
 
       {erro ? (
-        <p role="alert" className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent">
+        <p
+          role="alert"
+          className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent"
+        >
           {erro}
         </p>
       ) : null}
@@ -213,8 +218,8 @@ export default function AvisosPage() {
                 .
               </li>
               <li>
-                Toque em <strong className="text-ink">Compartilhar</strong>{' '}
-                (o quadrado com a seta para cima).
+                Toque em <strong className="text-ink">Compartilhar</strong> (o
+                quadrado com a seta para cima).
               </li>
               <li>
                 Escolha{' '}
@@ -222,8 +227,7 @@ export default function AvisosPage() {
                 .
               </li>
               <li>
-                Abra o painel pelo ícone novo e volte aqui em Avisos no
-                celular.
+                Abra o painel pelo ícone novo e volte aqui em Avisos no celular.
               </li>
             </ol>
           </div>

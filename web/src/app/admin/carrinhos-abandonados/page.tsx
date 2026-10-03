@@ -111,7 +111,10 @@ export default function CarrinhosAbandonadosPage() {
       />
 
       {erro ? (
-        <p role="alert" className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent">
+        <p
+          role="alert"
+          className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent"
+        >
           {erro}
         </p>
       ) : null}
@@ -122,23 +125,36 @@ export default function CarrinhosAbandonadosPage() {
             {(
               [
                 ['Abandonados', String(dados.total), ''],
-                ['Voltaram e compraram', String(dados.recuperados), 'text-[var(--ok)]'],
+                [
+                  'Voltaram e compraram',
+                  String(dados.recuperados),
+                  'text-[var(--ok)]',
+                ],
                 ['Recuperação', `${taxa}%`, ''],
               ] as const
             ).map(([rotulo, valor, cor]) => (
-              <div key={rotulo} className="rounded-2xl border border-line bg-white px-5 py-4">
+              <div
+                key={rotulo}
+                className="rounded-2xl border border-line bg-white px-5 py-4"
+              >
                 <p className="text-[13px] text-muted">{rotulo}</p>
-                <p className={`mt-0.5 text-[26px] font-bold leading-tight tabular-nums ${cor}`}>{valor}</p>
+                <p
+                  className={`mt-0.5 text-[26px] font-bold leading-tight tabular-nums ${cor}`}
+                >
+                  {valor}
+                </p>
               </div>
             ))}
           </div>
 
           <label className="flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-line bg-white px-5 py-4">
             <span className="text-sm">
-              <strong className="block text-[15px]">Lembrete automático por e-mail</strong>
+              <strong className="block text-[15px]">
+                Lembrete automático por e-mail
+              </strong>
               <span className="text-muted">
-                Um e-mail só, assim que o pedido expira, com um botão que devolve
-                os itens à sacola do cliente.
+                Um e-mail só, assim que o pedido expira, com um botão que
+                devolve os itens à sacola do cliente.
               </span>
             </span>
             <span className="relative inline-flex shrink-0">
@@ -189,10 +205,14 @@ export default function CarrinhosAbandonadosPage() {
                         </p>
                         <p className="mt-2 flex flex-wrap gap-1.5">
                           {c.recuperadoNoPedido ? (
-                            <Selo tom="ok">Recuperado · pedido #{c.recuperadoNoPedido}</Selo>
+                            <Selo tom="ok">
+                              Recuperado · pedido #{c.recuperadoNoPedido}
+                            </Selo>
                           ) : null}
                           <Selo tom={c.emailEnviadoEm ? 'neutro' : 'alerta'}>
-                            {c.emailEnviadoEm ? 'E-mail enviado' : 'E-mail não enviado'}
+                            {c.emailEnviadoEm
+                              ? 'E-mail enviado'
+                              : 'E-mail não enviado'}
                           </Selo>
                         </p>
                       </div>

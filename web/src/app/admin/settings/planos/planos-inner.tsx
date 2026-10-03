@@ -1,6 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useConfirm } from '@/components/ConfirmDialog';
 import { api, money } from '@/lib/api';
@@ -242,7 +248,6 @@ export function AdminPlanosInner() {
     void load();
   }, [load]);
 
-
   useEffect(() => {
     const status = searchParams.get('status');
     const invoiceId = searchParams.get('invoice');
@@ -321,15 +326,15 @@ export function AdminPlanosInner() {
       })
         .then((me) => {
           setData(me);
-            if (me.store?.recurringActive) {
-              window.clearInterval(timer);
-              setPendingInvoiceId(null);
-              setCheckoutLink(null);
-              setBanner({
-                tone: 'ok',
-                text: 'Plano ativo! Assinatura confirmada e próxima cobrança atualizada.',
-              });
-            }
+          if (me.store?.recurringActive) {
+            window.clearInterval(timer);
+            setPendingInvoiceId(null);
+            setCheckoutLink(null);
+            setBanner({
+              tone: 'ok',
+              text: 'Plano ativo! Assinatura confirmada e próxima cobrança atualizada.',
+            });
+          }
         })
         .catch(() => undefined);
     }, 3000);
@@ -421,9 +426,7 @@ export function AdminPlanosInner() {
     } catch (e) {
       if (popup && !popup.closed) popup.close();
       setError(
-        e instanceof Error
-          ? e.message
-          : 'Erro ao abrir checkout de assinatura',
+        e instanceof Error ? e.message : 'Erro ao abrir checkout de assinatura',
       );
       setPayingId(null);
     }
@@ -527,9 +530,7 @@ export function AdminPlanosInner() {
             : ''),
       });
     } catch (e) {
-      setError(
-        e instanceof Error ? e.message : 'Erro ao cancelar assinatura',
-      );
+      setError(e instanceof Error ? e.message : 'Erro ao cancelar assinatura');
     } finally {
       setCancelling(false);
     }
@@ -551,7 +552,8 @@ export function AdminPlanosInner() {
   const plans = data?.plans || [];
   const selected = plans.find((p) => p.id === selectedId) || null;
   const temAnual = plans.some(isAnual) && plans.some((p) => !isAnual(p));
-  const periodo: 'mensal' | 'anual' = selected && isAnual(selected) ? 'anual' : 'mensal';
+  const periodo: 'mensal' | 'anual' =
+    selected && isAnual(selected) ? 'anual' : 'mensal';
   const planosVisiveis = temAnual
     ? plans.filter((p) => (periodo === 'anual') === isAnual(p))
     : plans;
@@ -581,7 +583,9 @@ export function AdminPlanosInner() {
       });
       setData(res);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Não foi possível mudar de plano');
+      setError(
+        e instanceof Error ? e.message : 'Não foi possível mudar de plano',
+      );
     } finally {
       setUsandoGratis(false);
     }
@@ -661,7 +665,9 @@ export function AdminPlanosInner() {
       }
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : 'Erro ao atualizar status da assinatura',
+        e instanceof Error
+          ? e.message
+          : 'Erro ao atualizar status da assinatura',
       );
     }
   }
@@ -714,7 +720,10 @@ export function AdminPlanosInner() {
       ) : null}
 
       {error ? (
-        <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-sm text-rose-800">
+        <p
+          role="alert"
+          className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-sm text-rose-800"
+        >
           {error}
         </p>
       ) : null}
@@ -843,232 +852,239 @@ export function AdminPlanosInner() {
       </section>
 
       {!store?.recurringActive ? (
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-base font-bold">
-            {store?.subscriptionStatus === 'cancelled'
-              ? 'Assinar novamente'
-              : 'Escolher plano'}
-          </h2>
-          <p className="mt-1 text-sm text-muted">
-            Escolha um plano. No Mercado Pago você autoriza o cartão — a
-            cobrança segue {cicloTexto}.
-          </p>
-        </div>
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-base font-bold">
+              {store?.subscriptionStatus === 'cancelled'
+                ? 'Assinar novamente'
+                : 'Escolher plano'}
+            </h2>
+            <p className="mt-1 text-sm text-muted">
+              Escolha um plano. No Mercado Pago você autoriza o cartão — a
+              cobrança segue {cicloTexto}.
+            </p>
+          </div>
 
-        {limits ? (
-          <div className="flex flex-wrap gap-x-6 gap-y-1 rounded-xl bg-zinc-50 px-4 py-3 text-sm ring-1 ring-black/5">
-            {limits.trial ? (
-              <span className="font-medium text-emerald-700">
-                No teste grátis tudo fica liberado.
-              </span>
-            ) : null}
-            <span>
-              <span className="text-muted">Produtos: </span>
-              <strong className="tabular-nums">
-                {limits.productCount}
-                {limits.maxProducts != null ? ` de ${limits.maxProducts}` : ''}
-              </strong>
-              {limits.maxProducts == null ? (
-                <span className="text-muted"> (sem limite)</span>
+          {limits ? (
+            <div className="flex flex-wrap gap-x-6 gap-y-1 rounded-xl bg-zinc-50 px-4 py-3 text-sm ring-1 ring-black/5">
+              {limits.trial ? (
+                <span className="font-medium text-emerald-700">
+                  No teste grátis tudo fica liberado.
+                </span>
               ) : null}
-            </span>
-            <span>
-              <span className="text-muted">Nota fiscal: </span>
-              <strong>{limits.nfeIncluded ? 'incluída' : 'não incluída'}</strong>
-            </span>
-          </div>
-        ) : null}
-
-        {temAnual ? (
-          <div
-            role="radiogroup"
-            aria-label="Forma de pagamento do plano"
-            className="inline-flex rounded-full bg-zinc-100 p-1 text-sm font-semibold"
-          >
-            {(['mensal', 'anual'] as const).map((op) => (
-              <button
-                key={op}
-                type="button"
-                role="radio"
-                aria-checked={periodo === op}
-                onClick={() => trocarPeriodo(op)}
-                className={[
-                  'rounded-full px-4 py-1.5 transition',
-                  periodo === op ? 'bg-white text-ink shadow-sm' : 'text-muted hover:text-ink',
-                ].join(' ')}
-              >
-                {op === 'mensal' ? 'Mensal' : 'Anual · 2 meses grátis'}
-              </button>
-            ))}
-          </div>
-        ) : null}
-
-        <div
-          className={`grid gap-4 sm:grid-cols-2 ${
-            planosVisiveis.length >= 4 ? 'xl:grid-cols-4' : 'lg:grid-cols-3'
-          }`}
-        >
-          {planosVisiveis.map((plan) => {
-            const active = selectedId === plan.id;
-            const isCurrent = currentPlanId === plan.id;
-            const features =
-              plan.features && plan.features.length > 0
-                ? plan.features
-                : FALLBACK_FEATURES;
-
-            return (
-              <button
-                key={plan.id}
-                type="button"
-                onClick={() => setSelectedId(plan.id)}
-                className={[
-                  'group relative flex h-full flex-col rounded-2xl border p-5 text-left transition',
-                  'bg-white shadow-sm hover:-translate-y-0.5 hover:shadow-md',
-                  active
-                    ? 'border-ink ring-2 ring-ink/20'
-                    : 'border-black/10 hover:border-black/20',
-                  plan.highlight && !active ? 'border-ink/25' : '',
-                ].join(' ')}
-              >
-                {plan.badge ? (
-                  <span
-                    className={[
-                      'absolute -top-2.5 left-4 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide',
-                      plan.highlight
-                        ? 'bg-ink text-white'
-                        : 'bg-zinc-100 text-zinc-700',
-                    ].join(' ')}
-                  >
-                    {plan.badge}
-                  </span>
+              <span>
+                <span className="text-muted">Produtos: </span>
+                <strong className="tabular-nums">
+                  {limits.productCount}
+                  {limits.maxProducts != null
+                    ? ` de ${limits.maxProducts}`
+                    : ''}
+                </strong>
+                {limits.maxProducts == null ? (
+                  <span className="text-muted"> (sem limite)</span>
                 ) : null}
+              </span>
+              <span>
+                <span className="text-muted">Nota fiscal: </span>
+                <strong>
+                  {limits.nfeIncluded ? 'incluída' : 'não incluída'}
+                </strong>
+              </span>
+            </div>
+          ) : null}
 
-                <div className="mt-1 flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-lg font-bold tracking-tight">
-                      {plan.name}
+          {temAnual ? (
+            <div
+              role="radiogroup"
+              aria-label="Forma de pagamento do plano"
+              className="inline-flex rounded-full bg-zinc-100 p-1 text-sm font-semibold"
+            >
+              {(['mensal', 'anual'] as const).map((op) => (
+                <button
+                  key={op}
+                  type="button"
+                  role="radio"
+                  aria-checked={periodo === op}
+                  onClick={() => trocarPeriodo(op)}
+                  className={[
+                    'rounded-full px-4 py-1.5 transition',
+                    periodo === op
+                      ? 'bg-white text-ink shadow-sm'
+                      : 'text-muted hover:text-ink',
+                  ].join(' ')}
+                >
+                  {op === 'mensal' ? 'Mensal' : 'Anual · 2 meses grátis'}
+                </button>
+              ))}
+            </div>
+          ) : null}
+
+          <div
+            className={`grid gap-4 sm:grid-cols-2 ${
+              planosVisiveis.length >= 4 ? 'xl:grid-cols-4' : 'lg:grid-cols-3'
+            }`}
+          >
+            {planosVisiveis.map((plan) => {
+              const active = selectedId === plan.id;
+              const isCurrent = currentPlanId === plan.id;
+              const features =
+                plan.features && plan.features.length > 0
+                  ? plan.features
+                  : FALLBACK_FEATURES;
+
+              return (
+                <button
+                  key={plan.id}
+                  type="button"
+                  onClick={() => setSelectedId(plan.id)}
+                  className={[
+                    'group relative flex h-full flex-col rounded-2xl border p-5 text-left transition',
+                    'bg-white shadow-sm hover:-translate-y-0.5 hover:shadow-md',
+                    active
+                      ? 'border-ink ring-2 ring-ink/20'
+                      : 'border-black/10 hover:border-black/20',
+                    plan.highlight && !active ? 'border-ink/25' : '',
+                  ].join(' ')}
+                >
+                  {plan.badge ? (
+                    <span
+                      className={[
+                        'absolute -top-2.5 left-4 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide',
+                        plan.highlight
+                          ? 'bg-ink text-white'
+                          : 'bg-zinc-100 text-zinc-700',
+                      ].join(' ')}
+                    >
+                      {plan.badge}
+                    </span>
+                  ) : null}
+
+                  <div className="mt-1 flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-lg font-bold tracking-tight">
+                        {plan.name}
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted">
+                        {plan.description}
+                      </p>
+                    </div>
+                    <span
+                      className={[
+                        'mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border',
+                        active
+                          ? 'border-ink bg-ink text-white'
+                          : 'border-black/20 bg-white text-transparent',
+                      ].join(' ')}
+                      aria-hidden
+                    >
+                      <CheckIcon className="h-3 w-3" />
+                    </span>
+                  </div>
+
+                  <div className="mt-5">
+                    <p className="text-3xl font-bold tracking-tight">
+                      {plan.amount > 0 ? money(plan.amount) : 'Grátis'}
                     </p>
-                    <p className="mt-1 text-xs leading-relaxed text-muted">
-                      {plan.description}
+                    <p className="mt-0.5 text-xs text-muted">
+                      {plan.amount <= 0
+                        ? 'sem mensalidade'
+                        : isAnual(plan)
+                          ? `por ano · equivale a ${money(plan.amount / 12)} por mês`
+                          : 'por mês'}
+                      {plan.feeBps
+                        ? ` · ${String(plan.feeBps / 100).replace('.', ',')}% por venda`
+                        : ''}
                     </p>
                   </div>
-                  <span
-                    className={[
-                      'mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border',
-                      active
-                        ? 'border-ink bg-ink text-white'
-                        : 'border-black/20 bg-white text-transparent',
-                    ].join(' ')}
-                    aria-hidden
-                  >
-                    <CheckIcon className="h-3 w-3" />
-                  </span>
-                </div>
 
-                <div className="mt-5">
-                  <p className="text-3xl font-bold tracking-tight">
-                    {plan.amount > 0 ? money(plan.amount) : 'Grátis'}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted">
-                    {plan.amount <= 0
-                      ? 'sem mensalidade'
-                      : isAnual(plan)
-                        ? `por ano · equivale a ${money(plan.amount / 12)} por mês`
-                        : 'por mês'}
-                    {plan.feeBps
-                      ? ` · ${String(plan.feeBps / 100).replace('.', ',')}% por venda`
-                      : ''}
-                  </p>
-                </div>
+                  <ul className="mt-5 space-y-2.5">
+                    {features.map((f) => (
+                      <li
+                        key={f}
+                        className="flex gap-2 text-[13px] leading-snug text-zinc-700"
+                      >
+                        <CheckIcon className="mt-0.5 shrink-0 text-emerald-600" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
 
-                <ul className="mt-5 space-y-2.5">
-                  {features.map((f) => (
-                    <li
-                      key={f}
-                      className="flex gap-2 text-[13px] leading-snug text-zinc-700"
-                    >
-                      <CheckIcon className="mt-0.5 shrink-0 text-emerald-600" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {isCurrent ? (
-                  <p className="mt-4 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
-                    Plano atual
-                  </p>
-                ) : (
-                  <span className="mt-4 text-[11px] font-medium text-muted">
-                    Selecionar
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {selected && selected.amount <= 0 ? (
-          <div className="rounded-2xl border border-black/10 bg-white px-5 py-4 shadow-sm">
-            <p className="text-sm font-bold">Plano {selected.name} · sem mensalidade</p>
-            <p className="mt-1 text-sm text-muted">
-              A loja continua vendendo normalmente. No lugar da mensalidade, a{' '}
-              {BRAND.name} fica com{' '}
-              {String((selected.feeBps ?? 0) / 100).replace('.', ',')}% de cada
-              venda, descontado automaticamente pelo Mercado Pago. Os limites do
-              plano passam a valer na hora.
-            </p>
-            <button
-              type="button"
-              className="btn btn-accent mt-4"
-              disabled={currentPlanId === selected.id || usandoGratis}
-              onClick={() => void usarGratis()}
-            >
-              {currentPlanId === selected.id
-                ? 'Você já está neste plano'
-                : usandoGratis
-                  ? 'Trocando…'
-                  : 'Usar o plano grátis'}
-            </button>
+                  {isCurrent ? (
+                    <p className="mt-4 text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
+                      Plano atual
+                    </p>
+                  ) : (
+                    <span className="mt-4 text-[11px] font-medium text-muted">
+                      Selecionar
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
-        ) : (
-          <div className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
-            <div className="border-b border-black/[0.06] bg-[#fafafa] px-5 py-3">
-              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted">
-                Checkout de assinatura
+
+          {selected && selected.amount <= 0 ? (
+            <div className="rounded-2xl border border-black/10 bg-white px-5 py-4 shadow-sm">
+              <p className="text-sm font-bold">
+                Plano {selected.name} · sem mensalidade
               </p>
-              <p className="mt-0.5 text-sm font-bold">
-                {selected
-                  ? `Plano ${selected.name} · ${money(selected.amount)}${isAnual(selected) ? '/ano' : '/mês'}`
-                  : 'Selecione um plano'}
+              <p className="mt-1 text-sm text-muted">
+                A loja continua vendendo normalmente. No lugar da mensalidade, a{' '}
+                {BRAND.name} fica com{' '}
+                {String((selected.feeBps ?? 0) / 100).replace('.', ',')}% de
+                cada venda, descontado automaticamente pelo Mercado Pago. Os
+                limites do plano passam a valer na hora.
               </p>
+              <button
+                type="button"
+                className="btn btn-accent mt-4"
+                disabled={currentPlanId === selected.id || usandoGratis}
+                onClick={() => void usarGratis()}
+              >
+                {currentPlanId === selected.id
+                  ? 'Você já está neste plano'
+                  : usandoGratis
+                    ? 'Trocando…'
+                    : 'Usar o plano grátis'}
+              </button>
             </div>
+          ) : (
+            <div className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
+              <div className="border-b border-black/[0.06] bg-[#fafafa] px-5 py-3">
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted">
+                  Checkout de assinatura
+                </p>
+                <p className="mt-0.5 text-sm font-bold">
+                  {selected
+                    ? `Plano ${selected.name} · ${money(selected.amount)}${isAnual(selected) ? '/ano' : '/mês'}`
+                    : 'Selecione um plano'}
+                </p>
+              </div>
 
-            <div className="px-5 py-4">
-              {selected ? (
-                <div className="mb-4 grid gap-0 sm:grid-cols-2 sm:gap-x-8">
-                  <DetailRow
-                    label="Produto"
-                    value={`${periodo === 'anual' ? 'Anuidade' : 'Mensalidade'} ${BRAND.name}`}
-                  />
-                  <DetailRow
-                    label="Cobrança"
-                    value={`${money(selected.amount)} / mês`}
-                    hint="Recorrente · checkout de Assinaturas do MP"
-                  />
-                </div>
-              ) : null}
+              <div className="px-5 py-4">
+                {selected ? (
+                  <div className="mb-4 grid gap-0 sm:grid-cols-2 sm:gap-x-8">
+                    <DetailRow
+                      label="Produto"
+                      value={`${periodo === 'anual' ? 'Anuidade' : 'Mensalidade'} ${BRAND.name}`}
+                    />
+                    <DetailRow
+                      label="Cobrança"
+                      value={`${money(selected.amount)} / mês`}
+                      hint="Recorrente · checkout de Assinaturas do MP"
+                    />
+                  </div>
+                ) : null}
 
-              {/*
+                {/*
                 Cartão e Pix são mecanismos diferentes, não só um botão a mais:
                 no cartão o Mercado Pago cobra sozinho todo mês; em Pix a
                 recorrência não existe na API deles, então geramos uma cobrança
                 nova a cada ciclo e o lojista precisa pagar. A escolha diz isso
                 com todas as letras — descobrir depois seria péssimo.
               */}
-              <div className="mb-4 grid gap-2 sm:grid-cols-2">
-                {(
-                  [
+                <div className="mb-4 grid gap-2 sm:grid-cols-2">
+                  {[
                     {
                       id: 'CARD' as const,
                       titulo: 'Cartão de crédito',
@@ -1079,77 +1095,82 @@ export function AdminPlanosInner() {
                       titulo: 'Pix',
                       desc: `Geramos a cobrança ${cicloTexto} e avisamos. Você paga o QR a cada ciclo.`,
                     },
-                  ]
-                ).map((op) => (
-                  <label
-                    key={op.id}
-                    className={`flex cursor-pointer gap-2.5 rounded-xl border p-3 text-sm transition-colors ${
-                      metodo === op.id
-                        ? 'border-accent bg-accent/[0.04]'
-                        : 'border-black/10 hover:border-black/20'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="metodo-pagamento"
-                      className="mt-1 shrink-0"
-                      checked={metodo === op.id}
-                      onChange={() => setMetodo(op.id)}
-                    />
-                    <span>
-                      <span className="font-bold">{op.titulo}</span>
-                      <span className="mt-0.5 block text-[12px] leading-snug text-muted">
-                        {op.desc}
+                  ].map((op) => (
+                    <label
+                      key={op.id}
+                      className={`flex cursor-pointer gap-2.5 rounded-xl border p-3 text-sm transition-colors ${
+                        metodo === op.id
+                          ? 'border-accent bg-accent/[0.04]'
+                          : 'border-black/10 hover:border-black/20'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="metodo-pagamento"
+                        className="mt-1 shrink-0"
+                        checked={metodo === op.id}
+                        onChange={() => setMetodo(op.id)}
+                      />
+                      <span>
+                        <span className="font-bold">{op.titulo}</span>
+                        <span className="mt-0.5 block text-[12px] leading-snug text-muted">
+                          {op.desc}
+                        </span>
                       </span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-
-              {metodo === 'CARD' ? (
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    className="btn"
-                    disabled={
-                      !selected ||
-                      !data?.paymentsEnabled ||
-                      payingId !== null ||
-                      Boolean(
-                        store?.recurringActive && store.planName === selected?.id,
-                      )
-                    }
-                    onClick={() => void startSubscriptionCheckout()}
-                  >
-                    {payingId
-                      ? 'Abrindo assinatura…'
-                      : store?.recurringActive && store.planName === selected?.id
-                        ? 'Já assinado'
-                        : selected
-                          ? 'Assinar no Mercado Pago'
-                          : 'Selecione um plano'}
-                  </button>
-                  <p className="max-w-md text-[11px] leading-snug text-muted">
-                    Abre o checkout do Mercado Pago em nova aba para autorizar o
-                    cartão. A cobrança renova {cicloTexto} automaticamente.
-                  </p>
+                    </label>
+                  ))}
                 </div>
-              ) : (
-                <PixBox
-                  pix={pix}
-                  busy={pixBusy}
-                  copiado={pixCopiado}
-                  podeGerar={Boolean(selected) && Boolean(data?.paymentsEnabled)}
-                  jaAssinante={store?.billingMethod === 'PIX'}
-                  onGerar={() => void gerarPix(store?.billingMethod !== 'PIX')}
-                  onCopiar={() => void copiarPix()}
-                  onAtualizar={() => void carregarPix()}
-                />
-              )}
+
+                {metodo === 'CARD' ? (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      className="btn"
+                      disabled={
+                        !selected ||
+                        !data?.paymentsEnabled ||
+                        payingId !== null ||
+                        Boolean(
+                          store?.recurringActive &&
+                          store.planName === selected?.id,
+                        )
+                      }
+                      onClick={() => void startSubscriptionCheckout()}
+                    >
+                      {payingId
+                        ? 'Abrindo assinatura…'
+                        : store?.recurringActive &&
+                            store.planName === selected?.id
+                          ? 'Já assinado'
+                          : selected
+                            ? 'Assinar no Mercado Pago'
+                            : 'Selecione um plano'}
+                    </button>
+                    <p className="max-w-md text-[11px] leading-snug text-muted">
+                      Abre o checkout do Mercado Pago em nova aba para autorizar
+                      o cartão. A cobrança renova {cicloTexto} automaticamente.
+                    </p>
+                  </div>
+                ) : (
+                  <PixBox
+                    pix={pix}
+                    busy={pixBusy}
+                    copiado={pixCopiado}
+                    podeGerar={
+                      Boolean(selected) && Boolean(data?.paymentsEnabled)
+                    }
+                    jaAssinante={store?.billingMethod === 'PIX'}
+                    onGerar={() =>
+                      void gerarPix(store?.billingMethod !== 'PIX')
+                    }
+                    onCopiar={() => void copiarPix()}
+                    onAtualizar={() => void carregarPix()}
+                  />
+                )}
+              </div>
             </div>
-          </div>
-        )}
-      </section>
+          )}
+        </section>
       ) : null}
 
       {data?.recentInvoices && data.recentInvoices.length > 0 ? (
@@ -1325,8 +1346,8 @@ function PixBox({
             </button>
           </div>
           <p className="mt-2 text-[11px] leading-snug text-muted">
-            O pagamento é confirmado sozinho em alguns segundos. Se demorar,
-            use o botão acima.
+            O pagamento é confirmado sozinho em alguns segundos. Se demorar, use
+            o botão acima.
           </p>
         </div>
       </div>

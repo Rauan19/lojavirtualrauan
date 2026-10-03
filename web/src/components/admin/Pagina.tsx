@@ -34,11 +34,15 @@ export function CabecalhoPagina({
         <div className="min-w-0">
           <h1>{titulo}</h1>
           {descricao ? (
-            <p className="mt-1 max-w-2xl text-[14px] leading-relaxed text-muted">{descricao}</p>
+            <p className="mt-1 max-w-2xl text-[14px] leading-relaxed text-muted">
+              {descricao}
+            </p>
           ) : null}
         </div>
       </div>
-      {acoes ? <div className="flex flex-wrap items-center gap-2">{acoes}</div> : null}
+      {acoes ? (
+        <div className="flex flex-wrap items-center gap-2">{acoes}</div>
+      ) : null}
     </div>
   );
 }
@@ -61,14 +65,22 @@ export function Secao({
   className?: string;
 }) {
   return (
-    <section className={`overflow-hidden rounded-2xl border border-line bg-white ${className}`}>
+    <section
+      className={`overflow-hidden rounded-2xl border border-line bg-white ${className}`}
+    >
       {titulo || acoes ? (
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
           <div className="min-w-0">
-            {titulo ? <h2 className="text-[15px] font-bold">{titulo}</h2> : null}
-            {descricao ? <p className="mt-0.5 text-[13px] text-muted">{descricao}</p> : null}
+            {titulo ? (
+              <h2 className="text-[15px] font-bold">{titulo}</h2>
+            ) : null}
+            {descricao ? (
+              <p className="mt-0.5 text-[13px] text-muted">{descricao}</p>
+            ) : null}
           </div>
-          {acoes ? <div className="flex flex-wrap items-center gap-2">{acoes}</div> : null}
+          {acoes ? (
+            <div className="flex flex-wrap items-center gap-2">{acoes}</div>
+          ) : null}
         </div>
       ) : null}
       <div className={semRespiro ? '' : 'p-5'}>{children}</div>
@@ -99,7 +111,9 @@ export function EstadoVazio({
         </span>
       ) : null}
       <p className="text-[15px] font-semibold text-ink">{titulo}</p>
-      {texto ? <p className="mt-1 max-w-md text-sm text-muted">{texto}</p> : null}
+      {texto ? (
+        <p className="mt-1 max-w-md text-sm text-muted">{texto}</p>
+      ) : null}
       {acao ? <div className="mt-4">{acao}</div> : null}
     </div>
   );

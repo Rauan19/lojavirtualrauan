@@ -9,10 +9,7 @@ import { REGRAS, isRefundReason } from '../orders/refund-rules';
  */
 
 export type RefundMailKind =
-  | 'requested'
-  | 'return_pending'
-  | 'done'
-  | 'rejected';
+  'requested' | 'return_pending' | 'done' | 'rejected';
 
 export type RefundMailInput = {
   kind: RefundMailKind;

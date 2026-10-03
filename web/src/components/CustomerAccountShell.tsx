@@ -100,17 +100,27 @@ export function CustomerAccountShell({ storeSlug, children }: Props) {
         <div className="flex items-center gap-3 px-4 py-4">
           <span
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[15px] font-bold"
-            style={{ background: 'var(--store-accent)', color: 'var(--store-accent-ink)' }}
+            style={{
+              background: 'var(--store-accent)',
+              color: 'var(--store-accent-ink)',
+            }}
             aria-hidden
           >
             {account.name.trim().charAt(0).toUpperCase() || '·'}
           </span>
           <span className="min-w-0">
-            <span className="block truncate text-sm font-semibold">{account.name}</span>
-            <span className="block truncate text-xs text-muted">{account.email}</span>
+            <span className="block truncate text-sm font-semibold">
+              {account.name}
+            </span>
+            <span className="block truncate text-xs text-muted">
+              {account.email}
+            </span>
           </span>
         </div>
-        <nav className="flex-1 space-y-0.5 px-2 pb-2" aria-label="Menu da conta">
+        <nav
+          className="flex-1 space-y-0.5 px-2 pb-2"
+          aria-label="Menu da conta"
+        >
           {items.map((item) => {
             const active = item.match(pathname);
             return (
@@ -161,14 +171,21 @@ export function CustomerAccountShell({ storeSlug, children }: Props) {
           <Link href={homeHref} className="flex items-center">
             {marca?.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={mediaUrl(marca.logoUrl) || ''} alt={marca.name} className="h-9 max-w-[170px] object-contain" />
+              <img
+                src={mediaUrl(marca.logoUrl) || ''}
+                alt={marca.name}
+                className="h-9 max-w-[170px] object-contain"
+              />
             ) : (
               <span className="text-lg font-bold tracking-tight text-[var(--store-accent-text)]">
                 {marca?.name || 'Loja'}
               </span>
             )}
           </Link>
-          <Link href={homeHref} className="text-sm font-medium text-muted hover:text-ink">
+          <Link
+            href={homeHref}
+            className="text-sm font-medium text-muted hover:text-ink"
+          >
             Voltar à loja
           </Link>
         </div>
@@ -187,7 +204,10 @@ export function CustomerAccountShell({ storeSlug, children }: Props) {
             <p className="truncate text-sm font-bold">Minha conta</p>
             <p className="truncate text-[11px] text-muted">{customer.name}</p>
           </div>
-          <Link href={homeHref} className="text-xs font-medium text-muted underline">
+          <Link
+            href={homeHref}
+            className="text-xs font-medium text-muted underline"
+          >
             Loja
           </Link>
         </div>

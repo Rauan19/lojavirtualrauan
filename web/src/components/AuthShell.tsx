@@ -14,7 +14,14 @@ import { StorefrontMockup } from '@/components/StorefrontMockup';
 
 function CheckIcon() {
   return (
-    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden className="mt-px shrink-0">
+    <svg
+      viewBox="0 0 20 20"
+      width="18"
+      height="18"
+      fill="none"
+      aria-hidden
+      className="mt-px shrink-0"
+    >
       <circle cx="10" cy="10" r="10" fill="var(--brand-coral)" />
       <path
         d="M6 10.2l2.4 2.4L14 7"
@@ -35,12 +42,22 @@ type Props = {
   children: ReactNode;
 };
 
-export function AuthShell({ headline, subhead, perks, footNote, children }: Props) {
+export function AuthShell({
+  headline,
+  subhead,
+  perks,
+  footNote,
+  children,
+}: Props) {
   return (
     <main className="auth-stage min-h-screen text-white">
       <div className="mx-auto grid min-h-screen max-w-[1180px] content-start gap-6 px-3 py-4 sm:px-4 sm:py-8 md:grid-cols-[minmax(0,400px)_minmax(0,1fr)] md:content-center md:items-center md:gap-14 md:px-8 md:py-8 lg:gap-20">
         <section className="auth-card w-full rounded-[20px] bg-white p-5 text-ink shadow-[0_30px_70px_-30px_rgba(4,24,29,0.65)] sm:p-7">
-          <Link href="/" className="mb-5 inline-block" aria-label="Vendira, página inicial">
+          <Link
+            href="/"
+            className="mb-5 inline-block"
+            aria-label="Vendira, página inicial"
+          >
             <BrandLogo height={32} priority />
           </Link>
           {children}
@@ -58,7 +75,10 @@ export function AuthShell({ headline, subhead, perks, footNote, children }: Prop
           </p>
           <ul className="mt-7 space-y-3">
             {perks.map((perk) => (
-              <li key={perk} className="flex items-start gap-3 text-[15px] leading-snug text-white/90">
+              <li
+                key={perk}
+                className="flex items-start gap-3 text-[15px] leading-snug text-white/90"
+              >
                 <CheckIcon />
                 {perk}
               </li>

@@ -96,9 +96,7 @@ export function installmentHeadlineFromPlan(
     .sort((a, b) => b.count - a.count)[0];
 
   const cashLine =
-    Number.isFinite(cash) && cash > 0
-      ? `À vista ${money(cash)}`
-      : null;
+    Number.isFinite(cash) && cash > 0 ? `À vista ${money(cash)}` : null;
 
   let cardLine: string | null = null;
   if (freeMax >= 2 && free) {

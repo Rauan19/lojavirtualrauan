@@ -8,10 +8,7 @@ import { api, thumbUrl, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 import { BRAND } from '@/lib/brand';
 import { percentual } from '@/components/TaxaVendira';
-import {
-  StatusBadge,
-  orderStatusLabel,
-} from '@/lib/order-status';
+import { StatusBadge, orderStatusLabel } from '@/lib/order-status';
 import {
   getPrintedIds,
   markPrinted,
@@ -249,9 +246,7 @@ export default function AdminOrdersPage() {
       );
       await load();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Falha ao gerar etiqueta',
-      );
+      setError(err instanceof Error ? err.message : 'Falha ao gerar etiqueta');
     } finally {
       setLabelBusyId(null);
     }
@@ -332,7 +327,8 @@ export default function AdminOrdersPage() {
       storeSlug,
     });
     setPrinter({
-      printerType: (store.printerType as PrinterConfig['printerType']) || 'BROWSER',
+      printerType:
+        (store.printerType as PrinterConfig['printerType']) || 'BROWSER',
       printerHost: store.printerHost || '',
       printerPort: store.printerPort || 9100,
       printerName: store.printerName || '',
@@ -344,7 +340,9 @@ export default function AdminOrdersPage() {
   }
 
   useEffect(() => {
-    load().catch((err) => setError(err instanceof Error ? err.message : 'Erro'));
+    load().catch((err) =>
+      setError(err instanceof Error ? err.message : 'Erro'),
+    );
     loadPrinter().catch(() => undefined);
   }, [load]);
 
@@ -403,14 +401,17 @@ export default function AdminOrdersPage() {
         );
       }
     } catch (err) {
-      if (!silent) setError(err instanceof Error ? err.message : 'Erro ao imprimir');
+      if (!silent)
+        setError(err instanceof Error ? err.message : 'Erro ao imprimir');
       throw err;
     } finally {
       setBusyId(null);
     }
   }
 
-  async function bulkStatus(nextStatus: 'SHIPPED' | 'DELIVERED' | 'PROCESSING') {
+  async function bulkStatus(
+    nextStatus: 'SHIPPED' | 'DELIVERED' | 'PROCESSING',
+  ) {
     const ids = [...selected];
     if (!ids.length) return;
     const ok = await confirm({
@@ -439,7 +440,9 @@ export default function AdminOrdersPage() {
         `${res.updated} de ${res.requested} atualizados para ${orderStatusLabel(nextStatus)}`,
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro na atualização em massa');
+      setError(
+        err instanceof Error ? err.message : 'Erro na atualização em massa',
+      );
     } finally {
       setBulkBusy(false);
     }
@@ -489,7 +492,10 @@ export default function AdminOrdersPage() {
     setError('');
     setInvoice(null);
     try {
-      const order = await api<Order>(`/admin/orders/${id}`, { token, storeSlug });
+      const order = await api<Order>(`/admin/orders/${id}`, {
+        token,
+        storeSlug,
+      });
       setDetail(order);
       try {
         const inv = await api<InvoiceInfo>(`/admin/orders/${id}/invoice`, {
@@ -555,7 +561,11 @@ export default function AdminOrdersPage() {
       });
       setMessage(`Pedido #${order.orderNumber} cancelado`);
       if (detail?.id === order.id) {
-        setDetail({ ...detail, status: 'CANCELLED', paymentStatus: detail.paymentStatus });
+        setDetail({
+          ...detail,
+          status: 'CANCELLED',
+          paymentStatus: detail.paymentStatus,
+        });
       }
       await load();
     } catch (err) {
@@ -652,9 +662,7 @@ export default function AdminOrdersPage() {
         .then((list) => {
           if (!list?.length) return;
           const printed = new Set(getPrintedIds());
-          const newest = list.find(
-            (o) => isOrderPaid(o) && !printed.has(o.id),
-          );
+          const newest = list.find((o) => isOrderPaid(o) && !printed.has(o.id));
           if (newest) {
             handlePrint(newest.id, true).catch(() => undefined);
           }
@@ -702,7 +710,9 @@ export default function AdminOrdersPage() {
       );
       setPrinterOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao salvar impressora');
+      setError(
+        err instanceof Error ? err.message : 'Erro ao salvar impressora',
+      );
     }
   }
 
@@ -734,7 +744,10 @@ export default function AdminOrdersPage() {
           aria-label="Ações para os pedidos selecionados"
         >
           <span className="mr-auto text-sm font-semibold">
-            {selected.size} {selected.size === 1 ? 'pedido selecionado' : 'pedidos selecionados'}
+            {selected.size}{' '}
+            {selected.size === 1
+              ? 'pedido selecionado'
+              : 'pedidos selecionados'}
           </span>
           <span className="text-[13px] text-white/75">Marcar como:</span>
           {(
@@ -766,7 +779,11 @@ export default function AdminOrdersPage() {
       ) : null}
 
       {message ? <p className="text-sm text-[var(--ok)]">{message}</p> : null}
-      {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-accent">
+          {error}
+        </p>
+      ) : null}
 
       {printerOpen ? (
         <div className="card form-grid !p-3 md:grid-cols-2">
@@ -810,7 +827,10 @@ export default function AdminOrdersPage() {
               className="field"
               value={printer.printerPaperWidth}
               onChange={(e) =>
-                setPrinter({ ...printer, printerPaperWidth: Number(e.target.value) })
+                setPrinter({
+                  ...printer,
+                  printerPaperWidth: Number(e.target.value),
+                })
               }
             >
               <option value={80}>80mm</option>
@@ -878,15 +898,16 @@ export default function AdminOrdersPage() {
               }
             />
             <span>
-              Imprimir automaticamente quando o pedido for{' '}
-              <strong>pago</strong>
+              Imprimir automaticamente quando o pedido for <strong>pago</strong>
               {printer.printerType === 'NETWORK'
                 ? ' (manda sozinho para a térmica, mesmo sem o painel aberto)'
                 : ' (só enquanto o painel de pedidos estiver aberto)'}
             </span>
           </label>
           <div className="md:col-span-2 rounded border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950">
-            <p className="font-bold">Entrega = rastreio real (igual ML/Shopee)</p>
+            <p className="font-bold">
+              Entrega = rastreio real (igual ML/Shopee)
+            </p>
             <p className="mt-1">
               O status <strong>Entregue</strong> sobe quando a transportadora
               confirma (webhook Melhor Envio ou consulta do código), ou quando o
@@ -986,8 +1007,9 @@ export default function AdminOrdersPage() {
                         Nenhum pedido ainda
                       </strong>
                       <span className="mt-1 block text-[13px] text-muted">
-                        Quando alguém comprar, o pedido aparece aqui e você recebe
-                        um aviso. Divulgue o link da sua loja para a primeira venda.
+                        Quando alguém comprar, o pedido aparece aqui e você
+                        recebe um aviso. Divulgue o link da sua loja para a
+                        primeira venda.
                       </span>
                       {getUser()?.store?.slug ? (
                         <a
@@ -1036,7 +1058,9 @@ export default function AdminOrdersPage() {
                   <td className="px-2.5 py-2">
                     <StatusBadge status={o.paymentStatus} kind="payment" />
                   </td>
-                  <td className="px-2.5 py-2 font-semibold">{money(o.total)}</td>
+                  <td className="px-2.5 py-2 font-semibold">
+                    {money(o.total)}
+                  </td>
                   <td className="px-2.5 py-2 text-xs">
                     {new Date(o.createdAt).toLocaleString('pt-BR')}
                   </td>
@@ -1120,9 +1144,7 @@ export default function AdminOrdersPage() {
       />
 
       {detail || detailLoading ? (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-3 sm:items-center"
-        >
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-3 sm:items-center">
           <div
             className="max-h-[90vh] w-full max-w-lg overflow-y-auto border border-line bg-white p-4 shadow-xl"
             onClick={(e) => e.stopPropagation()}
@@ -1133,7 +1155,9 @@ export default function AdminOrdersPage() {
               <>
                 <div className="mb-3 flex items-start justify-between gap-2">
                   <div>
-                    <h2 className="text-lg font-bold">Pedido #{detail.orderNumber}</h2>
+                    <h2 className="text-lg font-bold">
+                      Pedido #{detail.orderNumber}
+                    </h2>
                     <p className="text-xs text-muted">
                       {new Date(detail.createdAt).toLocaleString('pt-BR')}
                     </p>
@@ -1154,14 +1178,17 @@ export default function AdminOrdersPage() {
 
                 <div className="mb-3 space-y-1 text-sm">
                   <p>
-                    <span className="text-muted">Cliente:</span> {detail.customerName}
+                    <span className="text-muted">Cliente:</span>{' '}
+                    {detail.customerName}
                   </p>
                   <p>
-                    <span className="text-muted">E-mail:</span> {detail.customerEmail}
+                    <span className="text-muted">E-mail:</span>{' '}
+                    {detail.customerEmail}
                   </p>
                   {detail.customerPhone ? (
                     <p>
-                      <span className="text-muted">Telefone:</span> {detail.customerPhone}
+                      <span className="text-muted">Telefone:</span>{' '}
+                      {detail.customerPhone}
                     </p>
                   ) : null}
                   {formatAddress(detail.shippingAddress) ? (
@@ -1172,12 +1199,14 @@ export default function AdminOrdersPage() {
                   ) : null}
                   {detail.shippingMethod ? (
                     <p>
-                      <span className="text-muted">Frete:</span> {detail.shippingMethod}
+                      <span className="text-muted">Frete:</span>{' '}
+                      {detail.shippingMethod}
                     </p>
                   ) : null}
                   {detail.trackingCode ? (
                     <p>
-                      <span className="text-muted">Rastreio:</span> {detail.trackingCode}
+                      <span className="text-muted">Rastreio:</span>{' '}
+                      {detail.trackingCode}
                     </p>
                   ) : null}
                 </div>
@@ -1218,7 +1247,9 @@ export default function AdminOrdersPage() {
                             </p>
                           )}
                         </div>
-                        <strong className="shrink-0">{money(item.total)}</strong>
+                        <strong className="shrink-0">
+                          {money(item.total)}
+                        </strong>
                       </li>
                     );
                   })}
@@ -1235,7 +1266,8 @@ export default function AdminOrdersPage() {
                     <div className="flex justify-between text-[var(--ok)]">
                       <span>
                         Desconto
-                        {detail.pixDiscountApplied && Number(detail.pixDiscount) > 0
+                        {detail.pixDiscountApplied &&
+                        Number(detail.pixDiscount) > 0
                           ? ` (inclui ${money(detail.pixDiscount!)} do Pix)`
                           : ''}
                       </span>
@@ -1256,7 +1288,9 @@ export default function AdminOrdersPage() {
                     <span>Total</span>
                     <span>{money(detail.total)}</span>
                   </div>
-                  {(detail.platformFeeChargedCents ?? detail.platformFeeCents ?? 0) > 0 ? (
+                  {(detail.platformFeeChargedCents ??
+                    detail.platformFeeCents ??
+                    0) > 0 ? (
                     <div className="flex justify-between pt-1 text-xs text-muted">
                       <span>
                         Taxa {BRAND.name}
@@ -1285,7 +1319,9 @@ export default function AdminOrdersPage() {
                     className="field"
                     value={detail.status}
                     disabled={busyId === detail.id}
-                    onChange={(e) => void updateStatus(detail.id, e.target.value)}
+                    onChange={(e) =>
+                      void updateStatus(detail.id, e.target.value)
+                    }
                   >
                     {STATUS_EDITAVEL.filter((s) => {
                       const paid =
@@ -1350,7 +1386,9 @@ export default function AdminOrdersPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className={
-                            fase === 'postar' ? 'btn btn-accent' : 'btn btn-ghost'
+                            fase === 'postar'
+                              ? 'btn btn-accent'
+                              : 'btn btn-ghost'
                           }
                         >
                           {fase === 'postar'
@@ -1383,11 +1421,15 @@ export default function AdminOrdersPage() {
                                 aria-hidden
                               />
                               <span className="min-w-0">
-                                <span className={i === 0 ? 'font-semibold' : ''}>
+                                <span
+                                  className={i === 0 ? 'font-semibold' : ''}
+                                >
                                   {ev.descricao}
                                 </span>
                                 <span className="ml-1 text-muted">
-                                  {new Date(ev.ocorridoEm).toLocaleString('pt-BR')}
+                                  {new Date(ev.ocorridoEm).toLocaleString(
+                                    'pt-BR',
+                                  )}
                                   {[ev.cidade, ev.uf].filter(Boolean).length
                                     ? ` · ${[ev.cidade, ev.uf]
                                         .filter(Boolean)
@@ -1442,7 +1484,9 @@ export default function AdminOrdersPage() {
                           />
                         </div>
                         <div className="sm:col-span-2">
-                          <label className="label">ID da etiqueta no Melhor Envio</label>
+                          <label className="label">
+                            ID da etiqueta no Melhor Envio
+                          </label>
                           <input
                             className="field"
                             defaultValue={detail.carrierShipmentId || ''}
@@ -1545,7 +1589,8 @@ export default function AdminOrdersPage() {
                       Estornar pedido
                     </button>
                   ) : null}
-                  {detail.status !== 'CANCELLED' && detail.status !== 'REFUNDED' ? (
+                  {detail.status !== 'CANCELLED' &&
+                  detail.status !== 'REFUNDED' ? (
                     <button
                       type="button"
                       className="btn btn-danger"
@@ -1568,7 +1613,8 @@ export default function AdminOrdersPage() {
                 {invoice ? (
                   <div className="mt-3 border border-line bg-[#fafafa] p-3 text-xs">
                     <p className="font-semibold">
-                      NFC-e · {INVOICE_STATUS_LABEL[invoice.status] || invoice.status}
+                      NFC-e ·{' '}
+                      {INVOICE_STATUS_LABEL[invoice.status] || invoice.status}
                     </p>
                     {invoice.number != null ? (
                       <p className="mt-1 text-muted">

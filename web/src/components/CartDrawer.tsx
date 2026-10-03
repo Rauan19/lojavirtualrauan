@@ -11,7 +11,12 @@ import { precoNoPix } from '@/lib/pix';
 function MinusIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path
+        d="M5 12h14"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -19,7 +24,12 @@ function MinusIcon() {
 function PlusIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path
+        d="M12 5v14M5 12h14"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -40,13 +50,25 @@ function TrashIcon() {
 
 function EmptyBagIcon() {
   return (
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden className="text-muted">
+    <svg
+      width="40"
+      height="40"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className="text-muted"
+    >
       <path
         d="M6.5 8.5h11l-.8 10.2a1.5 1.5 0 01-1.5 1.3H8.8a1.5 1.5 0 01-1.5-1.3L6.5 8.5z"
         stroke="currentColor"
         strokeWidth="1.4"
       />
-      <path d="M9 8.5V7a3 3 0 016 0v1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <path
+        d="M9 8.5V7a3 3 0 016 0v1.5"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -69,13 +91,15 @@ export function CartDrawer({
   /** Desconto da loja no Pix (%) */
   pixPercent?: number | null;
 }) {
-  const { items, open, setOpen, updateQty, remove, subtotal, count } = useCart();
+  const { items, open, setOpen, updateQty, remove, subtotal, count } =
+    useCart();
 
   if (!open) return null;
 
   const limiteFrete = Number(freteGratisAcima) || 0;
   const faltaFrete = Math.max(0, limiteFrete - subtotal);
-  const progressoFrete = limiteFrete > 0 ? Math.min(1, subtotal / limiteFrete) : 0;
+  const progressoFrete =
+    limiteFrete > 0 ? Math.min(1, subtotal / limiteFrete) : 0;
 
   const themeVars = accentColor
     ? ({
@@ -114,7 +138,13 @@ export function CartDrawer({
             aria-label="Fechar"
             onClick={() => setOpen(false)}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden
+            >
               <path
                 d="M6 6l12 12M18 6L6 18"
                 stroke="currentColor"
@@ -125,41 +155,45 @@ export function CartDrawer({
           </button>
         </div>
 
-          {items.length > 0 && limiteFrete > 0 ? (
-            <div className="border-b border-line bg-[#fafafa] px-5 py-3">
-              <p className="mb-1.5 text-[13px]">
-                {faltaFrete > 0 ? (
-                  <>
-                    Faltam <strong>{money(faltaFrete)}</strong> para{' '}
-                    <strong>frete grátis</strong>
-                  </>
-                ) : (
-                  <strong className="text-[var(--ok)]">
-                    Você ganhou frete grátis
-                  </strong>
-                )}
-              </p>
+        {items.length > 0 && limiteFrete > 0 ? (
+          <div className="border-b border-line bg-[#fafafa] px-5 py-3">
+            <p className="mb-1.5 text-[13px]">
+              {faltaFrete > 0 ? (
+                <>
+                  Faltam <strong>{money(faltaFrete)}</strong> para{' '}
+                  <strong>frete grátis</strong>
+                </>
+              ) : (
+                <strong className="text-[var(--ok)]">
+                  Você ganhou frete grátis
+                </strong>
+              )}
+            </p>
+            <div
+              className="h-1.5 overflow-hidden rounded-full bg-[#eceef1]"
+              role="progressbar"
+              aria-label="Progresso até o frete grátis"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(progressoFrete * 100)}
+            >
               <div
-                className="h-1.5 overflow-hidden rounded-full bg-[#eceef1]"
-                role="progressbar"
-                aria-label="Progresso até o frete grátis"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={Math.round(progressoFrete * 100)}
-              >
-                <div
-                  className="h-full origin-left rounded-full bg-[var(--store-accent,#111)] transition-transform duration-500 ease-out"
-                  style={{ transform: `scaleX(${progressoFrete})` }}
-                />
-              </div>
+                className="h-full origin-left rounded-full bg-[var(--store-accent,#111)] transition-transform duration-500 ease-out"
+                style={{ transform: `scaleX(${progressoFrete})` }}
+              />
             </div>
-          ) : null}
+          </div>
+        ) : null}
         <div className="flex-1 overflow-y-auto overscroll-contain">
           {items.length === 0 ? (
             <div className="flex flex-col items-center gap-3 px-4 py-16 text-center">
               <EmptyBagIcon />
-              <p className="text-[17px] font-semibold text-ink">Sua sacola está vazia</p>
-              <p className="text-sm text-muted">Que tal dar uma olhada nos produtos?</p>
+              <p className="text-[17px] font-semibold text-ink">
+                Sua sacola está vazia
+              </p>
+              <p className="text-sm text-muted">
+                Que tal dar uma olhada nos produtos?
+              </p>
               <button
                 type="button"
                 className="btn btn-accent mt-2 h-11 px-6"
@@ -177,14 +211,22 @@ export function CartDrawer({
                     <div className="h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-[#f3f3f3]">
                       {img ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img loading="lazy" decoding="async" src={img} alt="" className="h-full w-full object-cover" />
+                        <img
+                          loading="lazy"
+                          decoding="async"
+                          src={img}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         <SemFoto nome={item.name} variante="mini" />
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
-                        <p className="line-clamp-2 text-[15px] font-medium leading-snug">{item.name}</p>
+                        <p className="line-clamp-2 text-[15px] font-medium leading-snug">
+                          {item.name}
+                        </p>
                         <button
                           type="button"
                           className="icon-btn -mr-2 -mt-2 h-10 w-10 shrink-0 text-muted hover:text-accent"
@@ -195,7 +237,9 @@ export function CartDrawer({
                         </button>
                       </div>
                       {item.variantLabel ? (
-                        <p className="mt-0.5 text-xs text-muted">{item.variantLabel}</p>
+                        <p className="mt-0.5 text-xs text-muted">
+                          {item.variantLabel}
+                        </p>
                       ) : null}
                       <div className="mt-2 flex items-center justify-between gap-2">
                         <div className="inline-flex items-center rounded-full border border-line">
@@ -204,7 +248,11 @@ export function CartDrawer({
                             className="flex h-9 w-9 items-center justify-center rounded-full text-ink hover:bg-[#f3f4f6]"
                             aria-label="Diminuir quantidade"
                             onClick={() =>
-                              updateQty(item.productId, item.quantity - 1, item.variantId)
+                              updateQty(
+                                item.productId,
+                                item.quantity - 1,
+                                item.variantId,
+                              )
                             }
                           >
                             <MinusIcon />
@@ -217,7 +265,11 @@ export function CartDrawer({
                             className="flex h-9 w-9 items-center justify-center rounded-full text-ink hover:bg-[#f3f4f6]"
                             aria-label="Aumentar quantidade"
                             onClick={() =>
-                              updateQty(item.productId, item.quantity + 1, item.variantId)
+                              updateQty(
+                                item.productId,
+                                item.quantity + 1,
+                                item.variantId,
+                              )
                             }
                           >
                             <PlusIcon />
@@ -236,41 +288,43 @@ export function CartDrawer({
         </div>
 
         {items.length > 0 ? (
-        <div className="border-t border-line px-5 py-4 shadow-[0_-10px_24px_-20px_rgba(0,0,0,0.35)]">
-          <div className="flex items-baseline justify-between">
-            <span className="text-[15px] font-semibold">Subtotal</span>
-            <strong className="text-[20px] tabular-nums">{money(subtotal)}</strong>
-          </div>
-          {items.length > 0 && pixPercent ? (
-            <div className="mt-0.5 flex justify-between text-[13px] text-[var(--ok)]">
-              <span>No Pix</span>
-              <strong className="tabular-nums">
-                {money(precoNoPix(subtotal, pixPercent))}
+          <div className="border-t border-line px-5 py-4 shadow-[0_-10px_24px_-20px_rgba(0,0,0,0.35)]">
+            <div className="flex items-baseline justify-between">
+              <span className="text-[15px] font-semibold">Subtotal</span>
+              <strong className="text-[20px] tabular-nums">
+                {money(subtotal)}
               </strong>
             </div>
-          ) : null}
-          {items.length > 0 ? (
-            <>
-              <p className="mt-1 text-[12px] text-muted">
-                Frete e prazo calculados no próximo passo.
-              </p>
-              <Link
-                href={checkoutHref}
-                className="btn btn-accent btn-block mt-3 h-12 text-[15px]"
-                onClick={() => setOpen(false)}
-              >
-                Finalizar compra
-              </Link>
-              <button
-                type="button"
-                className="mt-1 h-10 w-full text-[13px] text-muted underline-offset-2 hover:text-ink hover:underline"
-                onClick={() => setOpen(false)}
-              >
-                Continuar comprando
-              </button>
-            </>
-          ) : null}
-        </div>
+            {items.length > 0 && pixPercent ? (
+              <div className="mt-0.5 flex justify-between text-[13px] text-[var(--ok)]">
+                <span>No Pix</span>
+                <strong className="tabular-nums">
+                  {money(precoNoPix(subtotal, pixPercent))}
+                </strong>
+              </div>
+            ) : null}
+            {items.length > 0 ? (
+              <>
+                <p className="mt-1 text-[12px] text-muted">
+                  Frete e prazo calculados no próximo passo.
+                </p>
+                <Link
+                  href={checkoutHref}
+                  className="btn btn-accent btn-block mt-3 h-12 text-[15px]"
+                  onClick={() => setOpen(false)}
+                >
+                  Finalizar compra
+                </Link>
+                <button
+                  type="button"
+                  className="mt-1 h-10 w-full text-[13px] text-muted underline-offset-2 hover:text-ink hover:underline"
+                  onClick={() => setOpen(false)}
+                >
+                  Continuar comprando
+                </button>
+              </>
+            ) : null}
+          </div>
         ) : null}
       </aside>
     </>

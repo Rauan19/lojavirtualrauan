@@ -1,5 +1,10 @@
 import { INestApplication } from '@nestjs/common';
-import { DiscountType, OrderStatus, PaymentStatus, Prisma } from '@prisma/client';
+import {
+  DiscountType,
+  OrderStatus,
+  PaymentStatus,
+  Prisma,
+} from '@prisma/client';
 import request from 'supertest';
 import { OrdersService } from '../src/orders/orders.service';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -35,7 +40,11 @@ describe('Checkout (e2e)', () => {
 
   beforeEach(async () => {
     await resetDb(prisma);
-    seed = await seedStore(prisma, { stock: 5, price: 100, freteValorFixo: 25 });
+    seed = await seedStore(prisma, {
+      stock: 5,
+      price: 100,
+      freteValorFixo: 25,
+    });
 
     token = await signCustomerToken(app, seed.customer);
   });
@@ -63,7 +72,7 @@ describe('Checkout (e2e)', () => {
           items: [{ productId: seed.product.id, quantity: 1 }],
           shippingAddress: ADDRESS,
           shippingMethod: 'Entrega padrão',
-        acceptTerms: true,
+          acceptTerms: true,
           shippingOptionId: 'padrao',
         })
         .expect(401);
@@ -125,8 +134,9 @@ describe('Checkout (e2e)', () => {
 
   describe('reserva de estoque', () => {
     it('baixa o estoque assim que o pedido é criado', async () => {
-      await checkout({ items: [{ productId: seed.product.id, quantity: 2 }] })
-        .expect(201);
+      await checkout({
+        items: [{ productId: seed.product.id, quantity: 2 }],
+      }).expect(201);
 
       const product = await prisma.product.findUniqueOrThrow({
         where: { id: seed.product.id },
@@ -308,7 +318,11 @@ describe('Checkout (e2e)', () => {
       await orders.fulfillPaidOrder(res.body.id, seed.store.id, 'mp-refund-2');
 
       await expect(
-        orders.bulkUpdateStatus(seed.store.id, [res.body.id], OrderStatus.REFUNDED),
+        orders.bulkUpdateStatus(
+          seed.store.id,
+          [res.body.id],
+          OrderStatus.REFUNDED,
+        ),
       ).rejects.toThrow(/Estorno não é troca de status/);
 
       const order = await prisma.order.findUniqueOrThrow({

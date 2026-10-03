@@ -21,11 +21,14 @@ export default function RedefinirSenhaClientePage() {
     setError('');
     setDone('');
     try {
-      const res = await api<{ message: string }>('/storefront/auth/reset-password', {
-        method: 'POST',
-        storeSlug: params.slug,
-        body: { token, password },
-      });
+      const res = await api<{ message: string }>(
+        '/storefront/auth/reset-password',
+        {
+          method: 'POST',
+          storeSlug: params.slug,
+          body: { token, password },
+        },
+      );
       setDone(res.message);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível salvar');
@@ -41,7 +44,9 @@ export default function RedefinirSenhaClientePage() {
       subtitle="Escolha uma senha nova para sua conta nesta loja."
     >
       {!token ? (
-        <p className="text-sm text-accent">Link inválido. Peça um novo e-mail.</p>
+        <p className="text-sm text-accent">
+          Link inválido. Peça um novo e-mail.
+        </p>
       ) : (
         <form onSubmit={onSubmit} className="space-y-3">
           {error ? (
@@ -69,7 +74,11 @@ export default function RedefinirSenhaClientePage() {
                 minLength={6}
                 required
               />
-              <button type="submit" className="btn btn-accent w-full" disabled={busy}>
+              <button
+                type="submit"
+                className="btn btn-accent w-full"
+                disabled={busy}
+              >
                 {busy ? 'Salvando…' : 'Salvar senha'}
               </button>
             </>

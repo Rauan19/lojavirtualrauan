@@ -20,7 +20,11 @@ import { pctTexto, precoNoPix } from '@/lib/pix';
 import { AviseMe } from '@/components/AviseMe';
 import { CompreJunto } from '@/components/CompreJunto';
 import { avisosDaLoja } from '@/lib/avisos-loja';
-import { getRecentlyViewed, pushRecentlyViewed, type RecentProduct } from '@/lib/recently-viewed';
+import {
+  getRecentlyViewed,
+  pushRecentlyViewed,
+  type RecentProduct,
+} from '@/lib/recently-viewed';
 import { SemFoto } from '@/components/SemFoto';
 
 type Store = {
@@ -150,7 +154,9 @@ function ProductInner({
         setSelected(doLink ? { ...(doLink.options || {}) } : {});
         setVariantHint('');
       })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Produto não encontrado'));
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : 'Produto não encontrado'),
+      );
   }, [storeSlug, idOrSlug]);
 
   useEffect(() => {
@@ -174,7 +180,9 @@ function ProductInner({
       `/catalog/products?categoryId=${product.categoryId}&limit=7`,
       { storeSlug },
     )
-      .then((res) => setRelated(res.items.filter((p) => p.id !== product.id).slice(0, 6)))
+      .then((res) =>
+        setRelated(res.items.filter((p) => p.id !== product.id).slice(0, 6)),
+      )
       .catch(() => setRelated([]));
   }, [storeSlug, product]);
 
@@ -208,9 +216,7 @@ function ProductInner({
         opcao: 'Opção',
       };
       if (known[key]) return known[key];
-      return key
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, (c) => c.toUpperCase());
+      return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
     };
     return Array.from(map.entries()).map(([key, values]) => ({
       key,
@@ -248,7 +254,10 @@ function ProductInner({
         <div className="card w-full max-w-sm p-5 text-center">
           <h1 className="text-lg font-bold">Produto indisponível</h1>
           <p className="mt-2 text-sm text-muted">{error}</p>
-          <Link href={`/loja/${storeSlug}`} className="btn btn-accent mt-4 inline-flex">
+          <Link
+            href={`/loja/${storeSlug}`}
+            className="btn btn-accent mt-4 inline-flex"
+          >
             Voltar à loja
           </Link>
         </div>
@@ -373,7 +382,10 @@ function ProductInner({
         onOpenCart={() => cart.setOpen(true)}
       >
         <div className="mx-auto max-w-[1100px] px-3 py-4 md:px-4 md:py-6">
-          <nav className="mb-3 flex flex-wrap items-center gap-1 text-sm text-muted" aria-label="Breadcrumb">
+          <nav
+            className="mb-3 flex flex-wrap items-center gap-1 text-sm text-muted"
+            aria-label="Breadcrumb"
+          >
             <Link href={`/loja/${storeSlug}`} className="hover:text-ink">
               {store.name}
             </Link>
@@ -468,13 +480,21 @@ function ProductInner({
                         key={img.id || `${img.url}-${i}`}
                         type="button"
                         className={`h-14 w-11 shrink-0 overflow-hidden border ${
-                          i === index ? 'border-ink' : 'border-transparent opacity-70'
+                          i === index
+                            ? 'border-ink'
+                            : 'border-transparent opacity-70'
                         }`}
                         onClick={() => setIndex(i)}
                       >
                         {src ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img loading="lazy" decoding="async" src={src} alt="" className="h-full w-full object-cover" />
+                          <img
+                            loading="lazy"
+                            decoding="async"
+                            src={src}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
                         ) : null}
                       </button>
                     );
@@ -492,7 +512,10 @@ function ProductInner({
               </h1>
 
               {product.rating && product.rating.count > 0 ? (
-                <a href="#avaliacoes" className="mt-2 flex items-center gap-1.5">
+                <a
+                  href="#avaliacoes"
+                  className="mt-2 flex items-center gap-1.5"
+                >
                   <StarRating value={product.rating.avg} size={14} />
                   <span className="text-xs text-muted">
                     {product.rating.avg.toFixed(1)} ({product.rating.count})
@@ -502,7 +525,9 @@ function ProductInner({
 
               <div className="mt-4 flex flex-wrap items-baseline gap-2 border-t border-line pt-4">
                 {compare && compare > price ? (
-                  <span className="text-sm text-muted line-through">{money(compare)}</span>
+                  <span className="text-sm text-muted line-through">
+                    {money(compare)}
+                  </span>
                 ) : null}
                 <strong className="text-[30px] leading-none md:text-[34px]">
                   {money(price)}
@@ -656,7 +681,9 @@ function ProductInner({
               <GarantiasCompra
                 storeSlug={storeSlug}
                 freteGratisAcima={
-                  store?.freteGratisAcima ? Number(store.freteGratisAcima) : null
+                  store?.freteGratisAcima
+                    ? Number(store.freteGratisAcima)
+                    : null
                 }
               />
 
@@ -713,7 +740,10 @@ function ProductInner({
                   onClick={async () => {
                     const url = window.location.href;
                     const nav = navigator as Navigator & {
-                      share?: (data: { title?: string; url?: string }) => Promise<void>;
+                      share?: (data: {
+                        title?: string;
+                        url?: string;
+                      }) => Promise<void>;
                     };
                     if (nav.share) {
                       try {
@@ -754,7 +784,11 @@ function ProductInner({
               </div>
 
               <div id="avaliacoes">
-                <ProductReviews storeSlug={storeSlug} productId={product.id} idOrSlug={idOrSlug} />
+                <ProductReviews
+                  storeSlug={storeSlug}
+                  productId={product.id}
+                  idOrSlug={idOrSlug}
+                />
               </div>
             </div>
           </div>
@@ -778,7 +812,13 @@ function ProductInner({
                   <RelatedCard
                     key={p.id}
                     storeSlug={storeSlug}
-                    product={{ id: p.id, name: p.name, slug: p.slug, price: String(p.price), images: p.image ? [{ url: p.image }] : [] }}
+                    product={{
+                      id: p.id,
+                      name: p.name,
+                      slug: p.slug,
+                      price: String(p.price),
+                      images: p.image ? [{ url: p.image }] : [],
+                    }}
                   />
                 ))}
               </div>
@@ -789,12 +829,15 @@ function ProductInner({
           <div className="fixed inset-x-0 bottom-[calc(56px+env(safe-area-inset-bottom))] z-30 border-t border-line bg-white/95 px-3 py-2 shadow-[0_-6px_18px_rgba(0,0,0,0.08)] backdrop-blur md:hidden">
             <div className="flex items-center gap-3">
               <div className="min-w-0 flex-1 leading-tight">
-                <p className="truncate text-[12px] text-muted">{product.name}</p>
+                <p className="truncate text-[12px] text-muted">
+                  {product.name}
+                </p>
                 <p className="text-[15px] font-bold">
                   {money(price)}
                   {store?.pixDiscountPercent ? (
                     <span className="ml-1.5 text-[12px] font-semibold text-[var(--ok)]">
-                      {money(precoNoPix(price, store.pixDiscountPercent))} no Pix
+                      {money(precoNoPix(price, store.pixDiscountPercent))} no
+                      Pix
                     </span>
                   ) : null}
                 </p>
@@ -804,20 +847,27 @@ function ProductInner({
                 className="btn btn-accent h-11 shrink-0 px-4 text-[14px]"
                 onClick={() => {
                   if (hasVariants && !selectedVariant) {
-                    ctaEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    ctaEl?.scrollIntoView({
+                      behavior: 'smooth',
+                      block: 'center',
+                    });
                     return;
                   }
                   const item = buildCartItem();
                   if (item) cart.add(item);
                 }}
               >
-                {hasVariants && !selectedVariant ? 'Escolher opções' : 'Adicionar à sacola'}
+                {hasVariants && !selectedVariant
+                  ? 'Escolher opções'
+                  : 'Adicionar à sacola'}
               </button>
             </div>
           </div>
         ) : null}
       </StoreShell>
-      <CartDrawer checkoutHref={`/loja/${storeSlug}/checkout`} accentColor={store.accentColor}
+      <CartDrawer
+        checkoutHref={`/loja/${storeSlug}/checkout`}
+        accentColor={store.accentColor}
         freteGratisAcima={store.freteGratisAcima}
         pixPercent={store.pixDiscountPercent}
       />
@@ -880,7 +930,11 @@ function ShareIcon() {
       <circle cx="18" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.6" />
       <circle cx="6" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.6" />
       <circle cx="18" cy="19" r="2.5" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M8.2 10.7l7.6-4.4M8.2 13.3l7.6 4.4" stroke="currentColor" strokeWidth="1.6" />
+      <path
+        d="M8.2 10.7l7.6-4.4M8.2 13.3l7.6 4.4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
     </svg>
   );
 }
@@ -894,17 +948,30 @@ function RelatedCard({
 }) {
   const img = mediaUrl(product.images[0]?.url);
   return (
-    <Link href={`/loja/${storeSlug}/p/${product.slug || product.id}`} className="flex flex-col">
+    <Link
+      href={`/loja/${storeSlug}/p/${product.slug || product.id}`}
+      className="flex flex-col"
+    >
       <div className="relative store-card-media overflow-hidden bg-[#f3f3f3]">
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img loading="lazy" decoding="async" src={img} alt={product.name} className="h-full w-full object-cover" />
+          <img
+            loading="lazy"
+            decoding="async"
+            src={img}
+            alt={product.name}
+            className="h-full w-full object-cover"
+          />
         ) : (
           <SemFoto nome={product.name} />
         )}
       </div>
-      <h3 className="mt-1.5 line-clamp-2 text-[12px] leading-snug">{product.name}</h3>
-      <strong className="mt-0.5 text-[13px]">{money(Number(product.price))}</strong>
+      <h3 className="mt-1.5 line-clamp-2 text-[12px] leading-snug">
+        {product.name}
+      </h3>
+      <strong className="mt-0.5 text-[13px]">
+        {money(Number(product.price))}
+      </strong>
     </Link>
   );
 }

@@ -16,6 +16,10 @@ export const FRETE_CARRIER_OPTIONS = [
 export function asCarrierIds(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
   return raw
-    .map((v) => String(v || '').trim().toLowerCase())
+    .map((v) =>
+      String(v || '')
+        .trim()
+        .toLowerCase(),
+    )
     .filter(Boolean);
 }

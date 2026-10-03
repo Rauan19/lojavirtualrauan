@@ -163,11 +163,15 @@ export default function PedidoDetalhePage() {
       </Link>
 
       {error ? <p className="mt-3 text-sm text-accent">{error}</p> : null}
-      {message ? <p className="mt-3 text-sm text-[var(--ok)]">{message}</p> : null}
+      {message ? (
+        <p className="mt-3 text-sm text-[var(--ok)]">{message}</p>
+      ) : null}
 
       {order ? (
         <>
-          <h1 className="mt-4 text-xl font-bold">Pedido #{order.orderNumber}</h1>
+          <h1 className="mt-4 text-xl font-bold">
+            Pedido #{order.orderNumber}
+          </h1>
           <p className="mt-1 text-sm text-muted">
             {new Date(order.createdAt).toLocaleString('pt-BR')}
           </p>
@@ -180,7 +184,9 @@ export default function PedidoDetalhePage() {
                 : orderStatusLabel(order.status)}
             </p>
             {order.paymentStatus !== 'APPROVED' &&
-            !(order.paymentStatus === 'PENDING' && order.status === 'PENDING') ? (
+            !(
+              order.paymentStatus === 'PENDING' && order.status === 'PENDING'
+            ) ? (
               <StatusBadge status={order.paymentStatus} kind="payment" />
             ) : null}
             {refundLabel ? (
@@ -203,8 +209,7 @@ export default function PedidoDetalhePage() {
                 if (!token) return;
                 const ok = await confirm({
                   title: 'Pedido recebido?',
-                  message:
-                    'Confirme só se o pacote já chegou em suas mãos.',
+                  message: 'Confirme só se o pacote já chegou em suas mãos.',
                   confirmLabel: 'Sim, recebi',
                 });
                 if (!ok) return;
@@ -281,7 +286,9 @@ export default function PedidoDetalhePage() {
                     <p className="truncate font-medium">{item.productName}</p>
                     <p className="text-xs text-muted">
                       {item.quantity}×{' '}
-                      <span className="text-sky-700">{money(item.unitPrice)}</span>
+                      <span className="text-sky-700">
+                        {money(item.unitPrice)}
+                      </span>
                     </p>
                   </div>
                   <strong className="shrink-0 text-emerald-700">
@@ -295,7 +302,9 @@ export default function PedidoDetalhePage() {
           <div className="mt-3 space-y-1 text-sm">
             <div className="flex justify-between">
               <span className="text-muted">Subtotal</span>
-              <span className="font-medium text-sky-800">{money(order.subtotal)}</span>
+              <span className="font-medium text-sky-800">
+                {money(order.subtotal)}
+              </span>
             </div>
             {Number(order.discount) > 0 ? (
               <div className="flex justify-between font-medium text-emerald-700">
@@ -324,7 +333,10 @@ export default function PedidoDetalhePage() {
           </div>
 
           {canRequestRefund ? (
-            <form onSubmit={requestRefund} className="mt-6 space-y-3 border border-line p-3">
+            <form
+              onSubmit={requestRefund}
+              className="mt-6 space-y-3 border border-line p-3"
+            >
               <p className="text-sm font-bold">Solicitar reembolso</p>
               {/*
                 O motivo não é só informação: decide se o produto precisa
@@ -333,9 +345,21 @@ export default function PedidoDetalhePage() {
               */}
               <div className="space-y-1.5">
                 {[
-                  ['ARREPENDIMENTO', 'Desisti da compra', 'Até 7 dias do recebimento. A loja não pode recusar e paga o frete da volta.'],
-                  ['DEFEITO', 'Produto com defeito', 'Garantia legal de 30 ou 90 dias, conforme o tipo de produto.'],
-                  ['NAO_RECEBI', 'Não recebi o produto', 'A loja vai apurar com a transportadora.'],
+                  [
+                    'ARREPENDIMENTO',
+                    'Desisti da compra',
+                    'Até 7 dias do recebimento. A loja não pode recusar e paga o frete da volta.',
+                  ],
+                  [
+                    'DEFEITO',
+                    'Produto com defeito',
+                    'Garantia legal de 30 ou 90 dias, conforme o tipo de produto.',
+                  ],
+                  [
+                    'NAO_RECEBI',
+                    'Não recebi o produto',
+                    'A loja vai apurar com a transportadora.',
+                  ],
                   ['OUTRO', 'Outro motivo', 'Descreva abaixo o que aconteceu.'],
                 ].map(([valor, titulo, ajuda]) => (
                   <label

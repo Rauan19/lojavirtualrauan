@@ -49,10 +49,7 @@ export function whatsappHref(message?: string) {
 }
 
 /** WhatsApp do vendedor/loja (página do produto na vitrine). */
-export function sellerWhatsappHref(
-  phone: string,
-  message?: string,
-) {
+export function sellerWhatsappHref(phone: string, message?: string) {
   const number = normalizeWhatsappNumber(phone);
   if (!number) return null;
   const text = encodeURIComponent(

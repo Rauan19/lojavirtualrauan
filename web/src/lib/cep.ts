@@ -23,9 +23,7 @@ export function isCepLengthValid(value: string) {
 }
 
 /** Consulta ViaCEP. Retorna null se CEP inexistente/inválido. */
-export async function lookupViaCep(
-  raw: string,
-): Promise<ViaCepResult | null> {
+export async function lookupViaCep(raw: string): Promise<ViaCepResult | null> {
   const digits = onlyDigits(raw);
   if (digits.length !== 8) return null;
   const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);

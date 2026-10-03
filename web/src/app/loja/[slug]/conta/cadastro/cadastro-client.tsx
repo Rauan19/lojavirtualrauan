@@ -84,7 +84,10 @@ export default function ContaCadastroPage() {
     >
       <form onSubmit={onSubmit} className="space-y-2.5">
         {error ? (
-          <p role="alert" className="border border-accent/20 bg-accent/5 px-3 py-2 text-sm text-accent">
+          <p
+            role="alert"
+            className="border border-accent/20 bg-accent/5 px-3 py-2 text-sm text-accent"
+          >
             {error}
           </p>
         ) : null}

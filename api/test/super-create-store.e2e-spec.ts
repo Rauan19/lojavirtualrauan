@@ -79,9 +79,10 @@ describe('Super Admin cria loja manualmente (e2e)', () => {
   });
 
   it('recusa sem documento (CPF/CNPJ)', async () => {
-    await createStore({ sellerDocType: undefined, sellerDocument: undefined }).expect(
-      400,
-    );
+    await createStore({
+      sellerDocType: undefined,
+      sellerDocument: undefined,
+    }).expect(400);
   });
 
   it('recusa CPF com dígito verificador inválido', async () => {

@@ -19,11 +19,14 @@ export default function EsqueciSenhaPage() {
     setError('');
     setDone('');
     try {
-      const res = await api<{ message: string }>('/storefront/auth/forgot-password', {
-        method: 'POST',
-        storeSlug: params.slug,
-        body: { email },
-      });
+      const res = await api<{ message: string }>(
+        '/storefront/auth/forgot-password',
+        {
+          method: 'POST',
+          storeSlug: params.slug,
+          body: { email },
+        },
+      );
       setDone(res.message);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível enviar');

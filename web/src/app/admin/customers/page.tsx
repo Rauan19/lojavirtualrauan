@@ -6,7 +6,12 @@ import { PaginationBar } from '@/components/PaginationBar';
 import { api, money } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 import { StatusBadge } from '@/lib/order-status';
-import { CabecalhoPagina, EstadoVazio, Secao, Selo } from '@/components/admin/Pagina';
+import {
+  CabecalhoPagina,
+  EstadoVazio,
+  Secao,
+  Selo,
+} from '@/components/admin/Pagina';
 
 type Customer = {
   id: string;
@@ -209,7 +214,11 @@ export default function AdminCustomersPage() {
         }
       />
 
-      {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-accent">
+          {error}
+        </p>
+      ) : null}
 
       <Secao
         semRespiro
@@ -232,8 +241,19 @@ export default function AdminCustomersPage() {
                 aria-hidden
                 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"
               >
-                <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.8" />
-                <path d="m16 16 4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                <circle
+                  cx="11"
+                  cy="11"
+                  r="6.5"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                />
+                <path
+                  d="m16 16 4 4"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
               </svg>
             </label>
             <select
@@ -250,79 +270,85 @@ export default function AdminCustomersPage() {
           </>
         }
       >
-      {loading ? (
-        <p className="px-5 py-10 text-center text-sm text-muted">Carregando…</p>
-      ) : items.length === 0 ? (
-        <EstadoVazio
-          icone="/admin/customers"
-          titulo={debouncedQ ? 'Nenhum cliente encontrado' : 'Nenhum cliente ainda'}
-          texto={
-            debouncedQ
-              ? 'Tente outro nome, e-mail ou telefone.'
-              : 'Assim que alguém comprar na sua loja, aparece aqui com o histórico de pedidos.'
-          }
-        />
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-sm">
-            <thead className="border-b border-line text-left">
-              <tr>
-                <th className="px-5 py-2">Cliente</th>
-                <th className="px-3 py-2">Contato</th>
-                <th className="px-3 py-2 text-right">Pedidos</th>
-                <th className="px-3 py-2 text-right">Total gasto</th>
-                <th className="px-3 py-2">Última compra</th>
-                <th className="px-5 py-2" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {items.map((c) => (
-                <tr key={c.id} className="align-middle">
-                  <td className="px-5 py-2.5">
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e9f1f3] text-[13px] font-bold text-[var(--brand-deep)]"
-                        aria-hidden
-                      >
-                        {(c.name || '·').trim().charAt(0).toUpperCase()}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block font-semibold">{c.name}</span>
-                        <span className="mt-0.5 flex items-center gap-1.5 text-[12px] text-muted">
-                          Desde {formatDate(c.createdAt)}
-                          {c.hasAccount ? null : <Selo>sem conta</Selo>}
-                        </span>
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <p className="truncate text-xs">{c.email}</p>
-                    {c.phone ? (
-                      <p className="text-[11px] text-muted">{c.phone}</p>
-                    ) : null}
-                  </td>
-                  <td className="px-3 py-2.5 text-right tabular-nums">{c.orders}</td>
-                  <td className="px-3 py-2.5 text-right font-semibold tabular-nums">
-                    {money(c.totalSpent)}
-                  </td>
-                  <td className="px-3 py-2.5 text-xs text-muted">
-                    {formatDate(c.lastOrderAt)}
-                  </td>
-                  <td className="px-5 py-2.5 text-right">
-                    <button
-                      type="button"
-                      className="btn btn-ghost h-9 px-3 text-[13px]"
-                      onClick={() => openDetail(c.id)}
-                    >
-                      Ver cliente
-                    </button>
-                  </td>
+        {loading ? (
+          <p className="px-5 py-10 text-center text-sm text-muted">
+            Carregando…
+          </p>
+        ) : items.length === 0 ? (
+          <EstadoVazio
+            icone="/admin/customers"
+            titulo={
+              debouncedQ ? 'Nenhum cliente encontrado' : 'Nenhum cliente ainda'
+            }
+            texto={
+              debouncedQ
+                ? 'Tente outro nome, e-mail ou telefone.'
+                : 'Assim que alguém comprar na sua loja, aparece aqui com o histórico de pedidos.'
+            }
+          />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead className="border-b border-line text-left">
+                <tr>
+                  <th className="px-5 py-2">Cliente</th>
+                  <th className="px-3 py-2">Contato</th>
+                  <th className="px-3 py-2 text-right">Pedidos</th>
+                  <th className="px-3 py-2 text-right">Total gasto</th>
+                  <th className="px-3 py-2">Última compra</th>
+                  <th className="px-5 py-2" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody className="divide-y divide-line">
+                {items.map((c) => (
+                  <tr key={c.id} className="align-middle">
+                    <td className="px-5 py-2.5">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e9f1f3] text-[13px] font-bold text-[var(--brand-deep)]"
+                          aria-hidden
+                        >
+                          {(c.name || '·').trim().charAt(0).toUpperCase()}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block font-semibold">{c.name}</span>
+                          <span className="mt-0.5 flex items-center gap-1.5 text-[12px] text-muted">
+                            Desde {formatDate(c.createdAt)}
+                            {c.hasAccount ? null : <Selo>sem conta</Selo>}
+                          </span>
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <p className="truncate text-xs">{c.email}</p>
+                      {c.phone ? (
+                        <p className="text-[11px] text-muted">{c.phone}</p>
+                      ) : null}
+                    </td>
+                    <td className="px-3 py-2.5 text-right tabular-nums">
+                      {c.orders}
+                    </td>
+                    <td className="px-3 py-2.5 text-right font-semibold tabular-nums">
+                      {money(c.totalSpent)}
+                    </td>
+                    <td className="px-3 py-2.5 text-xs text-muted">
+                      {formatDate(c.lastOrderAt)}
+                    </td>
+                    <td className="px-5 py-2.5 text-right">
+                      <button
+                        type="button"
+                        className="btn btn-ghost h-9 px-3 text-[13px]"
+                        onClick={() => openDetail(c.id)}
+                      >
+                        Ver cliente
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Secao>
 
       <PaginationBar
@@ -365,8 +391,19 @@ export default function AdminCustomersPage() {
                 aria-label="Fechar"
                 onClick={() => setDetail(null)}
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden
+                >
+                  <path
+                    d="M6 6l12 12M18 6L6 18"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
                 </svg>
               </button>
             </div>
@@ -375,7 +412,9 @@ export default function AdminCustomersPage() {
               <div className="grid grid-cols-3 gap-2.5">
                 <div className="rounded-xl bg-[#f6f8fa] px-3.5 py-3">
                   <p className="label">Pedidos pagos</p>
-                  <p className="text-lg font-bold tabular-nums">{detail.paidOrders}</p>
+                  <p className="text-lg font-bold tabular-nums">
+                    {detail.paidOrders}
+                  </p>
                 </div>
                 <div className="rounded-xl bg-[#f6f8fa] px-3.5 py-3">
                   <p className="label">Total gasto</p>
@@ -385,7 +424,9 @@ export default function AdminCustomersPage() {
                 </div>
                 <div className="rounded-xl bg-[#f6f8fa] px-3.5 py-3">
                   <p className="label">Cliente desde</p>
-                  <p className="text-lg font-bold">{formatDate(detail.createdAt)}</p>
+                  <p className="text-lg font-bold">
+                    {formatDate(detail.createdAt)}
+                  </p>
                 </div>
               </div>
 
@@ -394,7 +435,10 @@ export default function AdminCustomersPage() {
                   <h3 className="text-sm font-bold">Endereços</h3>
                   <ul className="mt-2 space-y-1.5">
                     {detail.addresses.map((a) => (
-                      <li key={a.id} className="rounded-xl border border-line px-3.5 py-2.5 text-sm">
+                      <li
+                        key={a.id}
+                        className="rounded-xl border border-line px-3.5 py-2.5 text-sm"
+                      >
                         {a.isDefault ? (
                           <span className="mb-0.5 block text-[11px] font-bold uppercase text-[var(--ok)]">
                             Padrão
@@ -403,7 +447,8 @@ export default function AdminCustomersPage() {
                         {a.street}, {a.number}
                         {a.complement ? ` — ${a.complement}` : ''}
                         <span className="block text-xs text-muted">
-                          {a.neighborhood} · {a.city}/{a.state} · CEP {a.zipCode}
+                          {a.neighborhood} · {a.city}/{a.state} · CEP{' '}
+                          {a.zipCode}
                         </span>
                       </li>
                     ))}
@@ -416,7 +461,9 @@ export default function AdminCustomersPage() {
                   Histórico de pedidos ({detail.orders.length})
                 </h3>
                 {detail.orders.length === 0 ? (
-                  <p className="mt-2 text-sm text-muted">Nenhum pedido ainda.</p>
+                  <p className="mt-2 text-sm text-muted">
+                    Nenhum pedido ainda.
+                  </p>
                 ) : (
                   <ul className="mt-2 divide-y divide-line overflow-hidden rounded-xl border border-line">
                     {detail.orders.map((o) => (
@@ -431,7 +478,9 @@ export default function AdminCustomersPage() {
                           </p>
                         </div>
                         <StatusBadge status={o.status} />
-                        <strong className="tabular-nums">{money(o.total)}</strong>
+                        <strong className="tabular-nums">
+                          {money(o.total)}
+                        </strong>
                       </li>
                     ))}
                   </ul>
@@ -462,7 +511,9 @@ export default function AdminCustomersPage() {
                   <button
                     type="button"
                     className="btn btn-ghost py-1.5 text-xs text-accent"
-                    disabled={lgpdBusy || detail.email.endsWith('@removido.local')}
+                    disabled={
+                      lgpdBusy || detail.email.endsWith('@removido.local')
+                    }
                     onClick={() => void anonimizar(detail)}
                   >
                     {detail.email.endsWith('@removido.local')

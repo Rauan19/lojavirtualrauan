@@ -88,7 +88,13 @@ export function Modal({
             onClick={() => void fechar()}
             aria-label="Fechar"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden
+            >
               <path
                 d="M6 6l12 12M18 6L6 18"
                 stroke="currentColor"
@@ -99,11 +105,16 @@ export function Modal({
           </button>
         </div>
         {erro ? (
-          <p role="alert" className="mx-4 mt-3 border border-[#f3b3b3] bg-[#fef2f2] px-3 py-2 text-sm text-accent">
+          <p
+            role="alert"
+            className="mx-4 mt-3 border border-[#f3b3b3] bg-[#fef2f2] px-3 py-2 text-sm text-accent"
+          >
             {erro}
           </p>
         ) : null}
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+          {children}
+        </div>
       </div>
     </div>
   );

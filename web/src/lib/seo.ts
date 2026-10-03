@@ -132,7 +132,12 @@ function platformHosts(): Set<string> {
   return new Set(
     raw
       .split(',')
-      .map((h) => h.trim().toLowerCase().replace(/^www\./, ''))
+      .map((h) =>
+        h
+          .trim()
+          .toLowerCase()
+          .replace(/^www\./, ''),
+      )
       .filter(Boolean),
   );
 }
@@ -140,7 +145,11 @@ function platformHosts(): Set<string> {
 export async function currentHost(): Promise<string> {
   const h = await headers();
   const raw = h.get('x-forwarded-host') || h.get('host') || '';
-  return raw.split(':')[0].trim().toLowerCase().replace(/^www\./, '');
+  return raw
+    .split(':')[0]
+    .trim()
+    .toLowerCase()
+    .replace(/^www\./, '');
 }
 
 /**
@@ -240,7 +249,10 @@ export function metaDescription(
   raw: string | null | undefined,
   fallback: string,
 ): string {
-  const text = (raw || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const text = (raw || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (!text) return fallback;
   return text.length > 160 ? `${text.slice(0, 157)}...` : text;
 }

@@ -38,13 +38,18 @@ export default function AviseMePage() {
         titulo="Avise-me quando chegar"
         descricao={
           <>
-            Clientes que pediram para ser avisados quando um produto esgotado voltar. Ao repor o estoque, cada um recebe um e-mail (em até 10 minutos). Use a lista para decidir o que repor primeiro.
+            Clientes que pediram para ser avisados quando um produto esgotado
+            voltar. Ao repor o estoque, cada um recebe um e-mail (em até 10
+            minutos). Use a lista para decidir o que repor primeiro.
           </>
         }
       />
 
       {erro ? (
-        <p role="alert" className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent">
+        <p
+          role="alert"
+          className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent"
+        >
           {erro}
         </p>
       ) : null}

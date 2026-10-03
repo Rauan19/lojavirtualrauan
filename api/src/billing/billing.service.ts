@@ -130,13 +130,12 @@ export class BillingService {
       store.mpSubscriptionStatus !== 'cancelled'
     ) {
       const token = await this.platformAccessToken();
-      await this.cancelPreapproval(store.mpPreapprovalId, token).catch(
-        (err) =>
-          this.logger.warn(
-            `Não cancelou a assinatura ao ir para o grátis · loja ${storeId}: ${
-              err instanceof Error ? err.message : String(err)
-            }`,
-          ),
+      await this.cancelPreapproval(store.mpPreapprovalId, token).catch((err) =>
+        this.logger.warn(
+          `Não cancelou a assinatura ao ir para o grátis · loja ${storeId}: ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+        ),
       );
       assinaturaCancelada = true;
     }
@@ -1370,9 +1369,7 @@ export class BillingService {
     if (planos.length === 0) {
       throw new NotFoundException('Nenhum plano ativo configurado');
     }
-    const escolhido = planId
-      ? planos.find((p) => p.id === planId)
-      : undefined;
+    const escolhido = planId ? planos.find((p) => p.id === planId) : undefined;
     if (escolhido) return escolhido;
 
     const padrao =
@@ -1500,40 +1497,42 @@ export class BillingService {
      * da loja serializa por loja; o segundo espera e encontra a cobrança do
      * primeiro.
      */
-    const { invoice, jaExistia } = await this.prisma.$transaction(async (tx) => {
-      await tx.$executeRaw`SELECT id FROM "Store" WHERE id = ${storeId} FOR UPDATE`;
+    const { invoice, jaExistia } = await this.prisma.$transaction(
+      async (tx) => {
+        await tx.$executeRaw`SELECT id FROM "Store" WHERE id = ${storeId} FOR UPDATE`;
 
-      const aberta = await tx.platformInvoice.findFirst({
-        where: {
-          storeId,
-          method: BILLING_METHOD.PIX,
-          status: PaymentStatus.PENDING,
-        },
-        orderBy: { createdAt: 'desc' },
-      });
-      // vale mesmo sem QR ainda: outra requisição pode estar emitindo agora
-      if (
-        aberta &&
-        (!aberta.pixExpiresAt || aberta.pixExpiresAt.getTime() > Date.now())
-      ) {
-        return { invoice: aberta, jaExistia: true };
-      }
+        const aberta = await tx.platformInvoice.findFirst({
+          where: {
+            storeId,
+            method: BILLING_METHOD.PIX,
+            status: PaymentStatus.PENDING,
+          },
+          orderBy: { createdAt: 'desc' },
+        });
+        // vale mesmo sem QR ainda: outra requisição pode estar emitindo agora
+        if (
+          aberta &&
+          (!aberta.pixExpiresAt || aberta.pixExpiresAt.getTime() > Date.now())
+        ) {
+          return { invoice: aberta, jaExistia: true };
+        }
 
-      const criada = await tx.platformInvoice.create({
-        data: {
-          storeId,
-          planId: plan.id,
-          planName: plan.name,
-          amount: new Prisma.Decimal(plan.amount),
-          periodDays: plan.periodDays,
-          status: PaymentStatus.PENDING,
-          method: BILLING_METHOD.PIX,
-          dueAt: store.planDueAt,
-          pixExpiresAt: expiraEm,
-        },
-      });
-      return { invoice: criada, jaExistia: false };
-    });
+        const criada = await tx.platformInvoice.create({
+          data: {
+            storeId,
+            planId: plan.id,
+            planName: plan.name,
+            amount: new Prisma.Decimal(plan.amount),
+            periodDays: plan.periodDays,
+            status: PaymentStatus.PENDING,
+            method: BILLING_METHOD.PIX,
+            dueAt: store.planDueAt,
+            pixExpiresAt: expiraEm,
+          },
+        });
+        return { invoice: criada, jaExistia: false };
+      },
+    );
 
     if (jaExistia) {
       return this.cobrancaPixAberta(storeId);

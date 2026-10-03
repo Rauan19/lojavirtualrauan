@@ -39,7 +39,10 @@ function RedefinirSenhaForm() {
         onSubmit={onSubmit}
         className="auth-card w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_70px_-30px_rgba(4,24,29,0.65)] sm:p-9"
       >
-        <Link href="/login" className="text-xs font-medium text-muted hover:text-ink">
+        <Link
+          href="/login"
+          className="text-xs font-medium text-muted hover:text-ink"
+        >
           ← Login
         </Link>
         <h1 className="mt-4 font-[family-name:var(--font-brand)] text-[1.7rem] font-800 leading-tight tracking-tight">
@@ -55,7 +58,10 @@ function RedefinirSenhaForm() {
         ) : (
           <>
             {error ? (
-              <p role="alert" className="mt-3 border border-accent/20 bg-accent/5 px-3 py-2 text-sm text-accent">
+              <p
+                role="alert"
+                className="mt-3 border border-accent/20 bg-accent/5 px-3 py-2 text-sm text-accent"
+              >
                 {error}
               </p>
             ) : null}

@@ -130,14 +130,7 @@ function BoletoBarcode({ value }: { value: string }) {
     >
       <rect x={0} y={0} width={width} height={height} fill="#fff" />
       {rects.map((r, idx) => (
-        <rect
-          key={idx}
-          x={r.x}
-          y={0}
-          width={r.w}
-          height={height}
-          fill="#111"
-        />
+        <rect key={idx} x={r.x} y={0} width={r.w} height={height} fill="#111" />
       ))}
     </svg>
   );
@@ -254,10 +247,7 @@ export function OfflinePaymentPanel({ info, amount, orderLabel }: Props) {
                 type="button"
                 className="w-full rounded-sm border border-line bg-[#f7f8fa] px-3 py-3 text-left transition hover:border-ink/30"
                 onClick={() =>
-                  void copyText(
-                    digitableRaw || digitableDisplay,
-                    'boleto',
-                  )
+                  void copyText(digitableRaw || digitableDisplay, 'boleto')
                 }
                 title="Clique para copiar"
               >
@@ -299,8 +289,8 @@ export function OfflinePaymentPanel({ info, amount, orderLabel }: Props) {
 
       {!hasPix && !hasBoleto ? (
         <p className="text-sm text-amber-900">
-          Pagamento criado, mas o Mercado Pago não devolveu QR/boleto. Confira as
-          credenciais de teste da conta real e tente de novo.
+          Pagamento criado, mas o Mercado Pago não devolveu QR/boleto. Confira
+          as credenciais de teste da conta real e tente de novo.
         </p>
       ) : null}
     </div>

@@ -36,10 +36,32 @@ function ShieldIcon() {
 function TruckIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M2.5 6.5h11v9h-11v-9z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-      <path d="M13.5 10h3.5l3.5 3v2.5h-7V10z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
-      <circle cx="6.5" cy="17.5" r="1.7" stroke="currentColor" strokeWidth="1.7" />
-      <circle cx="16.5" cy="17.5" r="1.7" stroke="currentColor" strokeWidth="1.7" />
+      <path
+        d="M2.5 6.5h11v9h-11v-9z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M13.5 10h3.5l3.5 3v2.5h-7V10z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <circle
+        cx="6.5"
+        cy="17.5"
+        r="1.7"
+        stroke="currentColor"
+        strokeWidth="1.7"
+      />
+      <circle
+        cx="16.5"
+        cy="17.5"
+        r="1.7"
+        stroke="currentColor"
+        strokeWidth="1.7"
+      />
     </svg>
   );
 }
@@ -80,7 +102,6 @@ export function StoreAuthShell({
     api<StoreBrand>(`/stores/public/${slug}`)
       .then(setStore)
       .catch(() => setStore(null));
-
   }, [slug]);
 
   const primary = store?.primaryColor || '#1f2430';
@@ -114,7 +135,13 @@ export function StoreAuthShell({
           href={`/loja/${slug}`}
           className="inline-flex w-fit items-center gap-1.5 text-sm opacity-80 transition hover:opacity-100 md:col-span-2"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden
+          >
             <path
               d="M15 5l-7 7 7 7"
               stroke="currentColor"
@@ -130,7 +157,11 @@ export function StoreAuthShell({
           <Link href={`/loja/${slug}`} className="mb-6 inline-block">
             {logo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={logo} alt={name} className="h-11 max-w-[180px] object-contain" />
+              <img
+                src={logo}
+                alt={name}
+                className="h-11 max-w-[180px] object-contain"
+              />
             ) : (
               <span
                 className="text-xl font-bold tracking-tight"
@@ -143,7 +174,9 @@ export function StoreAuthShell({
           <h1 className="text-[26px] font-bold leading-tight tracking-tight text-ink sm:text-[28px]">
             {title}
           </h1>
-          <p className="mt-1.5 text-[14px] leading-snug text-muted">{subtitle}</p>
+          <p className="mt-1.5 text-[14px] leading-snug text-muted">
+            {subtitle}
+          </p>
           <div className="mt-6">{children}</div>
         </section>
 
@@ -152,12 +185,15 @@ export function StoreAuthShell({
             Sua conta, suas compras.
           </h2>
           <p className="mt-3 max-w-[36ch] text-[16px] leading-relaxed opacity-85">
-            Acompanhe tudo que você comprou{name ? ` na ${name}` : ''} e finalize a
-            próxima em segundos.
+            Acompanhe tudo que você comprou{name ? ` na ${name}` : ''} e
+            finalize a próxima em segundos.
           </p>
           <ul className="mt-7 space-y-3">
             {PERKS.map((p) => (
-              <li key={p.text} className="flex items-center gap-3 text-[15px] opacity-90">
+              <li
+                key={p.text}
+                className="flex items-center gap-3 text-[15px] opacity-90"
+              >
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-current/15">
                   {p.icon}
                 </span>

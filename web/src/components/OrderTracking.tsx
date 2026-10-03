@@ -1,9 +1,6 @@
 'use client';
 
-import {
-  buildTrackingSteps,
-  resolveTrackingUrl,
-} from '@/lib/tracking';
+import { buildTrackingSteps, resolveTrackingUrl } from '@/lib/tracking';
 
 type Props = {
   order: {

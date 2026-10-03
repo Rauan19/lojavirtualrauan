@@ -3,7 +3,13 @@ import { consolidatePackage, DEFAULT_PACKAGE, itemPackage } from './packaging';
 describe('itemPackage', () => {
   it('usa a medida cadastrada quando existe', () => {
     expect(
-      itemPackage({ quantity: 1, weight: 2, width: 30, height: 20, length: 40 }),
+      itemPackage({
+        quantity: 1,
+        weight: 2,
+        width: 30,
+        height: 20,
+        length: 40,
+      }),
     ).toEqual({ weight: 2, width: 30, height: 20, length: 40 });
   });
 

@@ -126,7 +126,11 @@ export class StorefrontService {
    * Exige a senha mesmo com o token válido: a ação não tem desfazer, e um
    * token roubado não pode bastar para apagar a conta de alguém.
    */
-  async deleteOwnAccount(storeId: string, customerId: string, password: string) {
+  async deleteOwnAccount(
+    storeId: string,
+    customerId: string,
+    password: string,
+  ) {
     const customer = await this.prisma.customer.findFirst({
       where: { id: customerId, storeId },
       select: { id: true, passwordHash: true },

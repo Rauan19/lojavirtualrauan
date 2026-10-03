@@ -239,7 +239,8 @@ export default function ContaPage() {
     if (!token) return;
     const ok = await confirm({
       title: 'Remover endereço?',
-      message: 'Esse endereço sai da sua conta. Você pode cadastrar de novo depois.',
+      message:
+        'Esse endereço sai da sua conta. Você pode cadastrar de novo depois.',
       confirmLabel: 'Remover',
       danger: true,
     });
@@ -308,7 +309,9 @@ export default function ContaPage() {
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    {addr.label ? <p className="font-semibold">{addr.label}</p> : null}
+                    {addr.label ? (
+                      <p className="font-semibold">{addr.label}</p>
+                    ) : null}
                     {addr.isDefault ? (
                       <span className="border border-[var(--ok)]/30 bg-[var(--ok)]/10 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[var(--ok)]">
                         Padrão
@@ -320,7 +323,8 @@ export default function ContaPage() {
                     {addr.complement ? ` — ${addr.complement}` : ''}
                   </p>
                   <p className="text-muted">
-                    {addr.neighborhood} · {addr.city}/{addr.state} · CEP {addr.zipCode}
+                    {addr.neighborhood} · {addr.city}/{addr.state} · CEP{' '}
+                    {addr.zipCode}
                   </p>
                 </div>
               </div>
@@ -354,7 +358,9 @@ export default function ContaPage() {
           {addresses.length === 0 && !showForm ? (
             <li className="flex flex-col items-center gap-2 border border-dashed border-line px-4 py-10 text-center">
               <AddressIcon />
-              <p className="text-sm font-semibold text-ink">Nenhum endereço cadastrado</p>
+              <p className="text-sm font-semibold text-ink">
+                Nenhum endereço cadastrado
+              </p>
               <p className="text-xs text-muted">
                 Cadastre um endereço pra agilizar sua próxima compra.
               </p>
@@ -424,7 +430,9 @@ export default function ContaPage() {
                 <input
                   className="field"
                   value={form.complement}
-                  onChange={(e) => setForm({ ...form, complement: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, complement: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -433,7 +441,9 @@ export default function ContaPage() {
               <input
                 className="field"
                 value={form.neighborhood}
-                onChange={(e) => setForm({ ...form, neighborhood: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, neighborhood: e.target.value })
+                }
                 required
               />
             </div>
@@ -464,7 +474,9 @@ export default function ContaPage() {
               <input
                 type="checkbox"
                 checked={form.isDefault}
-                onChange={(e) => setForm({ ...form, isDefault: e.target.checked })}
+                onChange={(e) =>
+                  setForm({ ...form, isDefault: e.target.checked })
+                }
               />
               Definir como endereço padrão
             </label>
@@ -539,7 +551,14 @@ export default function ContaPage() {
 
 function AddressIcon() {
   return (
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" aria-hidden className="text-muted">
+    <svg
+      width="32"
+      height="32"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className="text-muted"
+    >
       <path
         d="M12 21s-7-5.5-7-11a7 7 0 1114 0c0 5.5-7 11-7 11z"
         stroke="currentColor"

@@ -64,9 +64,12 @@ export function ProductShelf({
   const [canScroll, setCanScroll] = useState({ left: false, right: false });
 
   useEffect(() => {
-    api<{ items: ShelfProduct[] }>(`/catalog/products?${query}&limit=${limit}`, {
-      storeSlug,
-    })
+    api<{ items: ShelfProduct[] }>(
+      `/catalog/products?${query}&limit=${limit}`,
+      {
+        storeSlug,
+      },
+    )
       .then((res) => setItems(res.items))
       .catch(() => setItems([]));
   }, [storeSlug, query, limit]);
@@ -87,7 +90,10 @@ export function ProductShelf({
   function slide(dir: 1 | -1) {
     const el = trackRef.current;
     if (!el) return;
-    el.scrollBy({ left: dir * Math.max(240, el.clientWidth * 0.8), behavior: 'smooth' });
+    el.scrollBy({
+      left: dir * Math.max(240, el.clientWidth * 0.8),
+      behavior: 'smooth',
+    });
   }
 
   // Vitrine sem produto não vira espaço vazio na home: simplesmente não existe
@@ -135,7 +141,10 @@ export function ProductShelf({
         {items === null ? (
           <div className="no-scrollbar flex gap-3 overflow-hidden">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="w-[164px] shrink-0 animate-pulse md:w-[186px]">
+              <div
+                key={i}
+                className="w-[164px] shrink-0 animate-pulse md:w-[186px]"
+              >
                 <div className="store-card-media bg-[#ececec]" />
                 <div className="mt-2 h-3 w-4/5 bg-[#ececec]" />
                 <div className="mt-2 h-4 w-1/2 bg-[#ececec]" />
@@ -180,7 +189,10 @@ export function ProductShelf({
                     {off ? (
                       <span
                         className="selo-loja absolute left-2 top-2"
-                        style={{ background: 'var(--store-accent)', color: 'var(--store-accent-ink)' }}
+                        style={{
+                          background: 'var(--store-accent)',
+                          color: 'var(--store-accent-ink)',
+                        }}
                       >
                         -{off}%
                       </span>
@@ -196,7 +208,9 @@ export function ProductShelf({
                   {p.rating && p.rating.count > 0 ? (
                     <div className="mt-0.5 flex items-center gap-1">
                       <StarRating value={p.rating.avg} size={11} />
-                      <span className="text-[11px] text-muted">({p.rating.count})</span>
+                      <span className="text-[11px] text-muted">
+                        ({p.rating.count})
+                      </span>
                     </div>
                   ) : null}
                   <div className="mt-1 flex flex-wrap items-baseline gap-1.5">
@@ -205,7 +219,9 @@ export function ProductShelf({
                         {money(compare)}
                       </span>
                     ) : null}
-                    <strong className="text-[15px] font-bold text-ink">{money(price)}</strong>
+                    <strong className="text-[15px] font-bold text-ink">
+                      {money(price)}
+                    </strong>
                   </div>
                   {pixPercent ? (
                     <p className="text-[12px] font-semibold text-[var(--ok)]">
@@ -214,7 +230,10 @@ export function ProductShelf({
                   ) : null}
                   {p.installments && p.installments >= 2 ? (
                     <p className="text-[12px] text-muted">
-                      ou <strong className="font-semibold text-ink">{p.installments}x</strong>{' '}
+                      ou{' '}
+                      <strong className="font-semibold text-ink">
+                        {p.installments}x
+                      </strong>{' '}
                       sem juros
                     </p>
                   ) : null}

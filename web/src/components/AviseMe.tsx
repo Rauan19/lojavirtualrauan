@@ -39,7 +39,9 @@ export function AviseMe({
       });
       setEnviado(true);
     } catch (err) {
-      setErro(err instanceof Error ? err.message : 'Não foi possível registrar');
+      setErro(
+        err instanceof Error ? err.message : 'Não foi possível registrar',
+      );
     } finally {
       setOcupado(false);
     }
@@ -49,7 +51,8 @@ export function AviseMe({
     return (
       <p
         role="status"
-        className="mt-4 border border-[#bfe3c8] bg-[#f0fbf3] px-3 py-2.5 text-sm text-[#166534]">
+        className="mt-4 border border-[#bfe3c8] bg-[#f0fbf3] px-3 py-2.5 text-sm text-[#166534]"
+      >
         Pronto! Vamos te avisar em <strong>{email.trim()}</strong> assim que
         chegar.
       </p>

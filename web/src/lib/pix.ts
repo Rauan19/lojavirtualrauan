@@ -5,7 +5,8 @@
  */
 export function precoNoPix(valor: number, percentual?: number | null): number {
   const pct = Number(percentual);
-  if (!Number.isFinite(pct) || pct <= 0 || !Number.isFinite(valor)) return valor;
+  if (!Number.isFinite(pct) || pct <= 0 || !Number.isFinite(valor))
+    return valor;
   const centavos = Math.round(valor * 100);
   const desconto = Math.floor((centavos * Math.min(pct, 50)) / 100);
   return (centavos - desconto) / 100;

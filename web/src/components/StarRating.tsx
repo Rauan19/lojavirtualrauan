@@ -33,7 +33,11 @@ function Star({ fill, size }: { fill: number; size: number }) {
 export function StarRating({ value, size = 13, className = '' }: Props) {
   const v = Math.max(0, Math.min(5, value));
   return (
-    <div className={`inline-flex items-center gap-[1px] ${className}`} role="img" aria-label={`${v.toFixed(1)} de 5 estrelas`}>
+    <div
+      className={`inline-flex items-center gap-[1px] ${className}`}
+      role="img"
+      aria-label={`${v.toFixed(1)} de 5 estrelas`}
+    >
       {Array.from({ length: 5 }).map((_, i) => (
         <Star key={i} size={size} fill={Math.max(0, Math.min(1, v - i))} />
       ))}

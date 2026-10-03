@@ -11,7 +11,9 @@ export default function AdminSegurancaPage() {
         titulo="Segurança"
         descricao={
           <>
-            Proteja o painel da sua loja com a verificação em duas etapas: mesmo que alguém descubra a sua senha, não entra sem o código do seu celular.
+            Proteja o painel da sua loja com a verificação em duas etapas: mesmo
+            que alguém descubra a sua senha, não entra sem o código do seu
+            celular.
           </>
         }
       />

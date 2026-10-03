@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 const CONTROLE = 'input:not([type="hidden"]), select, textarea';
 let seq = 0;
@@ -10,7 +10,7 @@ let seq = 0;
  * hidrata depois, e um id posto antes disso vira erro de hydration.
  */
 const hidratado = (el: Element) =>
-  Object.keys(el).some((k) => k.startsWith("__reactFiber$"));
+  Object.keys(el).some((k) => k.startsWith('__reactFiber$'));
 
 /**
  * Liga cada `<label class="label">` ao campo logo abaixo dele.
@@ -27,7 +27,7 @@ export function LabelLinker() {
   useEffect(() => {
     const ligar = (raiz: ParentNode) => {
       raiz
-        .querySelectorAll<HTMLLabelElement>("label.label")
+        .querySelectorAll<HTMLLabelElement>('label.label')
         .forEach((label) => {
           if (label.htmlFor || label.querySelector(CONTROLE)) return;
 
@@ -38,7 +38,7 @@ export function LabelLinker() {
             el && !alvo;
             el = el.nextElementSibling
           ) {
-            if (el.matches("label")) break;
+            if (el.matches('label')) break;
             alvo = el.matches(CONTROLE) ? el : el.querySelector(CONTROLE);
           }
           if (!alvo || !hidratado(alvo) || !hidratado(label)) return;

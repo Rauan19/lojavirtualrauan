@@ -27,9 +27,13 @@ export function CodigoProduto({
   }
 
   return (
-    <span className={`inline-flex items-center gap-1.5 text-xs text-muted ${className}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 text-xs text-muted ${className}`}
+    >
       Código:
-      <span className="font-mono font-semibold tracking-wide text-ink">{codigo}</span>
+      <span className="font-mono font-semibold tracking-wide text-ink">
+        {codigo}
+      </span>
       <button
         type="button"
         onClick={copiar}

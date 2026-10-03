@@ -8,7 +8,10 @@ import {
   useCustomer,
   type CustomerAddress,
 } from '@/components/CustomerProvider';
-import { MpPaymentBrick, type BrickPayerAddress } from '@/components/MpPaymentBrick';
+import {
+  MpPaymentBrick,
+  type BrickPayerAddress,
+} from '@/components/MpPaymentBrick';
 import {
   OfflinePaymentPanel,
   type OfflinePaymentInfo,
@@ -159,8 +162,8 @@ function CheckoutInner({ slug }: { slug: string }) {
   }, [brickSession?.orderId]);
   const temDescontoPix = Boolean(
     brickSession &&
-      (brickSession.pixDiscountPercent ?? 0) > 0 &&
-      (brickSession.pixAmount ?? brickSession.amount) < brickSession.amount,
+    (brickSession.pixDiscountPercent ?? 0) > 0 &&
+    (brickSession.pixAmount ?? brickSession.amount) < brickSession.amount,
   );
   const valorEscolhido = brickSession
     ? metodo === 'pix' && temDescontoPix
@@ -240,8 +243,7 @@ function CheckoutInner({ slug }: { slug: string }) {
 
   useEffect(() => {
     if (!addresses.length) return;
-    const preferred =
-      addresses.find((a) => a.isDefault) || addresses[0];
+    const preferred = addresses.find((a) => a.isDefault) || addresses[0];
     setAddressId((prev) => prev || preferred.id);
   }, [addresses]);
 
@@ -309,7 +311,13 @@ function CheckoutInner({ slug }: { slug: string }) {
       clearInterval(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authToken, brickSession?.orderId, awaitingConfirm, watchingPayment, slug]);
+  }, [
+    authToken,
+    brickSession?.orderId,
+    awaitingConfirm,
+    watchingPayment,
+    slug,
+  ]);
 
   async function quoteShipping(cep: string) {
     const digits = cep.replace(/\D/g, '');
@@ -355,7 +363,9 @@ function CheckoutInner({ slug }: { slug: string }) {
     step,
     activeZip,
     cart.subtotal,
-    cart.items.map((i) => `${i.productId}:${i.variantId || ''}:${i.quantity}`).join('|'),
+    cart.items
+      .map((i) => `${i.productId}:${i.variantId || ''}:${i.quantity}`)
+      .join('|'),
   ]);
 
   async function lookupCep(raw: string) {
@@ -595,8 +605,7 @@ function CheckoutInner({ slug }: { slug: string }) {
         setBrickSession({
           orderId,
           amount: Number(pay.amount ?? total),
-          pixAmount:
-            pay.pixAmount != null ? Number(pay.pixAmount) : undefined,
+          pixAmount: pay.pixAmount != null ? Number(pay.pixAmount) : undefined,
           pixDiscountPercent: Number(pay.pixDiscountPercent ?? 0),
           publicKey: pay.publicKey,
           payerEmail: pay.payerEmail || customer.email,
@@ -687,7 +696,10 @@ function CheckoutInner({ slug }: { slug: string }) {
       ) : null}
       <header className="border-b border-line bg-white">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-          <Link href={`/loja/${slug}`} className="text-sm font-medium text-muted">
+          <Link
+            href={`/loja/${slug}`}
+            className="text-sm font-medium text-muted"
+          >
             ← Voltar à loja
           </Link>
           <strong className="text-sm">{store.name}</strong>
@@ -709,9 +721,7 @@ function CheckoutInner({ slug }: { slug: string }) {
             >
               <span
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] ${
-                  step >= s.n
-                    ? 'bg-ink text-white'
-                    : 'bg-[#eee] text-muted'
+                  step >= s.n ? 'bg-ink text-white' : 'bg-[#eee] text-muted'
                 }`}
               >
                 {s.n}
@@ -748,7 +758,9 @@ function CheckoutInner({ slug }: { slug: string }) {
                 <section className="space-y-3">
                   <div className="flex items-center justify-between gap-3">
                     <h1 className="text-lg font-bold">Onde entregar?</h1>
-                    <p className="truncate text-xs text-muted">{customer.email}</p>
+                    <p className="truncate text-xs text-muted">
+                      {customer.email}
+                    </p>
                   </div>
 
                   {!editingNew ? (
@@ -779,7 +791,9 @@ function CheckoutInner({ slug }: { slug: string }) {
                               </span>
                             ) : null}
                             {addr.label ? (
-                              <span className="font-medium">{addr.label} · </span>
+                              <span className="font-medium">
+                                {addr.label} ·{' '}
+                              </span>
                             ) : null}
                             {addr.street}, {addr.number}
                             {addr.complement ? ` — ${addr.complement}` : ''}
@@ -797,7 +811,9 @@ function CheckoutInner({ slug }: { slug: string }) {
                     <div className="space-y-2 border border-line p-3">
                       <p className="text-sm font-bold">Novo endereço</p>
                       <div>
-                        <label className="label" htmlFor="endereco-zipCode">CEP</label>
+                        <label className="label" htmlFor="endereco-zipCode">
+                          CEP
+                        </label>
                         <input
                           id="endereco-zipCode"
                           name="zipCode"
@@ -806,14 +822,19 @@ function CheckoutInner({ slug }: { slug: string }) {
                           inputMode="numeric"
                           value={addrForm.zipCode}
                           onChange={(e) =>
-                            setAddrForm({ ...addrForm, zipCode: e.target.value })
+                            setAddrForm({
+                              ...addrForm,
+                              zipCode: e.target.value,
+                            })
                           }
                           onBlur={(e) => lookupCep(e.target.value)}
                           required
                         />
                       </div>
                       <div>
-                        <label className="label" htmlFor="endereco-street">Rua</label>
+                        <label className="label" htmlFor="endereco-street">
+                          Rua
+                        </label>
                         <input
                           id="endereco-street"
                           name="street"
@@ -828,20 +849,30 @@ function CheckoutInner({ slug }: { slug: string }) {
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="label" htmlFor="endereco-number">Número</label>
+                          <label className="label" htmlFor="endereco-number">
+                            Número
+                          </label>
                           <input
                             id="endereco-number"
                             name="number"
                             className="field"
                             value={addrForm.number}
                             onChange={(e) =>
-                              setAddrForm({ ...addrForm, number: e.target.value })
+                              setAddrForm({
+                                ...addrForm,
+                                number: e.target.value,
+                              })
                             }
                             required
                           />
                         </div>
                         <div>
-                          <label className="label" htmlFor="endereco-complement">Complemento</label>
+                          <label
+                            className="label"
+                            htmlFor="endereco-complement"
+                          >
+                            Complemento
+                          </label>
                           <input
                             id="endereco-complement"
                             name="complement"
@@ -858,7 +889,12 @@ function CheckoutInner({ slug }: { slug: string }) {
                         </div>
                       </div>
                       <div>
-                        <label className="label" htmlFor="endereco-neighborhood">Bairro</label>
+                        <label
+                          className="label"
+                          htmlFor="endereco-neighborhood"
+                        >
+                          Bairro
+                        </label>
                         <input
                           id="endereco-neighborhood"
                           name="neighborhood"
@@ -876,7 +912,9 @@ function CheckoutInner({ slug }: { slug: string }) {
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="label" htmlFor="endereco-city">Cidade</label>
+                          <label className="label" htmlFor="endereco-city">
+                            Cidade
+                          </label>
                           <input
                             id="endereco-city"
                             name="city"
@@ -890,7 +928,9 @@ function CheckoutInner({ slug }: { slug: string }) {
                           />
                         </div>
                         <div>
-                          <label className="label" htmlFor="endereco-state">UF</label>
+                          <label className="label" htmlFor="endereco-state">
+                            UF
+                          </label>
                           <input
                             id="endereco-state"
                             name="state"
@@ -1002,7 +1042,8 @@ function CheckoutInner({ slug }: { slug: string }) {
                                 {formatDeliveryEstimate(opt.days)}
                               </span>
                               <span className="text-xs text-muted">
-                                {opt.name && !opt.name.toLowerCase().includes('grátis')
+                                {opt.name &&
+                                !opt.name.toLowerCase().includes('grátis')
                                   ? `${opt.name} · `
                                   : ''}
                                 {formatDeliveryDaysHint(opt.days)}
@@ -1041,307 +1082,319 @@ function CheckoutInner({ slug }: { slug: string }) {
                       total={valorEscolhido}
                     />
                   ) : (
-                  <div className="space-y-3">
-                    <h1 className="text-lg font-bold">Pagamento</h1>
-                    {temDescontoPix && !metodo && !offlinePay ? (
-                      <div className="space-y-2">
-                        <p className="text-sm text-muted">
-                          Como você quer pagar?
-                        </p>
-                        <div className="grid gap-2 sm:grid-cols-2">
-                          <button
-                            type="button"
-                            onClick={() => setMetodo('pix')}
-                            className="border-2 border-[#1b7f45] bg-[#f0faf4] p-4 text-left transition hover:bg-[#e3f4ea]"
-                          >
-                            <span className="text-[11px] font-bold uppercase tracking-wide text-[#1b7f45]">
-                              Pix ·{' '}
-                              {String(brickSession.pixDiscountPercent).replace('.', ',')}% OFF
-                            </span>
-                            <strong className="mt-1 block text-xl text-ink">
-                              {money(brickSession.pixAmount ?? brickSession.amount)}
-                            </strong>
-                            <span className="text-xs text-muted">
-                              Aprovação na hora · economize{' '}
-                              {money(
-                                brickSession.amount -
-                                  (brickSession.pixAmount ?? brickSession.amount),
-                              )}
-                            </span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setMetodo('cartao')}
-                            className="border-2 border-line bg-white p-4 text-left transition hover:border-ink"
-                          >
-                            <span className="text-[11px] font-bold uppercase tracking-wide text-muted">
-                              Cartão
-                            </span>
-                            <strong className="mt-1 block text-xl text-ink">
-                              {money(brickSession.amount)}
-                            </strong>
-                            <span className="text-xs text-muted">
-                              Crédito em até 12x ou débito
-                            </span>
-                          </button>
+                    <div className="space-y-3">
+                      <h1 className="text-lg font-bold">Pagamento</h1>
+                      {temDescontoPix && !metodo && !offlinePay ? (
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted">
+                            Como você quer pagar?
+                          </p>
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            <button
+                              type="button"
+                              onClick={() => setMetodo('pix')}
+                              className="border-2 border-[#1b7f45] bg-[#f0faf4] p-4 text-left transition hover:bg-[#e3f4ea]"
+                            >
+                              <span className="text-[11px] font-bold uppercase tracking-wide text-[#1b7f45]">
+                                Pix ·{' '}
+                                {String(
+                                  brickSession.pixDiscountPercent,
+                                ).replace('.', ',')}
+                                % OFF
+                              </span>
+                              <strong className="mt-1 block text-xl text-ink">
+                                {money(
+                                  brickSession.pixAmount ?? brickSession.amount,
+                                )}
+                              </strong>
+                              <span className="text-xs text-muted">
+                                Aprovação na hora · economize{' '}
+                                {money(
+                                  brickSession.amount -
+                                    (brickSession.pixAmount ??
+                                      brickSession.amount),
+                                )}
+                              </span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setMetodo('cartao')}
+                              className="border-2 border-line bg-white p-4 text-left transition hover:border-ink"
+                            >
+                              <span className="text-[11px] font-bold uppercase tracking-wide text-muted">
+                                Cartão
+                              </span>
+                              <strong className="mt-1 block text-xl text-ink">
+                                {money(brickSession.amount)}
+                              </strong>
+                              <span className="text-xs text-muted">
+                                Crédito em até 12x ou débito
+                              </span>
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <p className="flex flex-wrap items-center gap-2 text-xs text-muted">
-                        <span>
-                          Total {money(valorEscolhido)} ·{' '}
-                          {metodo === 'pix'
-                            ? 'Pix'
-                            : metodo === 'cartao'
-                              ? 'cartão'
-                              : 'cartão ou Pix'}
-                        </span>
-                        {temDescontoPix && metodo && !offlinePay ? (
-                          <button
-                            type="button"
-                            className="font-semibold text-ink underline underline-offset-2"
-                            onClick={() => setMetodo(null)}
-                          >
-                            Trocar
-                          </button>
-                        ) : null}
-                      </p>
-                    )}
+                      ) : (
+                        <p className="flex flex-wrap items-center gap-2 text-xs text-muted">
+                          <span>
+                            Total {money(valorEscolhido)} ·{' '}
+                            {metodo === 'pix'
+                              ? 'Pix'
+                              : metodo === 'cartao'
+                                ? 'cartão'
+                                : 'cartão ou Pix'}
+                          </span>
+                          {temDescontoPix && metodo && !offlinePay ? (
+                            <button
+                              type="button"
+                              className="font-semibold text-ink underline underline-offset-2"
+                              onClick={() => setMetodo(null)}
+                            >
+                              Trocar
+                            </button>
+                          ) : null}
+                        </p>
+                      )}
 
-                    {offlinePay ? (
-                      <OfflinePaymentPanel
-                        info={offlinePay}
-                        amount={valorEscolhido}
-                      />
-                    ) : null}
+                      {offlinePay ? (
+                        <OfflinePaymentPanel
+                          info={offlinePay}
+                          amount={valorEscolhido}
+                        />
+                      ) : null}
 
-                    {!offlinePay && !(temDescontoPix && !metodo) ? (
-                    <MpPaymentBrick
-                      key={metodo || 'todos'}
-                      metodo={temDescontoPix ? (metodo ?? undefined) : undefined}
-                      publicKey={brickSession.publicKey}
-                      amount={valorEscolhido}
-                      payerEmail={brickSession.payerEmail}
-                      payerName={brickSession.payerName}
-                      payerAddress={brickSession.payerAddress}
-                      onError={(msg) => setError(msg)}
-                      onSubmit={async (formData) => {
-                        setBusy(true);
-                        setError('');
-                        try {
-                          const result = await api<{
-                            id?: number;
-                            paymentId?: number;
-                            approved?: boolean;
-                            status?: string;
-                            status_detail?: string;
-                            orderId: string;
-                            qrCode?: string | null;
-                            qrCodeBase64?: string | null;
-                            ticketUrl?: string | null;
-                            digitableLine?: string | null;
-                            barcode?: string | null;
-                          }>(
-                            `/checkout/orders/${brickSession.orderId}/pay-brick`,
-                            {
-                              method: 'POST',
-                              storeSlug: slug,
-                              token: authToken,
-                              body: { formData },
-                            },
-                          );
-
-                          const paymentId = result.id ?? result.paymentId;
-                          const status = result.status || '';
-
-                          if (result.approved || status === 'approved') {
-                            // Marca sucesso ANTES de limpar a sacola (senão a UI vira "Sacola vazia")
-                            setOfflinePay(null);
-                            setAwaitingConfirm(false);
-                            setWatchingPayment(false);
-                            setPaymentDone(true);
-                            setBusy(false);
-                            cart.clear();
-                          } else if (
-                            status === 'pending' ||
-                            status === 'in_process'
-                          ) {
-                            // Pix/boleto: UI própria com QR; poll confirma depois
-                            setOfflinePay({
-                              paymentId,
-                              status,
-                              qrCode: result.qrCode,
-                              qrCodeBase64: result.qrCodeBase64,
-                              ticketUrl: result.ticketUrl,
-                              digitableLine: result.digitableLine,
-                              barcode: result.barcode,
-                            });
-                            setWatchingPayment(true);
-                            setBusy(false);
-                          } else if (status === 'rejected') {
-                            setBusy(false);
-                            setErroPagamento(motivoRecusa(result.status_detail));
-                          } else {
-                            setBusy(false);
+                      {!offlinePay && !(temDescontoPix && !metodo) ? (
+                        <MpPaymentBrick
+                          key={metodo || 'todos'}
+                          metodo={
+                            temDescontoPix ? (metodo ?? undefined) : undefined
                           }
+                          publicKey={brickSession.publicKey}
+                          amount={valorEscolhido}
+                          payerEmail={brickSession.payerEmail}
+                          payerName={brickSession.payerName}
+                          payerAddress={brickSession.payerAddress}
+                          onError={(msg) => setError(msg)}
+                          onSubmit={async (formData) => {
+                            setBusy(true);
+                            setError('');
+                            try {
+                              const result = await api<{
+                                id?: number;
+                                paymentId?: number;
+                                approved?: boolean;
+                                status?: string;
+                                status_detail?: string;
+                                orderId: string;
+                                qrCode?: string | null;
+                                qrCodeBase64?: string | null;
+                                ticketUrl?: string | null;
+                                digitableLine?: string | null;
+                                barcode?: string | null;
+                              }>(
+                                `/checkout/orders/${brickSession.orderId}/pay-brick`,
+                                {
+                                  method: 'POST',
+                                  storeSlug: slug,
+                                  token: authToken,
+                                  body: { formData },
+                                },
+                              );
 
-                          return {
-                            id: paymentId,
-                            status,
-                            status_detail: result.status_detail,
-                          };
-                        } catch (err) {
-                          setErroPagamento(
-                            err instanceof Error
-                              ? err.message
-                              : motivoRecusa(null),
-                          );
-                          setBusy(false);
-                          throw err;
-                        }
-                      }}
-                    />
-                    ) : null}
-                    {busy ? (
-                      <p className="text-xs text-muted">
-                        Enviando pagamento ao Mercado Pago…
-                      </p>
-                    ) : null}
-                    {watchingPayment || offlinePay ? (
-                      <button
-                        type="button"
-                        className="text-xs text-muted underline"
-                        onClick={() => {
-                          setWatchingPayment(true);
-                          setAwaitingConfirm(true);
-                        }}
-                      >
-                        Já paguei — confirmar pagamento →
-                      </button>
-                    ) : null}
-                  </div>
+                              const paymentId = result.id ?? result.paymentId;
+                              const status = result.status || '';
+
+                              if (result.approved || status === 'approved') {
+                                // Marca sucesso ANTES de limpar a sacola (senão a UI vira "Sacola vazia")
+                                setOfflinePay(null);
+                                setAwaitingConfirm(false);
+                                setWatchingPayment(false);
+                                setPaymentDone(true);
+                                setBusy(false);
+                                cart.clear();
+                              } else if (
+                                status === 'pending' ||
+                                status === 'in_process'
+                              ) {
+                                // Pix/boleto: UI própria com QR; poll confirma depois
+                                setOfflinePay({
+                                  paymentId,
+                                  status,
+                                  qrCode: result.qrCode,
+                                  qrCodeBase64: result.qrCodeBase64,
+                                  ticketUrl: result.ticketUrl,
+                                  digitableLine: result.digitableLine,
+                                  barcode: result.barcode,
+                                });
+                                setWatchingPayment(true);
+                                setBusy(false);
+                              } else if (status === 'rejected') {
+                                setBusy(false);
+                                setErroPagamento(
+                                  motivoRecusa(result.status_detail),
+                                );
+                              } else {
+                                setBusy(false);
+                              }
+
+                              return {
+                                id: paymentId,
+                                status,
+                                status_detail: result.status_detail,
+                              };
+                            } catch (err) {
+                              setErroPagamento(
+                                err instanceof Error
+                                  ? err.message
+                                  : motivoRecusa(null),
+                              );
+                              setBusy(false);
+                              throw err;
+                            }
+                          }}
+                        />
+                      ) : null}
+                      {busy ? (
+                        <p className="text-xs text-muted">
+                          Enviando pagamento ao Mercado Pago…
+                        </p>
+                      ) : null}
+                      {watchingPayment || offlinePay ? (
+                        <button
+                          type="button"
+                          className="text-xs text-muted underline"
+                          onClick={() => {
+                            setWatchingPayment(true);
+                            setAwaitingConfirm(true);
+                          }}
+                        >
+                          Já paguei — confirmar pagamento →
+                        </button>
+                      ) : null}
+                    </div>
                   )
                 ) : (
-                <form onSubmit={onPay} className="space-y-3">
-                  <button
-                    type="button"
-                    className="text-xs text-muted underline"
-                    onClick={() => setStep(3)}
-                  >
-                    ← Alterar frete
-                  </button>
-                  <h1 className="text-lg font-bold">Pagamento</h1>
-                  <div>
-                    <label className="label" htmlFor="cupom">
-                      Cupom (opcional)
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        id="cupom"
-                        name="cupom"
-                        className="field"
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value)}
-                        placeholder="Ex.: BEMVINDO10"
-                        autoComplete="off"
-                        autoCapitalize="characters"
-                        spellCheck={false}
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-ghost shrink-0"
-                        onClick={applyCoupon}
-                      >
-                        Aplicar
-                      </button>
+                  <form onSubmit={onPay} className="space-y-3">
+                    <button
+                      type="button"
+                      className="text-xs text-muted underline"
+                      onClick={() => setStep(3)}
+                    >
+                      ← Alterar frete
+                    </button>
+                    <h1 className="text-lg font-bold">Pagamento</h1>
+                    <div>
+                      <label className="label" htmlFor="cupom">
+                        Cupom (opcional)
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          id="cupom"
+                          name="cupom"
+                          className="field"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value)}
+                          placeholder="Ex.: BEMVINDO10"
+                          autoComplete="off"
+                          autoCapitalize="characters"
+                          spellCheck={false}
+                        />
+                        <button
+                          type="button"
+                          className="btn btn-ghost shrink-0"
+                          onClick={applyCoupon}
+                        >
+                          Aplicar
+                        </button>
+                      </div>
+                      {coupon ? (
+                        <p className="mt-1 text-xs text-[var(--ok)]">
+                          {coupon.freeShipping
+                            ? `Cupom ${coupon.code}: frete grátis`
+                            : `Cupom ${coupon.code}: −${money(coupon.discount)}`}
+                        </p>
+                      ) : null}
                     </div>
-                    {coupon ? (
-                      <p className="mt-1 text-xs text-[var(--ok)]">
-                        {coupon.freeShipping
-                          ? `Cupom ${coupon.code}: frete grátis`
-                          : `Cupom ${coupon.code}: −${money(coupon.discount)}`}
+                    <p className="text-xs text-muted">
+                      {(store.checkoutMode || 'personalized') !== 'pro'
+                        ? 'Cartão e Pix na própria loja.'
+                        : 'Você será redirecionado ao Mercado Pago (Checkout Pro) para pagar com segurança.'}
+                    </p>
+                    {store.paymentsEnabled === false ? (
+                      <p className="border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
+                        Os pagamentos desta loja ainda não estão disponíveis.
+                        Fale com a loja para concluir sua compra.
                       </p>
                     ) : null}
-                  </div>
-                  <p className="text-xs text-muted">
-                    {(store.checkoutMode || 'personalized') !== 'pro'
-                      ? 'Cartão e Pix na própria loja.'
-                      : 'Você será redirecionado ao Mercado Pago (Checkout Pro) para pagar com segurança.'}
-                  </p>
-                  {store.paymentsEnabled === false ? (
-                    <p className="border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
-                      Os pagamentos desta loja ainda não estão disponíveis. Fale com
-                      a loja para concluir sua compra.
-                    </p>
-                  ) : null}
-                  {/*
+                    {/*
                     Decreto 7.962/2013 art. 4º, I: o sumário do contrato tem
                     que ser apresentado antes da contratação. Os links abrem em
                     aba nova de propósito — sair do checkout para ler a política
                     e perder o carrinho seria pior para todo mundo.
                   */}
-                  <div className="border border-line bg-[#fafafa] p-3">
-                    <ul className="space-y-1 text-[12px] leading-relaxed text-muted">
-                      {selectedShip ? (
+                    <div className="border border-line bg-[#fafafa] p-3">
+                      <ul className="space-y-1 text-[12px] leading-relaxed text-muted">
+                        {selectedShip ? (
+                          <li>
+                            Entrega por {selectedShip.name}, prazo de{' '}
+                            {formatDeliveryEstimate(selectedShip.days)} após a
+                            aprovação do pagamento.
+                          </li>
+                        ) : null}
                         <li>
-                          Entrega por {selectedShip.name}, prazo de{' '}
-                          {formatDeliveryEstimate(selectedShip.days)} após a
-                          aprovação do pagamento.
+                          Você pode desistir da compra em até 7 dias corridos do
+                          recebimento e receber o valor de volta.
                         </li>
-                      ) : null}
-                      <li>
-                        Você pode desistir da compra em até 7 dias corridos do
-                        recebimento e receber o valor de volta.
-                      </li>
-                      <li>
-                        Produtos com defeito têm garantia legal de 30 ou 90
-                        dias, conforme o tipo.
-                      </li>
-                    </ul>
-                    <label className="mt-3 flex cursor-pointer items-start gap-2 text-[13px] leading-snug">
-                      <input
-                        type="checkbox"
-                        className="mt-0.5 shrink-0"
-                        checked={aceitou}
-                        onChange={(e) => setAceitou(e.target.checked)}
-                      />
-                      <span>
-                        Li e concordo com as{' '}
-                        <Link
-                          href={`/loja/${slug}/politicas/termos`}
-                          target="_blank"
-                          className="font-semibold underline"
-                        >
-                          condições de venda
-                        </Link>
-                        , a{' '}
-                        <Link
-                          href={`/loja/${slug}/politicas/trocas`}
-                          target="_blank"
-                          className="font-semibold underline"
-                        >
-                          política de trocas
-                        </Link>{' '}
-                        e a{' '}
-                        <Link
-                          href={`/loja/${slug}/politicas/privacidade`}
-                          target="_blank"
-                          className="font-semibold underline"
-                        >
-                          política de privacidade
-                        </Link>
-                        .
-                      </span>
-                    </label>
-                  </div>
-                  <button
-                    type="submit"
-                    className="btn btn-accent w-full"
-                    disabled={busy || !aceitou || store.paymentsEnabled === false}
-                  >
-                    {busy ? 'Abrindo Mercado Pago…' : `Pagar ${money(total)}`}
-                  </button>
-                </form>
+                        <li>
+                          Produtos com defeito têm garantia legal de 30 ou 90
+                          dias, conforme o tipo.
+                        </li>
+                      </ul>
+                      <label className="mt-3 flex cursor-pointer items-start gap-2 text-[13px] leading-snug">
+                        <input
+                          type="checkbox"
+                          className="mt-0.5 shrink-0"
+                          checked={aceitou}
+                          onChange={(e) => setAceitou(e.target.checked)}
+                        />
+                        <span>
+                          Li e concordo com as{' '}
+                          <Link
+                            href={`/loja/${slug}/politicas/termos`}
+                            target="_blank"
+                            className="font-semibold underline"
+                          >
+                            condições de venda
+                          </Link>
+                          , a{' '}
+                          <Link
+                            href={`/loja/${slug}/politicas/trocas`}
+                            target="_blank"
+                            className="font-semibold underline"
+                          >
+                            política de trocas
+                          </Link>{' '}
+                          e a{' '}
+                          <Link
+                            href={`/loja/${slug}/politicas/privacidade`}
+                            target="_blank"
+                            className="font-semibold underline"
+                          >
+                            política de privacidade
+                          </Link>
+                          .
+                        </span>
+                      </label>
+                    </div>
+                    <button
+                      type="submit"
+                      className="btn btn-accent w-full"
+                      disabled={
+                        busy || !aceitou || store.paymentsEnabled === false
+                      }
+                    >
+                      {busy ? 'Abrindo Mercado Pago…' : `Pagar ${money(total)}`}
+                    </button>
+                  </form>
                 )
               ) : null}
             </>
@@ -1358,7 +1411,13 @@ function CheckoutInner({ slug }: { slug: string }) {
                   <div className="h-14 w-11 shrink-0 overflow-hidden bg-[#eee]">
                     {img ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img loading="lazy" decoding="async" src={img} alt="" className="h-full w-full object-cover" />
+                      <img
+                        loading="lazy"
+                        decoding="async"
+                        src={img}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
                     ) : (
                       <SemFoto nome={item.name} variante="mini" />
                     )}

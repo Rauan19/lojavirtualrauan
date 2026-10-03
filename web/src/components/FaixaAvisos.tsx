@@ -25,7 +25,11 @@ export function FaixaAvisos({ avisos }: { avisos: string[] }) {
       role="region"
       aria-label="Avisos da loja"
     >
-      <p key={atual} className="faixa-avisos-texto truncate px-4 py-2" aria-live="polite">
+      <p
+        key={atual}
+        className="faixa-avisos-texto truncate px-4 py-2"
+        aria-live="polite"
+      >
         {avisos[atual % avisos.length]}
       </p>
     </div>

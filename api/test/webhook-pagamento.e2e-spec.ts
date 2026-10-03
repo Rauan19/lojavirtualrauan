@@ -49,7 +49,10 @@ describe('Webhook de pagamento (e2e)', () => {
     pagamentosMp = {};
     consultasMp = [];
 
-    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    globalThis.fetch = (async (
+      input: RequestInfo | URL,
+      init?: RequestInit,
+    ) => {
       const url = String(input);
       const consulta = url.match(/\/v1\/payments\/([^/?]+)/);
       if (consulta) {
@@ -134,7 +137,9 @@ describe('Webhook de pagamento (e2e)', () => {
 
     it('não devolve o estoque — a peça foi vendida', async () => {
       const antes = (
-        await prisma.product.findUniqueOrThrow({ where: { id: seed.product.id } })
+        await prisma.product.findUniqueOrThrow({
+          where: { id: seed.product.id },
+        })
       ).stock;
       const orderId = await criarPedido();
       const pid = registrarPagamento(orderId, 'approved');
@@ -142,7 +147,9 @@ describe('Webhook de pagamento (e2e)', () => {
       await notificar(pid, seed.store.id).expect(201);
 
       const depois = (
-        await prisma.product.findUniqueOrThrow({ where: { id: seed.product.id } })
+        await prisma.product.findUniqueOrThrow({
+          where: { id: seed.product.id },
+        })
       ).stock;
       // o checkout já tinha reservado; a aprovação confirma a baixa
       expect(depois).toBe(antes - 1);

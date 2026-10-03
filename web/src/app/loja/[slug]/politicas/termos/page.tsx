@@ -58,14 +58,23 @@ export default function TermsPage() {
       logoUrl={mediaUrl(store.logoUrl)}
       primaryColor={store.primaryColor || '#1a1a1a'}
       accentColor={store.accentColor || '#e31c5f'}
-      template={(store as { template?: import('@/lib/templates').TemplateDaLoja | null }).template}
+      template={
+        (
+          store as {
+            template?: import('@/lib/templates').TemplateDaLoja | null;
+          }
+        ).template
+      }
       search={q}
       onSearch={setQ}
       homeHref={`/loja/${slug}`}
       storeSlug={slug}
     >
       <div className="mx-auto max-w-[720px] px-4 py-8">
-        <Link href={`/loja/${slug}`} className="text-sm text-muted hover:text-ink">
+        <Link
+          href={`/loja/${slug}`}
+          className="text-sm text-muted hover:text-ink"
+        >
           ← Voltar à loja
         </Link>
         <h1 className="mt-4 text-2xl font-bold">Termos de uso</h1>

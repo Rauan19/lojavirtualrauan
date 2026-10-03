@@ -92,7 +92,9 @@ export const metadata: Metadata = {
     title: `${BRAND.name} — ${BRAND.tagline}`,
     description,
     url: '/',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: BRAND.name }],
+    images: [
+      { url: '/og-image.png', width: 1200, height: 630, alt: BRAND.name },
+    ],
   },
   twitter: {
     card: 'summary_large_image',

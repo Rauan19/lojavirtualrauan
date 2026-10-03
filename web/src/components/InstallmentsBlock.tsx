@@ -117,7 +117,9 @@ export function InstallmentsBlock({
             </p>
           ) : null}
           {headline.cardExtraLine ? (
-            <p className="mt-0.5 text-sm text-muted">{headline.cardExtraLine}</p>
+            <p className="mt-0.5 text-sm text-muted">
+              {headline.cardExtraLine}
+            </p>
           ) : null}
         </>
       )}

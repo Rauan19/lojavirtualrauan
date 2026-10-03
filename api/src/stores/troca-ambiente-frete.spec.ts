@@ -9,7 +9,9 @@ function build(freteSandboxAtual: boolean) {
   const update = jest.fn().mockResolvedValue({});
   const prisma = {
     store: {
-      findUnique: jest.fn().mockResolvedValue({ freteSandbox: freteSandboxAtual }),
+      findUnique: jest
+        .fn()
+        .mockResolvedValue({ freteSandbox: freteSandboxAtual }),
       update,
     },
   };

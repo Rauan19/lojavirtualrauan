@@ -68,7 +68,9 @@ function FavoritosInner({ slug }: { slug: string }) {
     function load() {
       const idsPromise =
         customer && token
-          ? fetchFavoritesOnce(slug, customer.id, token).then((set) => Array.from(set))
+          ? fetchFavoritesOnce(slug, customer.id, token).then((set) =>
+              Array.from(set),
+            )
           : Promise.resolve(getWishlist(slug));
 
       idsPromise.then((ids) => {
@@ -79,7 +81,9 @@ function FavoritosInner({ slug }: { slug: string }) {
         }
         Promise.all(
           ids.map((id) =>
-            api<Product>(`/catalog/products/${id}`, { storeSlug: slug }).catch(() => null),
+            api<Product>(`/catalog/products/${id}`, { storeSlug: slug }).catch(
+              () => null,
+            ),
           ),
         ).then((list) => {
           setProducts(list.filter((p): p is Product => !!p));
@@ -145,10 +149,19 @@ function FavoritosInner({ slug }: { slug: string }) {
                 const href = `/loja/${slug}/p/${p.slug || p.id}`;
                 return (
                   <article key={p.id} className="flex flex-col">
-                    <Link href={href} className="relative store-card-media overflow-hidden bg-[#f3f3f3]">
+                    <Link
+                      href={href}
+                      className="relative store-card-media overflow-hidden bg-[#f3f3f3]"
+                    >
                       {img ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img loading="lazy" decoding="async" src={img} alt={p.name} className="h-full w-full object-cover" />
+                        <img
+                          loading="lazy"
+                          decoding="async"
+                          src={img}
+                          alt={p.name}
+                          className="h-full w-full object-cover"
+                        />
                       ) : null}
                       <WishlistButton
                         storeSlug={slug}
@@ -157,9 +170,13 @@ function FavoritosInner({ slug }: { slug: string }) {
                       />
                     </Link>
                     <Link href={href} className="mt-1.5">
-                      <h2 className="line-clamp-2 text-[12px] leading-snug md:text-[13px]">{p.name}</h2>
+                      <h2 className="line-clamp-2 text-[12px] leading-snug md:text-[13px]">
+                        {p.name}
+                      </h2>
                     </Link>
-                    <strong className="mt-0.5 text-[13px] md:text-sm">{money(Number(p.price))}</strong>
+                    <strong className="mt-0.5 text-[13px] md:text-sm">
+                      {money(Number(p.price))}
+                    </strong>
                   </article>
                 );
               })}
@@ -167,7 +184,9 @@ function FavoritosInner({ slug }: { slug: string }) {
           )}
         </div>
       </StoreShell>
-      <CartDrawer checkoutHref={`/loja/${slug}/checkout`} accentColor={store.accentColor}
+      <CartDrawer
+        checkoutHref={`/loja/${slug}/checkout`}
+        accentColor={store.accentColor}
         freteGratisAcima={store.freteGratisAcima}
         pixPercent={store.pixDiscountPercent}
       />

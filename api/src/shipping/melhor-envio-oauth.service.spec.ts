@@ -10,7 +10,8 @@ const ENV: Record<string, string> = {
   JWT_SECRET: 'segredo-de-teste',
   ME_SANDBOX_CLIENT_ID: '11836',
   ME_SANDBOX_CLIENT_SECRET: 'secret-sandbox',
-  ME_SANDBOX_REDIRECT_URI: 'https://tunel.example/api/shipping/melhor-envio/callback',
+  ME_SANDBOX_REDIRECT_URI:
+    'https://tunel.example/api/shipping/melhor-envio/callback',
 };
 
 function build(env: Record<string, string> = ENV, sandbox = true) {
@@ -117,13 +118,14 @@ describe('state', () => {
     );
   });
 
-  it.each([['sem ponto', 'abc'], ['vazio', ''], ['só assinatura', '.xyz']])(
-    'recusa state malformado (%s)',
-    (_label, state) => {
-      const { service } = build();
-      expect(() => read(service, state)).toThrow(BadRequestException);
-    },
-  );
+  it.each([
+    ['sem ponto', 'abc'],
+    ['vazio', ''],
+    ['só assinatura', '.xyz'],
+  ])('recusa state malformado (%s)', (_label, state) => {
+    const { service } = build();
+    expect(() => read(service, state)).toThrow(BadRequestException);
+  });
 
   it('recusa state vencido', () => {
     const { service } = build();

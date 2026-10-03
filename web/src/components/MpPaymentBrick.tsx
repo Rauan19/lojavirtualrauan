@@ -116,10 +116,7 @@ function normalizeUf(state: string) {
     sergipe: 'SE',
     tocantins: 'TO',
   };
-  const key = raw
-    .normalize('NFD')
-    .replace(/\p{M}/gu, '')
-    .toLowerCase();
+  const key = raw.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
   return map[key] || raw.slice(0, 2).toUpperCase();
 }
 
@@ -139,9 +136,7 @@ function toBrickAddress(addr?: BrickPayerAddress | null) {
     neighborhood: addr.neighborhood.trim(),
     streetName: addr.street.trim(),
     streetNumber,
-    ...(addr.complement?.trim()
-      ? { complement: addr.complement.trim() }
-      : {}),
+    ...(addr.complement?.trim() ? { complement: addr.complement.trim() } : {}),
   };
 }
 
@@ -182,7 +177,8 @@ function brickErrorMessage(err: unknown): string {
   if (typeof err === 'object') {
     const o = err as {
       message?: string;
-      cause?: string | { message?: string; description?: string; code?: string };
+      cause?:
+        string | { message?: string; description?: string; code?: string };
       error?: string;
       type?: string;
     };
@@ -274,7 +270,9 @@ export function MpPaymentBrick({
 
       const safeAmount = normalizeAmount(amount);
       if (!publicKey?.trim()) {
-        throw new Error('Os pagamentos desta loja ainda não estão disponíveis. Fale com a loja para concluir sua compra.');
+        throw new Error(
+          'Os pagamentos desta loja ainda não estão disponíveis. Fale com a loja para concluir sua compra.',
+        );
       }
       if (safeAmount == null) {
         throw new Error(`Valor inválido para pagamento (R$ ${String(amount)})`);
@@ -366,7 +364,9 @@ export function MpPaymentBrick({
       try {
         const safeAmount = normalizeAmount(amount);
         if (!publicKey?.trim()) {
-          throw new Error('Os pagamentos desta loja ainda não estão disponíveis. Fale com a loja para concluir sua compra.');
+          throw new Error(
+            'Os pagamentos desta loja ainda não estão disponíveis. Fale com a loja para concluir sua compra.',
+          );
         }
         if (looksLikeAccessTokenAsPublicKey(publicKey)) {
           throw new Error(
@@ -456,9 +456,7 @@ export function MpPaymentBrick({
   return (
     <div className="space-y-2">
       {!ready && !loadError ? (
-        <p className="text-xs text-muted">
-          Carregando cartão e Pix...
-        </p>
+        <p className="text-xs text-muted">Carregando cartão e Pix...</p>
       ) : null}
       {loadError ? (
         <div className="border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900">

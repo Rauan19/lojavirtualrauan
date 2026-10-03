@@ -10,10 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { PaymentStatus, OrderStatus, Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { OrdersService } from '../orders/orders.service';
-import {
-  deveDevolverEstoque,
-  exigeDevolucao,
-} from '../orders/refund-rules';
+import { deveDevolverEstoque, exigeDevolucao } from '../orders/refund-rules';
 import { PrismaService } from '../prisma/prisma.service';
 import { SecretsService } from '../common/secrets/secrets.service';
 import { buildMercadoPagoWebhookUrl } from '../common/utils/mercadopago-webhook-url';

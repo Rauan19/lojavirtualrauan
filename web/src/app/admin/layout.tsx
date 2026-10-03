@@ -271,15 +271,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const onPlansPage = pathname.startsWith('/admin/settings/planos');
   const accessBlocked = Boolean(
     storeAccess?.accessBlocked ||
-      storeAccess?.status === 'PAST_DUE' ||
-      storeAccess?.status === 'SUSPENDED' ||
-      storeAccess?.planState === 'expired',
+    storeAccess?.status === 'PAST_DUE' ||
+    storeAccess?.status === 'SUSPENDED' ||
+    storeAccess?.planState === 'expired',
   );
   const showRestrictionModal = accessBlocked && !onPlansPage;
 
   useEffect(() => {
-    document.body.style.overflow =
-      open || showRestrictionModal ? 'hidden' : '';
+    document.body.style.overflow = open || showRestrictionModal ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
@@ -311,7 +310,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <h1 className="truncate text-[15px] font-bold leading-tight">
               {user.store?.name || 'Painel'}
             </h1>
-            <span className="block truncate text-xs text-muted">{user.email}</span>
+            <span className="block truncate text-xs text-muted">
+              {user.email}
+            </span>
           </span>
         </div>
         {user.store?.slug ? (
@@ -322,8 +323,20 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             onClick={() => setOpen(false)}
           >
             Ver minha loja
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d="M14 5h5v5M19 5l-8 8M18 14v5H5V6h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden
+            >
+              <path
+                d="M14 5h5v5M19 5l-8 8M18 14v5H5V6h5"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </Link>
         ) : null}
@@ -334,48 +347,50 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           const itens = group.items.filter((i) => podeVer(user, i));
           if (itens.length === 0) return null;
           return (
-          <div key={group.title} className="mb-2">
-            <p className="px-5 pb-1 pt-3 text-[12px] font-semibold text-muted">
-              {group.title}
-            </p>
-            {itens.map((link) => {
-              const active = isActive(pathname, link.href);
-              const badge =
-                link.badgeKey === 'refunds'
-                  ? pendingRefunds
-                  : link.badgeKey === 'orders'
-                    ? pendingOrders
-                    : 0;
-              const tone = link.badgeKey === 'refunds' ? 'rose' : 'amber';
-              const aria =
-                link.badgeKey === 'refunds'
-                  ? `${badge} reembolsos pendentes`
-                  : `${badge} pedidos novos`;
-              const locked =
-                accessBlocked && link.href !== '/admin/settings/planos';
-              return (
-                <Link
-                  key={link.href}
-                  href={locked ? '/admin/settings/planos' : link.href}
-                  onClick={() => setOpen(false)}
-                  className={`mx-2 flex items-center gap-3 rounded-lg px-3 py-2 text-[14px] transition-colors ${
-                    active
-                      ? 'bg-[var(--brand-deep)] font-semibold text-white'
-                      : 'text-ink hover:bg-[#e9f1f3]'
-                  }`}
-                >
-                  <IconeMenu href={link.href} />
-                  <span className="min-w-0 flex-1 truncate">{link.label}</span>
-                  <NavBadge
-                    count={badge}
-                    active={active}
-                    tone={tone}
-                    ariaLabel={aria}
-                  />
-                </Link>
-              );
-            })}
-          </div>
+            <div key={group.title} className="mb-2">
+              <p className="px-5 pb-1 pt-3 text-[12px] font-semibold text-muted">
+                {group.title}
+              </p>
+              {itens.map((link) => {
+                const active = isActive(pathname, link.href);
+                const badge =
+                  link.badgeKey === 'refunds'
+                    ? pendingRefunds
+                    : link.badgeKey === 'orders'
+                      ? pendingOrders
+                      : 0;
+                const tone = link.badgeKey === 'refunds' ? 'rose' : 'amber';
+                const aria =
+                  link.badgeKey === 'refunds'
+                    ? `${badge} reembolsos pendentes`
+                    : `${badge} pedidos novos`;
+                const locked =
+                  accessBlocked && link.href !== '/admin/settings/planos';
+                return (
+                  <Link
+                    key={link.href}
+                    href={locked ? '/admin/settings/planos' : link.href}
+                    onClick={() => setOpen(false)}
+                    className={`mx-2 flex items-center gap-3 rounded-lg px-3 py-2 text-[14px] transition-colors ${
+                      active
+                        ? 'bg-[var(--brand-deep)] font-semibold text-white'
+                        : 'text-ink hover:bg-[#e9f1f3]'
+                    }`}
+                  >
+                    <IconeMenu href={link.href} />
+                    <span className="min-w-0 flex-1 truncate">
+                      {link.label}
+                    </span>
+                    <NavBadge
+                      count={badge}
+                      active={active}
+                      tone={tone}
+                      ariaLabel={aria}
+                    />
+                  </Link>
+                );
+              })}
+            </div>
           );
         })}
 
@@ -446,7 +461,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             aria-label="Menu"
             onClick={() => setOpen(true)}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden
+            >
               <path
                 d="M4 7h16M4 12h16M4 17h16"
                 stroke="currentColor"
@@ -470,7 +491,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
       <main
         className={`painel min-w-0 bg-[#f4f6f8] p-3 md:p-5 ${
-          showRestrictionModal ? 'pointer-events-none select-none blur-[2px]' : ''
+          showRestrictionModal
+            ? 'pointer-events-none select-none blur-[2px]'
+            : ''
         }`}
         aria-hidden={showRestrictionModal || undefined}
       >
@@ -496,7 +519,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         ) : null}
         {paginaFechada ? (
           <div className="mx-auto mt-10 max-w-md border border-line bg-white px-5 py-6 text-center">
-            <h2 className="text-base font-bold">Esta parte é do dono da loja</h2>
+            <h2 className="text-base font-bold">
+              Esta parte é do dono da loja
+            </h2>
             <p className="mt-2 text-sm text-muted">
               Seu acesso não inclui {paginaFechada.label}. Se precisar, peça
               para o dono liberar em Equipe.

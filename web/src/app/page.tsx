@@ -206,7 +206,10 @@ export default async function HomePage() {
             ) : null}
           </div>
 
-          <div className="relative mx-auto w-full max-w-[520px] md:max-w-none" aria-hidden>
+          <div
+            className="relative mx-auto w-full max-w-[520px] md:max-w-none"
+            aria-hidden
+          >
             <div className="lp-hero-devices">
               <StoreDeviceShowcase />
             </div>
@@ -596,8 +599,8 @@ export default async function HomePage() {
             </h2>
             <p className="mt-3 text-[1.05rem] leading-relaxed text-white/90">
               Sua loja pode estar no ar em poucos minutos — quanto antes
-              começar, antes vende. Se preferir conversar
-              antes, também respondemos no WhatsApp.
+              começar, antes vende. Se preferir conversar antes, também
+              respondemos no WhatsApp.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

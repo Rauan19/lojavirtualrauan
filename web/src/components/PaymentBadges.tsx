@@ -8,7 +8,16 @@ function PixIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <rect x="9.5" y="9.5" width="5" height="5" rx="1" transform="rotate(45 12 12)" stroke="currentColor" strokeWidth="1.6" />
+      <rect
+        x="9.5"
+        y="9.5"
+        width="5"
+        height="5"
+        rx="1"
+        transform="rotate(45 12 12)"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
     </svg>
   );
 }
@@ -16,9 +25,22 @@ function PixIcon() {
 function CardIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <rect x="2.5" y="5.5" width="19" height="13" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+      <rect
+        x="2.5"
+        y="5.5"
+        width="19"
+        height="13"
+        rx="1.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
       <path d="M2.5 9.5h19" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M5.5 14.5h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path
+        d="M5.5 14.5h4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -26,7 +48,9 @@ function CardIcon() {
 /** Selo estático de meios de pagamento aceitos — mesmo pra todas as lojas da plataforma. */
 export function PaymentBadges({ className = '' }: { className?: string }) {
   return (
-    <div className={`flex flex-wrap items-center gap-3 text-[11px] text-muted ${className}`}>
+    <div
+      className={`flex flex-wrap items-center gap-3 text-[11px] text-muted ${className}`}
+    >
       <span className="flex items-center gap-1.5">
         <PixIcon /> Pix
       </span>

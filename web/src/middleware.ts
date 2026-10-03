@@ -5,20 +5,27 @@ import { NextRequest, NextResponse } from 'next/server';
  * Ex: PLATFORM_HOSTS=localhost,127.0.0.1,app.seudominio.com
  */
 function platformHosts(): Set<string> {
-  const raw =
-    process.env.PLATFORM_HOSTS ||
-    'localhost,127.0.0.1';
+  const raw = process.env.PLATFORM_HOSTS || 'localhost,127.0.0.1';
   return new Set(
     raw
       .split(',')
-      .map((h) => h.trim().toLowerCase().replace(/^www\./, ''))
+      .map((h) =>
+        h
+          .trim()
+          .toLowerCase()
+          .replace(/^www\./, ''),
+      )
       .filter(Boolean),
   );
 }
 
 function cleanHost(raw: string | null): string {
   if (!raw) return '';
-  return raw.split(':')[0].trim().toLowerCase().replace(/^www\./, '');
+  return raw
+    .split(':')[0]
+    .trim()
+    .toLowerCase()
+    .replace(/^www\./, '');
 }
 
 function isPassthroughPath(pathname: string): boolean {
@@ -36,7 +43,9 @@ function isPassthroughPath(pathname: string): boolean {
 }
 
 export async function middleware(req: NextRequest) {
-  const host = cleanHost(req.headers.get('x-forwarded-host') || req.headers.get('host'));
+  const host = cleanHost(
+    req.headers.get('x-forwarded-host') || req.headers.get('host'),
+  );
   if (!host || platformHosts().has(host)) {
     return NextResponse.next();
   }

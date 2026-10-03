@@ -80,7 +80,9 @@ export default function AdminRefundsPage() {
   }, [showAll]);
 
   useEffect(() => {
-    load().catch((err) => setError(err instanceof Error ? err.message : 'Erro'));
+    load().catch((err) =>
+      setError(err instanceof Error ? err.message : 'Erro'),
+    );
   }, [load]);
 
   const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
@@ -144,7 +146,9 @@ export default function AdminRefundsPage() {
         `/admin/orders/${id}/refund/return-received`,
         { method: 'POST', token, storeSlug },
       );
-      setMessage(res.gatewayMessage || 'Devolução confirmada e valor estornado');
+      setMessage(
+        res.gatewayMessage || 'Devolução confirmada e valor estornado',
+      );
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao confirmar');
@@ -158,7 +162,8 @@ export default function AdminRefundsPage() {
     if (!token) return;
     const motivo = await ask({
       title: 'Recusar a solicitação?',
-      message: 'O cliente recebe um e-mail avisando. O motivo aparece para ele.',
+      message:
+        'O cliente recebe um e-mail avisando. O motivo aparece para ele.',
       confirmLabel: 'Recusar',
       danger: true,
       field: {
@@ -195,7 +200,11 @@ export default function AdminRefundsPage() {
         titulo="Reembolsos"
         descricao="Pedidos de devolução e reembolso dos clientes. Ao aprovar, o valor volta para o cliente pelo Mercado Pago."
         acoes={
-          <div className="inline-flex rounded-xl border border-line bg-white p-1" role="group" aria-label="Mostrar">
+          <div
+            className="inline-flex rounded-xl border border-line bg-white p-1"
+            role="group"
+            aria-label="Mostrar"
+          >
             {(
               [
                 [false, 'Pendentes'],
@@ -220,19 +229,28 @@ export default function AdminRefundsPage() {
         }
       />
 
-      {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-accent">
+          {error}
+        </p>
+      ) : null}
       {message ? <p className="text-sm text-[var(--ok)]">{message}</p> : null}
 
       <ul className="space-y-3">
         {paged.map((order) => (
-          <li key={order.id} className="rounded-2xl border border-line bg-white p-5">
+          <li
+            key={order.id}
+            className="rounded-2xl border border-line bg-white p-5"
+          >
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-[15px] font-bold">
                     Pedido #{order.orderNumber}
                   </p>
-                  <span className="text-[15px] font-bold tabular-nums">{money(order.total)}</span>
+                  <span className="text-[15px] font-bold tabular-nums">
+                    {money(order.total)}
+                  </span>
                   {refundStatusLabel(order.refundStatus) ? (
                     <Selo tom={tomDoReembolso(order.refundStatus)}>
                       {refundStatusLabel(order.refundStatus)}
@@ -288,8 +306,8 @@ export default function AdminRefundsPage() {
                   </p>
                 ) : (
                   <p className="mt-1 text-[11px] text-muted">
-                    Este pedido não foi pago pelo Mercado Pago: devolva o valor ao
-                    cliente por fora (Pix ou transferência).
+                    Este pedido não foi pago pelo Mercado Pago: devolva o valor
+                    ao cliente por fora (Pix ou transferência).
                   </p>
                 )}
               </div>
@@ -345,7 +363,11 @@ export default function AdminRefundsPage() {
           <li className="rounded-2xl border border-line bg-white">
             <EstadoVazio
               icone="/admin/refunds"
-              titulo={showAll ? 'Nenhum reembolso no histórico' : 'Nenhum pedido de reembolso'}
+              titulo={
+                showAll
+                  ? 'Nenhum reembolso no histórico'
+                  : 'Nenhum pedido de reembolso'
+              }
               texto={
                 showAll
                   ? 'Reembolsos aprovados ou recusados aparecem aqui.'

@@ -34,15 +34,23 @@ export default function AdminEsqueciSenhaPage() {
         onSubmit={onSubmit}
         className="auth-card w-full max-w-md rounded-[22px] bg-white p-6 shadow-[0_30px_70px_-30px_rgba(4,24,29,0.65)] sm:p-9"
       >
-        <Link href="/login" className="text-xs font-medium text-muted hover:text-ink">
+        <Link
+          href="/login"
+          className="text-xs font-medium text-muted hover:text-ink"
+        >
           ← Voltar
         </Link>
-        <h1 className="mt-4 font-[family-name:var(--font-brand)] text-[1.7rem] font-800 leading-tight tracking-tight">Esqueci a senha</h1>
+        <h1 className="mt-4 font-[family-name:var(--font-brand)] text-[1.7rem] font-800 leading-tight tracking-tight">
+          Esqueci a senha
+        </h1>
         <p className="mt-1 text-sm text-muted">
           Enviamos um link se o e-mail existir no painel.
         </p>
         {error ? (
-          <p role="alert" className="mt-3 border border-accent/20 bg-accent/5 px-3 py-2 text-sm text-accent">
+          <p
+            role="alert"
+            className="mt-3 border border-accent/20 bg-accent/5 px-3 py-2 text-sm text-accent"
+          >
             {error}
           </p>
         ) : null}
@@ -63,7 +71,11 @@ export default function AdminEsqueciSenhaPage() {
             required
           />
         </div>
-        <button type="submit" className="btn btn-accent mt-5 w-full" disabled={busy}>
+        <button
+          type="submit"
+          className="btn btn-accent mt-5 w-full"
+          disabled={busy}
+        >
           {busy ? 'Enviando…' : 'Enviar link'}
         </button>
       </form>

@@ -13,7 +13,9 @@ const DIA = 24 * 60 * 60 * 1000;
 const AGORA = new Date('2026-03-10T12:00:00Z');
 const emDias = (d: number) => new Date(AGORA.getTime() + d * DIA);
 
-function loja(over: Partial<Parameters<typeof decidirCobrancaPix>[0]['loja']> = {}) {
+function loja(
+  over: Partial<Parameters<typeof decidirCobrancaPix>[0]['loja']> = {},
+) {
   return {
     billingMethod: 'PIX',
     status: StoreStatus.ACTIVE,

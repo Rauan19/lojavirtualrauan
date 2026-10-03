@@ -98,7 +98,9 @@ describe('eventos dos Correios', () => {
 
   it('descarta evento sem descricao — nao diz nada ao cliente', () => {
     const eventos = eventosDosCorreios({
-      objetos: [{ eventos: [{ codigo: 'X', dtHrCriado: '2026-09-20T10:00:00' }] }],
+      objetos: [
+        { eventos: [{ codigo: 'X', dtHrCriado: '2026-09-20T10:00:00' }] },
+      ],
     });
     expect(eventos).toHaveLength(0);
   });
@@ -117,7 +119,11 @@ describe('eventos dos Correios', () => {
       objetos: [
         {
           eventos: [
-            { codigo: 'A', descricao: 'Com dtHrCriacao', dtHrCriacao: '2026-09-20T10:00:00' },
+            {
+              codigo: 'A',
+              descricao: 'Com dtHrCriacao',
+              dtHrCriacao: '2026-09-20T10:00:00',
+            },
             { codigo: 'B', descricao: 'Com data', data: '2026-09-21T10:00:00' },
           ],
         },

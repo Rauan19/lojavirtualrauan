@@ -76,7 +76,8 @@ function firstImageUrl(item: OrderItem) {
 
 function currentShipLabel(order: Order) {
   const steps = buildTrackingSteps(order);
-  const current = steps.find((s) => s.current) || steps.filter((s) => s.done).at(-1);
+  const current =
+    steps.find((s) => s.current) || steps.filter((s) => s.done).at(-1);
   return current?.label || orderStatusLabel(order.status);
 }
 
@@ -146,14 +147,13 @@ export default function MeusPedidosPage() {
     }
   }
 
-
   useEffect(() => {
     if (!token) return;
     setFetching(true);
-    api<ListResponse>(
-      `/storefront/orders?page=${page}&limit=${PAGE_SIZE}`,
-      { token, storeSlug: params.slug },
-    )
+    api<ListResponse>(`/storefront/orders?page=${page}&limit=${PAGE_SIZE}`, {
+      token,
+      storeSlug: params.slug,
+    })
       .then((data) => {
         setOrders(data.items);
         setTotal(data.total);
@@ -293,7 +293,10 @@ export default function MeusPedidosPage() {
                         aria-hidden
                       >
                         {steps.map((step, i) => (
-                          <div key={step.key} className="flex flex-1 items-center gap-1">
+                          <div
+                            key={step.key}
+                            className="flex flex-1 items-center gap-1"
+                          >
                             <span
                               className={`h-2 w-2 shrink-0 rounded-full ${
                                 step.done
@@ -318,8 +321,7 @@ export default function MeusPedidosPage() {
 
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {/* Só mostra badge de pagamento se NÃO estiver ok (recusado/estorno) */}
-                      {!awaitingPay &&
-                      order.paymentStatus !== 'APPROVED' ? (
+                      {!awaitingPay && order.paymentStatus !== 'APPROVED' ? (
                         <StatusBadge
                           status={order.paymentStatus}
                           kind="payment"
@@ -506,9 +508,13 @@ export default function MeusPedidosPage() {
               Você ainda não tem compras aqui
             </p>
             <p className="mt-1 text-sm text-muted">
-              Quando comprar, o pedido e o rastreio da entrega aparecem nesta tela.
+              Quando comprar, o pedido e o rastreio da entrega aparecem nesta
+              tela.
             </p>
-            <Link href={`/loja/${params.slug}`} className="btn btn-accent mt-4 inline-flex h-11 px-5">
+            <Link
+              href={`/loja/${params.slug}`}
+              className="btn btn-accent mt-4 inline-flex h-11 px-5"
+            >
               Ver produtos
             </Link>
           </li>

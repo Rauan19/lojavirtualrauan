@@ -34,7 +34,10 @@ export function formatDeliveryEstimate(days: number): string {
   const from = addDays(today, Math.max(1, n - 2));
   const to = addDays(today, n + 1);
 
-  if (from.getMonth() === to.getMonth() && from.getFullYear() === to.getFullYear()) {
+  if (
+    from.getMonth() === to.getMonth() &&
+    from.getFullYear() === to.getFullYear()
+  ) {
     return `Chega entre ${from.getDate()} e ${to.getDate()} de ${MONTHS[from.getMonth()]}`;
   }
 

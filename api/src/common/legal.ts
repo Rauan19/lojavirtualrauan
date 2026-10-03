@@ -5,4 +5,3 @@
  * aceite de cada loja, então mude as duas juntas quando o texto mudar.
  */
 export const TERMS_VERSION = '2026-09-30';
-

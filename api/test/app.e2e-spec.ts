@@ -14,7 +14,10 @@ describe('App (e2e)', () => {
   });
 
   it('valida o corpo do login', async () => {
-    await request(app.getHttpServer()).post('/api/auth/login').send({}).expect(400);
+    await request(app.getHttpServer())
+      .post('/api/auth/login')
+      .send({})
+      .expect(400);
   });
 
   it('recusa campo desconhecido no corpo (whitelist)', async () => {

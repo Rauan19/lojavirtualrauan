@@ -188,7 +188,9 @@ export function CustomerProvider({
   );
 
   return (
-    <CustomerContext.Provider value={value}>{children}</CustomerContext.Provider>
+    <CustomerContext.Provider value={value}>
+      {children}
+    </CustomerContext.Provider>
   );
 }
 

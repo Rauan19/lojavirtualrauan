@@ -51,7 +51,9 @@ export default function ContaEntrarPage() {
   return (
     <StoreAuthShell
       slug={params.slug}
-      title={vindoDaCompra ? 'Falta pouco para finalizar' : 'Bem-vindo de volta'}
+      title={
+        vindoDaCompra ? 'Falta pouco para finalizar' : 'Bem-vindo de volta'
+      }
       subtitle={
         vindoDaCompra
           ? 'Entre para receber o pedido e acompanhar a entrega. Seus itens continuam na sacola.'
@@ -60,7 +62,10 @@ export default function ContaEntrarPage() {
     >
       <form onSubmit={onSubmit} className="space-y-4">
         {error ? (
-          <p role="alert" className="border border-accent/25 bg-accent/5 px-3 py-2.5 text-sm leading-snug text-accent">
+          <p
+            role="alert"
+            className="border border-accent/25 bg-accent/5 px-3 py-2.5 text-sm leading-snug text-accent"
+          >
             {error}
           </p>
         ) : null}

@@ -70,7 +70,9 @@ export class PublicController {
      * para de abrir a loja, que segue no endereço da plataforma.
      */
     if (!(await this.planLimits.forStore(store.id)).customDomainIncluded) {
-      throw new NotFoundException('Domínio próprio não incluído no plano da loja');
+      throw new NotFoundException(
+        'Domínio próprio não incluído no plano da loja',
+      );
     }
 
     return {

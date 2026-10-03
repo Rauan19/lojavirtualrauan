@@ -141,7 +141,9 @@ describe('Categorias em árvore (e2e)', () => {
         .set('x-store-slug', seed.store.slug)
         .expect(200);
 
-      const cat = res.body.find((c: { slug: string }) => c.slug === 'masculinos');
+      const cat = res.body.find(
+        (c: { slug: string }) => c.slug === 'masculinos',
+      );
       expect(cat.borderColor).toBe('#c9a75f');
     });
 
@@ -151,7 +153,9 @@ describe('Categorias em árvore (e2e)', () => {
         .set('x-store-slug', seed.store.slug)
         .expect(200);
 
-      const cat = res.body.find((c: { slug: string }) => c.slug === 'femininos');
+      const cat = res.body.find(
+        (c: { slug: string }) => c.slug === 'femininos',
+      );
       expect(cat.borderColor).toBeNull();
     });
 

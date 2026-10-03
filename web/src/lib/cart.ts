@@ -46,7 +46,9 @@ export function getCart(storeSlug: string): CartItem[] {
 
 export function setCart(storeSlug: string, items: CartItem[]) {
   localStorage.setItem(key(storeSlug), JSON.stringify(items));
-  window.dispatchEvent(new CustomEvent('cart:updated', { detail: { storeSlug } }));
+  window.dispatchEvent(
+    new CustomEvent('cart:updated', { detail: { storeSlug } }),
+  );
 }
 
 export function addToCart(
@@ -96,9 +98,7 @@ export function updateQty(
   if (quantity <= 0) {
     cart = cart.filter((c) => !sameLine(c, match));
   } else {
-    cart = cart.map((c) =>
-      sameLine(c, match) ? { ...c, quantity } : c,
-    );
+    cart = cart.map((c) => (sameLine(c, match) ? { ...c, quantity } : c));
   }
   setCart(storeSlug, cart);
   return cart;

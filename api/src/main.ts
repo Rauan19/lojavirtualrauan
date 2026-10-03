@@ -162,7 +162,7 @@ async function bootstrap() {
   // qualquer um forjando token de super admin offline.
   if (isProd && (config.get<string>('JWT_SECRET')?.trim().length ?? 0) < 32) {
     console.warn(
-      '[segurança] JWT_SECRET curto (< 32 caracteres). Gere um forte: node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'hex\'))"',
+      "[segurança] JWT_SECRET curto (< 32 caracteres). Gere um forte: node -e \"console.log(require('crypto').randomBytes(48).toString('hex'))\"",
     );
   }
   if (isProd && !config.get<string>('ENCRYPTION_KEY')?.trim()) {

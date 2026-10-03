@@ -201,7 +201,11 @@ export function CompreJuntoEditor({
               ) : null}
             </div>
           ) : null}
-          {erro ? <p role="alert" className="mt-1 text-xs text-accent">{erro}</p> : null}
+          {erro ? (
+            <p role="alert" className="mt-1 text-xs text-accent">
+              {erro}
+            </p>
+          ) : null}
         </>
       )}
     </div>

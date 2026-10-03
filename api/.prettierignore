@@ -1,0 +1,9 @@
+# Gerado ou de terceiros: não é código nosso para formatar
+node_modules/
+dist/
+coverage/
+generated/
+uploads/
+prisma/migrations/
+package-lock.json
+*.md

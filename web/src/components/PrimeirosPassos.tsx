@@ -52,7 +52,10 @@ export function PrimeirosPassos() {
     api<LojaResumo>('/stores/me', { token, storeSlug: slug })
       .then(setLoja)
       .catch(() => undefined);
-    api<{ total: number }>('/admin/products?limit=1', { token, storeSlug: slug })
+    api<{ total: number }>('/admin/products?limit=1', {
+      token,
+      storeSlug: slug,
+    })
       .then((r) => setProdutos(r.total))
       .catch(() => undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,17 +65,18 @@ export function PrimeirosPassos() {
 
   const temOrigem = Boolean(
     (loja.freteCepOrigem || '').replace(/\D/g, '').length === 8 &&
-      loja.freteRuaOrigem?.trim() &&
-      loja.freteNumeroOrigem?.trim() &&
-      loja.freteCidadeOrigem?.trim() &&
-      loja.freteUfOrigem?.trim(),
+    loja.freteRuaOrigem?.trim() &&
+    loja.freteNumeroOrigem?.trim() &&
+    loja.freteCidadeOrigem?.trim() &&
+    loja.freteUfOrigem?.trim(),
   );
 
   const passos: Passo[] = [
     {
       id: 'pagamento',
       titulo: 'Conectar o Mercado Pago',
-      detalhe: 'É onde o dinheiro das vendas cai. Sem isso o cliente não consegue pagar.',
+      detalhe:
+        'É onde o dinheiro das vendas cai. Sem isso o cliente não consegue pagar.',
       feito: Boolean(loja.mpAccessTokenSet),
       href: '/admin/settings?secao=payments',
       acao: 'Conectar',
@@ -149,7 +153,11 @@ export function PrimeirosPassos() {
             {feitos} de {passos.length} passos concluídos
           </p>
         </div>
-        <button type="button" className="text-xs font-semibold text-muted hover:text-ink" onClick={esconder}>
+        <button
+          type="button"
+          className="text-xs font-semibold text-muted hover:text-ink"
+          onClick={esconder}
+        >
           Esconder
         </button>
       </div>
@@ -184,7 +192,9 @@ export function PrimeirosPassos() {
               {p.feito ? '✓' : i + 1}
             </span>
             <span className="min-w-0 flex-1">
-              <span className={`block text-sm font-semibold ${p.feito ? 'text-muted line-through' : 'text-ink'}`}>
+              <span
+                className={`block text-sm font-semibold ${p.feito ? 'text-muted line-through' : 'text-ink'}`}
+              >
                 {p.titulo}
               </span>
               {!p.feito ? (

@@ -61,7 +61,10 @@ export function ProdutoDetalhe({
   useEscapeKey(true, onFechar);
 
   const preco = Number(produto.price);
-  const de = produto.compareAt != null && produto.compareAt !== '' ? Number(produto.compareAt) : null;
+  const de =
+    produto.compareAt != null && produto.compareAt !== ''
+      ? Number(produto.compareAt)
+      : null;
   const imagens = produto.images || [];
   const principal = mediaUrl(imagens[foto]?.url);
   const variacoes = produto.variants || [];
@@ -81,12 +84,24 @@ export function ProdutoDetalhe({
         ? `até ${produto.installments}x sem juros`
         : 'à vista ou cartão com juros',
     ],
-    ['Estoque', `${produto.stock} ${produto.stock === 1 ? 'unidade' : 'unidades'}`],
+    [
+      'Estoque',
+      `${produto.stock} ${produto.stock === 1 ? 'unidade' : 'unidades'}`,
+    ],
     [
       'Vendas',
-      vendas == null ? null : vendas === 0 ? 'ainda não vendeu' : `em ${vendas} ${vendas === 1 ? 'pedido' : 'pedidos'}`,
+      vendas == null
+        ? null
+        : vendas === 0
+          ? 'ainda não vendeu'
+          : `em ${vendas} ${vendas === 1 ? 'pedido' : 'pedidos'}`,
     ],
-    ['Peso', produto.weightKg != null && produto.weightKg !== '' ? `${Number(produto.weightKg)} kg` : null],
+    [
+      'Peso',
+      produto.weightKg != null && produto.weightKg !== ''
+        ? `${Number(produto.weightKg)} kg`
+        : null,
+    ],
     ['Medidas (L × A × C)', medidas],
     ['NCM', produto.ncm || null],
   ];
@@ -105,12 +120,17 @@ export function ProdutoDetalhe({
         <div className="flex items-start gap-3 border-b border-line px-4 py-3">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 id="produto-detalhe-titulo" className="text-base font-bold leading-snug">
+              <h2
+                id="produto-detalhe-titulo"
+                className="text-base font-bold leading-snug"
+              >
                 {produto.name}
               </h2>
               <span
                 className={`rounded px-1.5 py-0.5 text-[11px] font-bold uppercase ${
-                  produto.active ? 'bg-emerald-50 text-emerald-700' : 'bg-zinc-100 text-muted'
+                  produto.active
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'bg-zinc-100 text-muted'
                 }`}
               >
                 {produto.active ? 'Na vitrine' : 'Inativo'}
@@ -118,7 +138,11 @@ export function ProdutoDetalhe({
             </div>
             <CodigoProduto codigo={produto.sku} className="mt-1" />
           </div>
-          <button type="button" className="btn btn-ghost shrink-0 py-1.5 text-xs" onClick={onFechar}>
+          <button
+            type="button"
+            className="btn btn-ghost shrink-0 py-1.5 text-xs"
+            onClick={onFechar}
+          >
             Fechar
           </button>
         </div>
@@ -128,7 +152,11 @@ export function ProdutoDetalhe({
             <div className="aspect-square overflow-hidden rounded bg-[#eee]">
               {principal ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={principal} alt={produto.name} className="h-full w-full object-cover" />
+                <img
+                  src={principal}
+                  alt={produto.name}
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 <div className="flex h-full items-center justify-center text-xs text-muted">
                   Sem foto
@@ -148,7 +176,11 @@ export function ProdutoDetalhe({
                     aria-label={`Ver foto ${i + 1}`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={mediaUrl(img.url) || ''} alt="" className="h-full w-full object-cover" />
+                    <img
+                      src={mediaUrl(img.url) || ''}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
                   </button>
                 ))}
               </div>
@@ -189,14 +221,23 @@ export function ProdutoDetalhe({
                     </thead>
                     <tbody>
                       {variacoes.map((v) => (
-                        <tr key={v.id || v.label} className="border-t border-line">
+                        <tr
+                          key={v.id || v.label}
+                          className="border-t border-line"
+                        >
                           <td className="px-2 py-1.5 font-medium">{v.label}</td>
-                          <td className="px-2 py-1.5 font-mono">{v.sku || v.barcode || '—'}</td>
-                          <td className={`px-2 py-1.5 text-right ${v.stock <= 0 ? 'font-semibold text-accent' : ''}`}>
+                          <td className="px-2 py-1.5 font-mono">
+                            {v.sku || v.barcode || '—'}
+                          </td>
+                          <td
+                            className={`px-2 py-1.5 text-right ${v.stock <= 0 ? 'font-semibold text-accent' : ''}`}
+                          >
                             {v.stock <= 0 ? 'esgotado' : v.stock}
                           </td>
                           <td className="px-2 py-1.5 text-right">
-                            {v.price != null && v.price !== '' ? money(Number(v.price)) : money(preco)}
+                            {v.price != null && v.price !== ''
+                              ? money(Number(v.price))
+                              : money(preco)}
                           </td>
                         </tr>
                       ))}
@@ -215,7 +256,9 @@ export function ProdutoDetalhe({
                   {produto.description}
                 </p>
               ) : (
-                <p className="text-sm text-muted">Sem descrição. Produto com descrição vende mais.</p>
+                <p className="text-sm text-muted">
+                  Sem descrição. Produto com descrição vende mais.
+                </p>
               )}
             </div>
 
@@ -224,7 +267,11 @@ export function ProdutoDetalhe({
         </div>
 
         <div className="flex flex-wrap justify-end gap-2 border-t border-line px-4 py-3">
-          <button type="button" className="btn btn-ghost" onClick={onAlternarAtivo}>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={onAlternarAtivo}
+          >
             {produto.active ? 'Tirar da vitrine' : 'Colocar na vitrine'}
           </button>
           {produto.slug && produto.active ? (

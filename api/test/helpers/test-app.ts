@@ -146,7 +146,12 @@ export async function seedStore(
  */
 export async function signCustomerToken(
   app: INestApplication,
-  customer: { id: string; email: string; storeId: string; tokenVersion: number },
+  customer: {
+    id: string;
+    email: string;
+    storeId: string;
+    tokenVersion: number;
+  },
 ) {
   const jwt = app.get(JwtService);
   return jwt.signAsync(

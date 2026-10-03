@@ -13,7 +13,8 @@ import { StoreStatus } from '@prisma/client';
  */
 
 export const BILLING_METHOD = { CARD: 'CARD', PIX: 'PIX' } as const;
-export type BillingMethod = (typeof BILLING_METHOD)[keyof typeof BILLING_METHOD];
+export type BillingMethod =
+  (typeof BILLING_METHOD)[keyof typeof BILLING_METHOD];
 
 /** Com quantos dias de antecedência a cobrança do próximo ciclo é criada. */
 export const ANTECEDENCIA_DIAS = 5;
@@ -44,8 +45,7 @@ export type MotivoPular =
   | 'ja_tem_cobranca_aberta';
 
 export type DecisaoCobranca =
-  | { gerar: true }
-  | { gerar: false; motivo: MotivoPular };
+  { gerar: true } | { gerar: false; motivo: MotivoPular };
 
 export type LojaParaCobranca = {
   billingMethod: string | null;

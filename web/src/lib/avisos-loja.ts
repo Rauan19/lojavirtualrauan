@@ -29,7 +29,9 @@ export function avisosDaLoja(
     avisos.push(`Frete grátis acima de ${money(freteAcima)}`);
   }
   if (loja.pixDiscountPercent && loja.pixDiscountPercent > 0) {
-    avisos.push(`${pctTexto(loja.pixDiscountPercent)}% de desconto pagando no Pix`);
+    avisos.push(
+      `${pctTexto(loja.pixDiscountPercent)}% de desconto pagando no Pix`,
+    );
   }
   if (cupom) {
     const beneficio =

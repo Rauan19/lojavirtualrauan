@@ -95,7 +95,9 @@ const PAGE_SIZE = 24;
 
 function asImageList(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
-  return value.filter((v): v is string => typeof v === 'string' && v.length > 0);
+  return value.filter(
+    (v): v is string => typeof v === 'string' && v.length > 0,
+  );
 }
 
 function ProductCardSkeleton() {
@@ -112,10 +114,33 @@ function ProductCardSkeleton() {
 
 function SearchOffIcon() {
   return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden className="text-muted">
-      <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M15.5 15.5L20 20" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M8 8l5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    <svg
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className="text-muted"
+    >
+      <circle
+        cx="10.5"
+        cy="10.5"
+        r="6.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <path
+        d="M15.5 15.5L20 20"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M8 8l5 5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -156,8 +181,8 @@ function StorefrontInner({ slug }: { slug: string }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [q, setQ] = useState('');
   const [debouncedQ, setDebouncedQ] = useState('');
-  const [categoryId, setCategoryId] = useState<string | null>(
-    () => searchParams.get('categoryId'),
+  const [categoryId, setCategoryId] = useState<string | null>(() =>
+    searchParams.get('categoryId'),
   );
   const [sort, setSort] = useState('newest');
   const [minPrice, setMinPrice] = useState('');
@@ -221,17 +246,25 @@ function StorefrontInner({ slug }: { slug: string }) {
   useEffect(() => {
     Promise.all([
       api<Store>(`/stores/public/${slug}`),
-      api<Category[]>('/catalog/categories', { storeSlug: slug }).catch(() => []),
+      api<Category[]>('/catalog/categories', { storeSlug: slug }).catch(
+        () => [],
+      ),
       api<string[]>('/catalog/brands', { storeSlug: slug }).catch(() => []),
-      api<CouponBanner>('/catalog/coupon-banner', { storeSlug: slug }).catch(() => null),
+      api<CouponBanner>('/catalog/coupon-banner', { storeSlug: slug }).catch(
+        () => null,
+      ),
     ])
       .then(([s, cats, brandList, coupon]) => {
         setStore(s);
-        setCategories(Array.isArray(cats) ? cats.filter((c) => c.active !== false) : []);
+        setCategories(
+          Array.isArray(cats) ? cats.filter((c) => c.active !== false) : [],
+        );
         setBrands(Array.isArray(brandList) ? brandList : []);
         setCouponBanner(coupon);
       })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Loja não encontrada'));
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : 'Loja não encontrada'),
+      );
   }, [slug]);
 
   useEffect(() => {
@@ -256,7 +289,9 @@ function StorefrontInner({ slug }: { slug: string }) {
         setTotalPages(catalog.totalPages || 1);
       })
       .catch((err) =>
-        setError(err instanceof Error ? err.message : 'Erro ao carregar produtos'),
+        setError(
+          err instanceof Error ? err.message : 'Erro ao carregar produtos',
+        ),
       )
       .finally(() => setLoadingCatalog(false));
   }, [
@@ -301,13 +336,13 @@ function StorefrontInner({ slug }: { slug: string }) {
 
   const hasActiveFilters = Boolean(
     q ||
-      categoryId ||
-      minPrice ||
-      maxPrice ||
-      sort !== 'newest' ||
-      brand ||
-      inStock ||
-      onSale,
+    categoryId ||
+    minPrice ||
+    maxPrice ||
+    sort !== 'newest' ||
+    brand ||
+    inStock ||
+    onSale,
   );
 
   const activeCategoryName = useMemo(
@@ -422,7 +457,9 @@ function StorefrontInner({ slug }: { slug: string }) {
                       className="block aspect-square w-full overflow-hidden rounded-2xl bg-[#f1f1f3]"
                       style={
                         categoryId === c.id
-                          ? { boxShadow: `0 0 0 2px #fff, 0 0 0 4px ${anelDaCategoria(c)}` }
+                          ? {
+                              boxShadow: `0 0 0 2px #fff, 0 0 0 4px ${anelDaCategoria(c)}`,
+                            }
                           : undefined
                       }
                     >
@@ -496,7 +533,9 @@ function StorefrontInner({ slug }: { slug: string }) {
                   onClick={() => setPriceOpen((v) => !v)}
                 >
                   Filtros
-                  {minPrice || maxPrice || brand || inStock || onSale ? ' •' : ''}
+                  {minPrice || maxPrice || brand || inStock || onSale
+                    ? ' •'
+                    : ''}
                 </button>
                 {priceOpen ? (
                   <div className="absolute right-0 z-20 mt-1.5 w-64 space-y-3 border border-line bg-white p-3 shadow-lg">
@@ -602,7 +641,9 @@ function StorefrontInner({ slug }: { slug: string }) {
           ) : products.length === 0 ? (
             <div className="flex flex-col items-center gap-3 border border-dashed border-line px-4 py-16 text-center">
               <SearchOffIcon />
-              <p className="text-sm font-semibold text-ink">Nenhum produto encontrado</p>
+              <p className="text-sm font-semibold text-ink">
+                Nenhum produto encontrado
+              </p>
               <p className="max-w-[32ch] text-xs text-muted">
                 {debouncedQ
                   ? `Sem resultados para "${debouncedQ}".`
@@ -644,8 +685,14 @@ function StorefrontInner({ slug }: { slug: string }) {
                 const href = `/loja/${slug}/p/${p.slug || p.id}`;
 
                 return (
-                  <article key={p.id} className="product-card group flex flex-col">
-                    <Link href={href} className="relative store-card-media overflow-hidden bg-[#f3f3f3]">
+                  <article
+                    key={p.id}
+                    className="product-card group flex flex-col"
+                  >
+                    <Link
+                      href={href}
+                      className="relative store-card-media overflow-hidden bg-[#f3f3f3]"
+                    >
                       {img ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -658,12 +705,16 @@ function StorefrontInner({ slug }: { slug: string }) {
                       ) : (
                         <SemFoto nome={p.name} />
                       )}
-                      {discount || (p.stock != null && p.stock > 0 && p.stock <= 5) ? (
+                      {discount ||
+                      (p.stock != null && p.stock > 0 && p.stock <= 5) ? (
                         <span className="absolute left-2 top-2 flex flex-col items-start gap-1">
                           {discount ? (
                             <span
                               className="selo-loja"
-                              style={{ background: 'var(--store-accent)', color: 'var(--store-accent-ink)' }}
+                              style={{
+                                background: 'var(--store-accent)',
+                                color: 'var(--store-accent-ink)',
+                              }}
                             >
                               -{discount}%
                             </span>
@@ -693,7 +744,9 @@ function StorefrontInner({ slug }: { slug: string }) {
                       {p.rating && p.rating.count > 0 ? (
                         <div className="flex items-center gap-1">
                           <StarRating value={p.rating.avg} size={11} />
-                          <span className="text-[11px] text-muted">({p.rating.count})</span>
+                          <span className="text-[11px] text-muted">
+                            ({p.rating.count})
+                          </span>
                         </div>
                       ) : null}
                       <div className="flex flex-wrap items-baseline gap-1.5 pt-0.5">
@@ -708,7 +761,8 @@ function StorefrontInner({ slug }: { slug: string }) {
                       </div>
                       {store.pixDiscountPercent ? (
                         <p className="text-[12px] font-semibold text-[var(--ok)]">
-                          {money(precoNoPix(price, store.pixDiscountPercent))} no Pix
+                          {money(precoNoPix(price, store.pixDiscountPercent))}{' '}
+                          no Pix
                         </p>
                       ) : null}
                       <InstallmentsBlock
@@ -742,7 +796,9 @@ function StorefrontInner({ slug }: { slug: string }) {
                             });
                           }}
                         >
-                          {p.hasVariants ? 'Escolher opções' : 'Adicionar à sacola'}
+                          {p.hasVariants
+                            ? 'Escolher opções'
+                            : 'Adicionar à sacola'}
                         </button>
                       </div>
                     </div>
@@ -765,7 +821,9 @@ function StorefrontInner({ slug }: { slug: string }) {
           />
         </div>
       </StoreShell>
-      <CartDrawer checkoutHref={`/loja/${slug}/checkout`} accentColor={store.accentColor}
+      <CartDrawer
+        checkoutHref={`/loja/${slug}/checkout`}
+        accentColor={store.accentColor}
         freteGratisAcima={store.freteGratisAcima}
         pixPercent={store.pixDiscountPercent}
       />

@@ -45,7 +45,12 @@ function ChevronRight() {
  * controle pelas setas, pelos indicadores ou arrastando no celular. Auto-play
  * pausa no hover e quando o visitante navega manualmente.
  */
-export function StoreMarquee({ images, mobile, storeName, intervalMs = 5000 }: Props) {
+export function StoreMarquee({
+  images,
+  mobile,
+  storeName,
+  intervalMs = 5000,
+}: Props) {
   const urls = images.map((src) => mediaUrl(src)).filter(Boolean) as string[];
   // Imagem de celular por banner (padrão Shopify/Nuvemshop); sem ela, a do PC
   const urlsCelular = images.map((src) => mediaUrl(mobile?.[src]) || null);
@@ -84,7 +89,9 @@ export function StoreMarquee({ images, mobile, storeName, intervalMs = 5000 }: P
     <section
       className="store-promo-marquee relative w-full overflow-hidden bg-[#111]"
       style={
-        ratio ? ({ '--promo-ratio': String(ratio) } as React.CSSProperties) : undefined
+        ratio
+          ? ({ '--promo-ratio': String(ratio) } as React.CSSProperties)
+          : undefined
       }
       aria-roledescription="carrossel"
       aria-label={storeName ? `Promoções ${storeName}` : 'Promoções'}
@@ -130,23 +137,26 @@ export function StoreMarquee({ images, mobile, storeName, intervalMs = 5000 }: P
             {/* Arte real: inteira, sem corte. No celular, a versão de celular. */}
             <picture>
               {urlsCelular[i] ? (
-                <source media="(max-width: 767px)" srcSet={urlsCelular[i] as string} />
+                <source
+                  media="(max-width: 767px)"
+                  srcSet={urlsCelular[i] as string}
+                />
               ) : null}
-            <img
-              src={src}
-              alt=""
-              className="relative h-full w-full object-contain"
-              loading={i === 0 ? 'eager' : 'lazy'}
-              draggable={false}
-              onLoad={(e) => {
-                // A primeira arte define a proporção do carrossel inteiro.
-                if (i !== 0 || ratio) return;
-                const el = e.currentTarget;
-                if (el.naturalWidth && el.naturalHeight) {
-                  setRatio(el.naturalWidth / el.naturalHeight);
-                }
-              }}
-            />
+              <img
+                src={src}
+                alt=""
+                className="relative h-full w-full object-contain"
+                loading={i === 0 ? 'eager' : 'lazy'}
+                draggable={false}
+                onLoad={(e) => {
+                  // A primeira arte define a proporção do carrossel inteiro.
+                  if (i !== 0 || ratio) return;
+                  const el = e.currentTarget;
+                  if (el.naturalWidth && el.naturalHeight) {
+                    setRatio(el.naturalWidth / el.naturalHeight);
+                  }
+                }}
+              />
             </picture>
           </div>
         ))}
@@ -174,7 +184,9 @@ export function StoreMarquee({ images, mobile, storeName, intervalMs = 5000 }: P
                     aria-current={i === index}
                     onClick={() => go(i)}
                     className={`h-2 rounded-full transition-[width,background-color] ${
-                      i === index ? 'w-6 bg-[#171a1f]' : 'w-2 bg-[#171a1f]/25 hover:bg-[#171a1f]/45'
+                      i === index
+                        ? 'w-6 bg-[#171a1f]'
+                        : 'w-2 bg-[#171a1f]/25 hover:bg-[#171a1f]/45'
                     }`}
                   />
                 ))}

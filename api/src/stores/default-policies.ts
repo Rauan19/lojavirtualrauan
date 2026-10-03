@@ -52,8 +52,10 @@ function formatCep(raw: string) {
 
 function formatPhone(raw: string) {
   const d = raw.replace(/\D/g, '');
-  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
-  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  if (d.length === 11)
+    return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  if (d.length === 10)
+    return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
   return raw;
 }
 
@@ -71,10 +73,10 @@ function identificacao(store: PolicyStore) {
   const rua = [store.sellerStreet, store.sellerNumber]
     .filter(Boolean)
     .join(', ');
-  const endereco = [rua, store.sellerNeighborhood]
+  const endereco = [rua, store.sellerNeighborhood].filter(Boolean).join(' — ');
+  const cidade = [store.sellerCity, store.sellerState]
     .filter(Boolean)
-    .join(' — ');
-  const cidade = [store.sellerCity, store.sellerState].filter(Boolean).join('/');
+    .join('/');
   const local = [endereco, cidade].filter(Boolean).join(', ');
   const comCep = store.sellerZipCode
     ? `${local}${local ? ' · ' : ''}CEP ${formatCep(store.sellerZipCode)}`

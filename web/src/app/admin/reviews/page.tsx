@@ -5,7 +5,12 @@ import { useConfirm } from '@/components/ConfirmDialog';
 import { StarRating } from '@/components/StarRating';
 import { api } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
-import { CabecalhoPagina, EstadoVazio, Secao, Selo } from '@/components/admin/Pagina';
+import {
+  CabecalhoPagina,
+  EstadoVazio,
+  Secao,
+  Selo,
+} from '@/components/admin/Pagina';
 
 type Review = {
   id: string;
@@ -83,7 +88,11 @@ export default function AdminReviewsPage() {
     });
     if (!ok) return;
     const { token, storeSlug } = auth();
-    await api(`/admin/reviews/${review.id}`, { method: 'DELETE', token, storeSlug });
+    await api(`/admin/reviews/${review.id}`, {
+      method: 'DELETE',
+      token,
+      storeSlug,
+    });
     await load();
   }
 
@@ -94,14 +103,18 @@ export default function AdminReviewsPage() {
         titulo="Avaliações"
         descricao={
           <>
-            {total} avaliaç{total === 1 ? 'ão' : 'ões'} dos seus produtos. Oculte ou
-            remova o que for spam, ofensivo ou fora de contexto; o resto aparece na
-            vitrine automaticamente.
+            {total} avaliaç{total === 1 ? 'ão' : 'ões'} dos seus produtos.
+            Oculte ou remova o que for spam, ofensivo ou fora de contexto; o
+            resto aparece na vitrine automaticamente.
           </>
         }
       />
 
-      {error ? <p role="alert" className="text-sm text-accent">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-accent">
+          {error}
+        </p>
+      ) : null}
 
       {loading ? (
         <p className="text-sm text-muted">Carregando…</p>
@@ -116,20 +129,31 @@ export default function AdminReviewsPage() {
       ) : (
         <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white">
           {reviews.map((r) => (
-            <li key={r.id} className={`px-5 py-4 ${r.hidden ? 'bg-[#fafafa]' : ''}`}>
+            <li
+              key={r.id}
+              className={`px-5 py-4 ${r.hidden ? 'bg-[#fafafa]' : ''}`}
+            >
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <StarRating value={r.rating} size={13} />
-                    <span className="text-[15px] font-semibold">{r.customer.name}</span>
-                    {r.verifiedPurchase ? <Selo tom="ok">Compra verificada</Selo> : null}
+                    <span className="text-[15px] font-semibold">
+                      {r.customer.name}
+                    </span>
+                    {r.verifiedPurchase ? (
+                      <Selo tom="ok">Compra verificada</Selo>
+                    ) : null}
                     {r.hidden ? <Selo>Oculta na vitrine</Selo> : null}
                   </div>
                   <p className="mt-1 text-[13px] text-muted">
                     {r.product.name} · {formatDate(r.createdAt)}
                   </p>
                   {r.comment ? (
-                    <p className={`mt-2 max-w-[70ch] text-[14px] leading-relaxed ${r.hidden ? 'text-muted' : 'text-[#333]'}`}>{r.comment}</p>
+                    <p
+                      className={`mt-2 max-w-[70ch] text-[14px] leading-relaxed ${r.hidden ? 'text-muted' : 'text-[#333]'}`}
+                    >
+                      {r.comment}
+                    </p>
                   ) : null}
                 </div>
                 <div className="flex shrink-0 gap-1.5">

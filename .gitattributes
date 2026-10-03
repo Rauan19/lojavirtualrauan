@@ -1,0 +1,16 @@
+# Repositório sempre em LF, inclusive no Windows (acaba o aviso "LF will be
+# replaced by CRLF" e casa com o Prettier). Binários ficam como estão.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.p12 binary
+*.pfx binary

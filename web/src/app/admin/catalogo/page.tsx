@@ -46,13 +46,19 @@ export default function CatalogoPage() {
         titulo="Google e Instagram"
         descricao={
           <>
-            Seus produtos aparecendo no Google Shopping e na aba de compras do Instagram e do Facebook. Você cadastra o endereço abaixo uma vez; eles buscam os produtos sozinhos todo dia, com preço, estoque e fotos atualizados.
+            Seus produtos aparecendo no Google Shopping e na aba de compras do
+            Instagram e do Facebook. Você cadastra o endereço abaixo uma vez;
+            eles buscam os produtos sozinhos todo dia, com preço, estoque e
+            fotos atualizados.
           </>
         }
       />
 
       {erro ? (
-        <p role="alert" className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent">
+        <p
+          role="alert"
+          className="border border-accent/25 bg-accent/5 px-3 py-2 text-sm text-accent"
+        >
           {erro}
         </p>
       ) : null}
@@ -103,8 +109,12 @@ export default function CatalogoPage() {
               </li>
               <li>Confirme o endereço da sua loja quando ele pedir.</li>
               <li>
-                Vá em <strong className="text-ink">Produtos → Adicionar produtos</strong>{' '}
-                e escolha <strong className="text-ink">adicionar de um arquivo</strong>{' '}
+                Vá em{' '}
+                <strong className="text-ink">
+                  Produtos → Adicionar produtos
+                </strong>{' '}
+                e escolha{' '}
+                <strong className="text-ink">adicionar de um arquivo</strong>{' '}
                 com <strong className="text-ink">busca programada</strong>.
               </li>
               <li>Cole o endereço do catálogo e escolha atualizar todo dia.</li>
@@ -135,8 +145,11 @@ export default function CatalogoPage() {
                 comércio eletrônico.
               </li>
               <li>
-                Em <strong className="text-ink">Fontes de dados → Feed de dados</strong>,
-                cole o endereço do catálogo e programe a atualização diária.
+                Em{' '}
+                <strong className="text-ink">
+                  Fontes de dados → Feed de dados
+                </strong>
+                , cole o endereço do catálogo e programe a atualização diária.
               </li>
               <li>
                 Ligue o catálogo ao perfil comercial do Instagram para marcar

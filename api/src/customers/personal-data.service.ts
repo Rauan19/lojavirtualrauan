@@ -39,7 +39,9 @@ export class PersonalDataService {
           include: { items: true },
           orderBy: { createdAt: 'desc' },
         },
-        reviews: { select: { id: true, rating: true, comment: true, createdAt: true } },
+        reviews: {
+          select: { id: true, rating: true, comment: true, createdAt: true },
+        },
       },
     });
     if (!customer) throw new NotFoundException('Cliente não encontrado');

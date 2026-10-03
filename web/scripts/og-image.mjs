@@ -95,6 +95,9 @@ camadas.push({
   top: 64,
 });
 
-const png = await sharp(base).composite(camadas).png({ quality: 92 }).toBuffer();
+const png = await sharp(base)
+  .composite(camadas)
+  .png({ quality: 92 })
+  .toBuffer();
 writeFileSync('public/og-image.png', png);
 console.log(`og-image.png gerada (${(png.length / 1024).toFixed(1)} KB)`);

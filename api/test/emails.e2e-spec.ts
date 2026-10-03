@@ -152,7 +152,9 @@ describe('E-mails transacionais (e2e)', () => {
       return { sent: true };
     });
 
-    const total = await prisma.order.count({ where: { storeId: seed.store.id } });
+    const total = await prisma.order.count({
+      where: { storeId: seed.store.id },
+    });
     expect(total).toBe(1);
   });
 });
