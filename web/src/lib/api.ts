@@ -11,6 +11,8 @@ export type AuthUser = {
   dono?: boolean;
   /** Áreas liberadas ao funcionário (null para o dono). */
   permissoes?: string[] | null;
+  /** Senha provisória: o painel só abre depois de trocar. */
+  trocarSenha?: boolean;
   store?: {
     id: string;
     name: string;

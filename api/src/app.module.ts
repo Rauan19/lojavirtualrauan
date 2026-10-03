@@ -33,6 +33,7 @@ import { UploadsModule } from './uploads/uploads.module';
 import { AccessLogService } from './common/access-log.service';
 import { AccessLogInterceptor } from './common/interceptors/access-log.interceptor';
 import { TemplatesModule } from './templates/templates.module';
+import { PlataformaEquipeModule } from './plataforma-equipe/plataforma-equipe.module';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { TemplatesModule } from './templates/templates.module';
     PromotionsModule,
     StorefrontModule,
     TemplatesModule,
+    PlataformaEquipeModule,
   ],
   providers: [
     {

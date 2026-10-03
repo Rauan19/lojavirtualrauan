@@ -24,6 +24,20 @@ export class AdminResetPasswordDto {
   password!: string;
 }
 
+export class TrocarSenhaDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  atual!: string;
+
+  @IsString()
+  @MinLength(8, {
+    message: 'A senha nova precisa ter pelo menos 8 caracteres.',
+  })
+  @MaxLength(200)
+  nova!: string;
+}
+
 export class SegundaEtapaDto {
   @IsString()
   @MinLength(20)

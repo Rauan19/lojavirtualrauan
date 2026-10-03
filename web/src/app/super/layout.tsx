@@ -8,15 +8,33 @@ import { IconeMenu } from '@/components/admin/IconeMenu';
 import { api, AuthUser } from '@/lib/api';
 import { clearSession, getToken, saveSession } from '@/lib/auth';
 
-const nav = [
-  { href: '/super', label: 'Dashboard', exact: true },
-  { href: '/super/lojas', label: 'Lojas' },
-  { href: '/super/planos', label: 'Planos' },
-  { href: '/super/templates', label: 'Templates' },
-  { href: '/super/comissoes', label: 'Comissões' },
-  { href: '/super/mercadopago', label: 'Mercado Pago' },
+/*
+ * area: o que o colaborador precisa ter liberado para ver o item
+ * ('dono' = só o dono da plataforma; sem area = todo mundo). Esconder no
+ * menu é só conforto: quem barra de verdade é a API (plataforma-equipe/areas.ts).
+ */
+const nav: {
+  href: string;
+  label: string;
+  exact?: boolean;
+  area?: string;
+}[] = [
+  { href: '/super', label: 'Dashboard', exact: true, area: 'lojas' },
+  { href: '/super/lojas', label: 'Lojas', area: 'lojas' },
+  { href: '/super/planos', label: 'Planos', area: 'planos' },
+  { href: '/super/templates', label: 'Templates', area: 'templates' },
+  { href: '/super/comissoes', label: 'Comissões', area: 'comissoes' },
+  { href: '/super/mercadopago', label: 'Mercado Pago', area: 'dono' },
+  { href: '/super/equipe', label: 'Equipe', area: 'dono' },
   { href: '/super/seguranca', label: 'Segurança' },
-] as const;
+];
+
+function podeVer(user: AuthUser, area?: string) {
+  if (!area) return true;
+  if (user.dono !== false) return true;
+  if (area === 'dono') return false;
+  return (user.permissoes ?? []).includes(area);
+}
 
 function isActive(pathname: string, href: string, exact?: boolean) {
   if (exact) return pathname === href;
@@ -28,7 +46,10 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname() || '';
   const [user, setUser] = useState<AuthUser | null>(null);
   const [open, setOpen] = useState(false);
-  /** Super Admin sem verificação em duas etapas: só a tela de ativação abre. */
+  /**
+   * Super Admin sem verificação em duas etapas, ou com senha provisória:
+   * só a tela de Segurança abre até resolver.
+   */
   const [precisaAtivar, setPrecisaAtivar] = useState(false);
 
   useEffect(() => {
@@ -54,7 +75,9 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
           return;
         }
         saveSession(token, fresh);
-        setPrecisaAtivar(Boolean(fresh.ativarDoisFatores));
+        setPrecisaAtivar(
+          Boolean(fresh.ativarDoisFatores) || Boolean(fresh.trocarSenha),
+        );
         setUser(fresh);
       } catch {
         if (cancelled) return;
@@ -75,8 +98,17 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (precisaAtivar && pathname !== '/super/seguranca') {
       router.replace('/super/seguranca');
+      return;
     }
-  }, [precisaAtivar, pathname, router]);
+    // Colaborador numa tela que não é dele: vai para a primeira que é
+    if (user && !precisaAtivar) {
+      const atual = nav.find((i) => isActive(pathname, i.href, i.exact));
+      if (atual && !podeVer(user, atual.area)) {
+        const primeira = nav.find((i) => podeVer(user, i.area));
+        router.replace(primeira?.href ?? '/super/seguranca');
+      }
+    }
+  }, [precisaAtivar, pathname, router, user]);
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
@@ -95,7 +127,7 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
 
   const itens = precisaAtivar
     ? nav.filter((i) => i.href === '/super/seguranca')
-    : nav;
+    : nav.filter((i) => podeVer(user, i.area));
 
   const side = (
     <>
@@ -109,7 +141,7 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
           </span>
           <span className="min-w-0">
             <span className="block truncate text-[15px] font-bold leading-tight">
-              Super admin
+              {user.dono === false ? 'Equipe Vendira' : 'Super admin'}
             </span>
             <span className="block truncate text-xs text-muted">
               {user.email}
@@ -125,7 +157,7 @@ export default function SuperLayout({ children }: { children: ReactNode }) {
           Plataforma
         </p>
         {itens.map((item) => {
-          const active = isActive(pathname, item.href, 'exact' in item);
+          const active = isActive(pathname, item.href, item.exact);
           return (
             <Link
               key={item.href}

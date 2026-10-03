@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '@/lib/api';
-import { getToken } from '@/lib/auth';
+import { getToken, getUser } from '@/lib/auth';
 import { CabecalhoPagina } from '@/components/admin/Pagina';
 import {
   BillingSummary,
@@ -45,6 +45,19 @@ export default function SuperDashboardPage() {
   const [stores, setStores] = useState<StoreRow[]>([]);
   const [billing, setBilling] = useState<BillingSummary | null>(null);
   const [mp, setMp] = useState<PlatformMpSettings | null>(null);
+  /*
+   * Colaborador da equipe só vê o que tem liberado: sem a área de planos,
+   * nada de faturamento; Mercado Pago da plataforma é só do dono. Esconde
+   * em vez de mostrar R$ 0,00 ou "pendente", que seria informação falsa.
+   */
+  const [verFinanceiro, setVerFinanceiro] = useState(true);
+  const [verMp, setVerMp] = useState(true);
+  useEffect(() => {
+    const u = getUser();
+    const dono = u?.dono !== false;
+    setVerFinanceiro(dono || Boolean(u?.permissoes?.includes('planos')));
+    setVerMp(dono);
+  }, []);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -58,7 +71,8 @@ export default function SuperDashboardPage() {
     try {
       const [list, bill, platformMp] = await Promise.all([
         api<StoreRow[]>('/stores', { token }),
-        api<BillingSummary>('/stores/billing', { token }),
+        // Colaborador sem a área de planos não vê o faturamento: segue sem ele
+        api<BillingSummary>('/stores/billing', { token }).catch(() => null),
         api<PlatformMpSettings>('/billing/platform/mercadopago', {
           token,
         }).catch(() => null),
@@ -200,21 +214,23 @@ export default function SuperDashboardPage() {
         descricao={<span className="capitalize">{todayLabel()}</span>}
         acoes={
           <>
-            <span
-              className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold ${
-                mp?.paymentsEnabled
-                  ? 'bg-[#e8f6ee] text-[#166534]'
-                  : 'bg-[#fde8e8] text-[#b42318]'
-              }`}
-            >
+            {verMp ? (
               <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  mp?.paymentsEnabled ? 'bg-[#1b8f4a]' : 'bg-[#b42318]'
+                className={`inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold ${
+                  mp?.paymentsEnabled
+                    ? 'bg-[#e8f6ee] text-[#166534]'
+                    : 'bg-[#fde8e8] text-[#b42318]'
                 }`}
-              />
-              Mercado Pago {mp?.paymentsEnabled ? 'ok' : 'pendente'}
-              {mp?.mpUseSandbox ? ' · teste' : mp ? ' · produção' : ''}
-            </span>
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    mp?.paymentsEnabled ? 'bg-[#1b8f4a]' : 'bg-[#b42318]'
+                  }`}
+                />
+                Mercado Pago {mp?.paymentsEnabled ? 'ok' : 'pendente'}
+                {mp?.mpUseSandbox ? ' · teste' : mp ? ' · produção' : ''}
+              </span>
+            ) : null}
             <button
               type="button"
               className="btn btn-ghost h-9 px-3 text-[13px]"
@@ -244,23 +260,27 @@ export default function SuperDashboardPage() {
 
       {/* KPIs principais */}
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="relative overflow-hidden rounded-2xl bg-[var(--brand-deep)] px-5 py-4 text-white sm:col-span-2 xl:col-span-1">
-          <p className="text-[13px] font-medium text-white/75">
-            Receita mensal (MRR)
-          </p>
-          <p className="mt-2 text-3xl font-bold tracking-tight">
-            {moneyBr(stats.mrr)}
-          </p>
-          <p className="mt-2 text-xs text-white/75">
-            Potencial {moneyBr(stats.potential)} · captura {stats.capture}%
-          </p>
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/15">
-            <div
-              className="h-1.5 rounded-full bg-[#7fd1a0] transition-[width] duration-700 ease-out"
-              style={{ width: `${Math.min(100, Math.max(4, stats.capture))}%` }}
-            />
+        {verFinanceiro ? (
+          <div className="relative overflow-hidden rounded-2xl bg-[var(--brand-deep)] px-5 py-4 text-white sm:col-span-2 xl:col-span-1">
+            <p className="text-[13px] font-medium text-white/75">
+              Receita mensal (MRR)
+            </p>
+            <p className="mt-2 text-3xl font-bold tracking-tight">
+              {moneyBr(stats.mrr)}
+            </p>
+            <p className="mt-2 text-xs text-white/75">
+              Potencial {moneyBr(stats.potential)} · captura {stats.capture}%
+            </p>
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/15">
+              <div
+                className="h-1.5 rounded-full bg-[#7fd1a0] transition-[width] duration-700 ease-out"
+                style={{
+                  width: `${Math.min(100, Math.max(4, stats.capture))}%`,
+                }}
+              />
+            </div>
           </div>
-        </div>
+        ) : null}
 
         <Link
           href="/super/lojas"
@@ -296,16 +316,18 @@ export default function SuperDashboardPage() {
           </p>
         </Link>
 
-        <div className="rounded-2xl border border-line bg-white px-5 py-4">
-          <p className="text-[13px] font-medium text-muted">Em atraso</p>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-[#b54708]">
-            {moneyBr(stats.overdue)}
-          </p>
-          <p className="mt-2 text-xs text-muted">
-            Em teste {moneyBr(stats.trialAmount)} · ticket médio{' '}
-            {moneyBr(stats.avgTicket)}
-          </p>
-        </div>
+        {verFinanceiro ? (
+          <div className="rounded-2xl border border-line bg-white px-5 py-4">
+            <p className="text-[13px] font-medium text-muted">Em atraso</p>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-[#b54708]">
+              {moneyBr(stats.overdue)}
+            </p>
+            <p className="mt-2 text-xs text-muted">
+              Em teste {moneyBr(stats.trialAmount)} · ticket médio{' '}
+              {moneyBr(stats.avgTicket)}
+            </p>
+          </div>
+        ) : null}
       </section>
 
       {/* Saúde da rede */}
@@ -330,142 +352,144 @@ export default function SuperDashboardPage() {
         ))}
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-5">
-        {/* Gráfico MRR */}
-        <section className="rounded-2xl border border-line bg-white p-5 xl:col-span-3">
-          <div className="flex flex-wrap items-end justify-between gap-2">
-            <div>
-              <h2 className="text-[15px] font-bold">MRR estimado</h2>
-              <p className="mt-0.5 text-xs text-muted">
-                Últimos 6 meses · lojas ativas com mensalidade
-              </p>
+      {verFinanceiro ? (
+        <div className="grid gap-4 xl:grid-cols-5">
+          {/* Gráfico MRR */}
+          <section className="rounded-2xl border border-line bg-white p-5 xl:col-span-3">
+            <div className="flex flex-wrap items-end justify-between gap-2">
+              <div>
+                <h2 className="text-[15px] font-bold">MRR estimado</h2>
+                <p className="mt-0.5 text-xs text-muted">
+                  Últimos 6 meses · lojas ativas com mensalidade
+                </p>
+              </div>
+              {billing?.monthlySeries?.length ? (
+                <p className="text-[15px] font-bold tabular-nums text-[#166534]">
+                  {moneyBr(
+                    billing.monthlySeries[billing.monthlySeries.length - 1]
+                      ?.mrr || 0,
+                  )}
+                </p>
+              ) : null}
             </div>
-            {billing?.monthlySeries?.length ? (
-              <p className="text-[15px] font-bold tabular-nums text-[#166534]">
-                {moneyBr(
-                  billing.monthlySeries[billing.monthlySeries.length - 1]
-                    ?.mrr || 0,
-                )}
-              </p>
-            ) : null}
-          </div>
 
-          {billing?.monthlySeries?.length ? (
-            <div className="mt-6 flex h-48 items-end gap-2.5 sm:gap-3">
-              {billing.monthlySeries.map((point, idx) => {
-                const h = Math.max(6, (point.mrr / chartMax) * 100);
-                const isLast = idx === billing.monthlySeries.length - 1;
-                return (
-                  <div
-                    key={point.month}
-                    className="group flex flex-1 flex-col items-center gap-1.5"
-                    title={`${point.label}: ${moneyBr(point.mrr)} · ${point.stores} lojas`}
-                  >
-                    <span
-                      className={`text-[11px] font-semibold tabular-nums ${
-                        isLast ? 'text-ink' : 'text-muted'
-                      }`}
+            {billing?.monthlySeries?.length ? (
+              <div className="mt-6 flex h-48 items-end gap-2.5 sm:gap-3">
+                {billing.monthlySeries.map((point, idx) => {
+                  const h = Math.max(6, (point.mrr / chartMax) * 100);
+                  const isLast = idx === billing.monthlySeries.length - 1;
+                  return (
+                    <div
+                      key={point.month}
+                      className="group flex flex-1 flex-col items-center gap-1.5"
+                      title={`${point.label}: ${moneyBr(point.mrr)} · ${point.stores} lojas`}
                     >
-                      {moneyCompact(point.mrr).replace(/\s/g, '\u00a0')}
-                    </span>
-                    <div className="relative flex w-full flex-1 items-end">
-                      <div
-                        className={`w-full rounded-t-md transition-[height] duration-700 ease-out ${
-                          isLast
-                            ? 'bg-[var(--brand-deep)]'
-                            : 'bg-[#c9dde2] group-hover:bg-[var(--brand-teal)]'
+                      <span
+                        className={`text-[11px] font-semibold tabular-nums ${
+                          isLast ? 'text-ink' : 'text-muted'
                         }`}
-                        style={{ height: `${h}%` }}
+                      >
+                        {moneyCompact(point.mrr).replace(/\s/g, '\u00a0')}
+                      </span>
+                      <div className="relative flex w-full flex-1 items-end">
+                        <div
+                          className={`w-full rounded-t-md transition-[height] duration-700 ease-out ${
+                            isLast
+                              ? 'bg-[var(--brand-deep)]'
+                              : 'bg-[#c9dde2] group-hover:bg-[var(--brand-teal)]'
+                          }`}
+                          style={{ height: `${h}%` }}
+                        />
+                      </div>
+                      <span className="text-[11px] capitalize text-muted">
+                        {point.label}
+                      </span>
+                      <span className="text-[11px] tabular-nums text-muted/80">
+                        {point.stores} lj
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="mt-8 text-sm text-muted">Sem histórico ainda.</p>
+            )}
+          </section>
+
+          {/* Mix de planos */}
+          <section className="rounded-2xl border border-line bg-white p-5 xl:col-span-2">
+            <h2 className="text-[15px] font-bold">Mix de planos</h2>
+            <p className="mt-0.5 text-xs text-muted">
+              Receita por plano cadastrado
+            </p>
+            <ul className="mt-5 space-y-4">
+              {planEntries.map(([plan, data]) => (
+                <li key={plan}>
+                  <div className="flex items-baseline justify-between gap-2 text-sm">
+                    <span className="font-semibold capitalize">{plan}</span>
+                    <span className="tabular-nums text-muted">
+                      {moneyBr(data.revenue)}
+                    </span>
+                  </div>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#eef0f3]">
+                      <div
+                        className="h-1.5 rounded-full bg-[var(--brand-teal)] transition-[width] duration-700 ease-out"
+                        style={{
+                          width: `${Math.max(3, (data.revenue / maxPlanRev) * 100)}%`,
+                        }}
                       />
                     </div>
-                    <span className="text-[11px] capitalize text-muted">
-                      {point.label}
-                    </span>
-                    <span className="text-[11px] tabular-nums text-muted/80">
-                      {point.stores} lj
+                    <span className="w-10 text-right text-[11px] tabular-nums text-muted">
+                      {data.count}
                     </span>
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="mt-8 text-sm text-muted">Sem histórico ainda.</p>
-          )}
-        </section>
-
-        {/* Mix de planos */}
-        <section className="rounded-2xl border border-line bg-white p-5 xl:col-span-2">
-          <h2 className="text-[15px] font-bold">Mix de planos</h2>
-          <p className="mt-0.5 text-xs text-muted">
-            Receita por plano cadastrado
-          </p>
-          <ul className="mt-5 space-y-4">
-            {planEntries.map(([plan, data]) => (
-              <li key={plan}>
-                <div className="flex items-baseline justify-between gap-2 text-sm">
-                  <span className="font-semibold capitalize">{plan}</span>
-                  <span className="tabular-nums text-muted">
-                    {moneyBr(data.revenue)}
-                  </span>
-                </div>
-                <div className="mt-1.5 flex items-center gap-2">
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#eef0f3]">
-                    <div
-                      className="h-1.5 rounded-full bg-[var(--brand-teal)] transition-[width] duration-700 ease-out"
-                      style={{
-                        width: `${Math.max(3, (data.revenue / maxPlanRev) * 100)}%`,
-                      }}
-                    />
-                  </div>
-                  <span className="w-10 text-right text-[11px] tabular-nums text-muted">
-                    {data.count}
-                  </span>
-                </div>
-              </li>
-            ))}
-            {planEntries.length === 0 ? (
-              <li className="text-sm text-muted">Nenhum plano ainda.</li>
-            ) : null}
-          </ul>
-
-          <div className="mt-6 border-t border-line pt-4">
-            <p className="text-[13px] font-semibold text-muted">Por status</p>
-            <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-[#eef0f3]">
-              {statusEntries.map(([st, data]) => {
-                const width = pct(data.count, stats.total || 1);
-                if (!width) return null;
-                const color =
-                  st === 'ACTIVE'
-                    ? 'bg-[#1b8f4a]'
-                    : st === 'TRIAL'
-                      ? 'bg-[#5b6cff]'
-                      : st === 'PAST_DUE'
-                        ? 'bg-[#e87b1a]'
-                        : 'bg-[#b42318]';
-                return (
-                  <div
-                    key={st}
-                    className={color}
-                    style={{ width: `${width}%` }}
-                    title={`${statusLabel[st] || st}: ${data.count}`}
-                  />
-                );
-              })}
-            </div>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {statusEntries.map(([st, data]) => (
-                <Link
-                  key={st}
-                  href={`/super/lojas?status=${st}`}
-                  className={`rounded-full px-2.5 py-1 text-[12px] font-semibold transition-opacity hover:opacity-80 ${statusTone(st)}`}
-                >
-                  {statusLabel[st] || st} {data.count}
-                </Link>
+                </li>
               ))}
+              {planEntries.length === 0 ? (
+                <li className="text-sm text-muted">Nenhum plano ainda.</li>
+              ) : null}
+            </ul>
+
+            <div className="mt-6 border-t border-line pt-4">
+              <p className="text-[13px] font-semibold text-muted">Por status</p>
+              <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-[#eef0f3]">
+                {statusEntries.map(([st, data]) => {
+                  const width = pct(data.count, stats.total || 1);
+                  if (!width) return null;
+                  const color =
+                    st === 'ACTIVE'
+                      ? 'bg-[#1b8f4a]'
+                      : st === 'TRIAL'
+                        ? 'bg-[#5b6cff]'
+                        : st === 'PAST_DUE'
+                          ? 'bg-[#e87b1a]'
+                          : 'bg-[#b42318]';
+                  return (
+                    <div
+                      key={st}
+                      className={color}
+                      style={{ width: `${width}%` }}
+                      title={`${statusLabel[st] || st}: ${data.count}`}
+                    />
+                  );
+                })}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {statusEntries.map(([st, data]) => (
+                  <Link
+                    key={st}
+                    href={`/super/lojas?status=${st}`}
+                    className={`rounded-full px-2.5 py-1 text-[12px] font-semibold transition-opacity hover:opacity-80 ${statusTone(st)}`}
+                  >
+                    {statusLabel[st] || st} {data.count}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-      </div>
+          </section>
+        </div>
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Atenção */}
@@ -640,15 +664,17 @@ export default function SuperDashboardPage() {
                 {stats.expiring.length}
               </span>
             </Link>
-            <Link
-              href="/super/mercadopago"
-              className="flex items-center justify-between rounded-xl border border-line px-3.5 py-3 text-sm font-semibold transition-colors hover:border-[var(--brand-teal)] hover:bg-[#f4f9fa]"
-            >
-              Mercado Pago
-              <span className="text-muted">
-                {mp?.paymentsEnabled ? 'configurado' : 'configurar'}
-              </span>
-            </Link>
+            {verMp ? (
+              <Link
+                href="/super/mercadopago"
+                className="flex items-center justify-between rounded-xl border border-line px-3.5 py-3 text-sm font-semibold transition-colors hover:border-[var(--brand-teal)] hover:bg-[#f4f9fa]"
+              >
+                Mercado Pago
+                <span className="text-muted">
+                  {mp?.paymentsEnabled ? 'configurado' : 'configurar'}
+                </span>
+              </Link>
+            ) : null}
           </div>
         </section>
       </div>

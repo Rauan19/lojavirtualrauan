@@ -249,7 +249,11 @@ export class AuthService {
       // tokenVersion++ derruba qualquer sessão aberta com a senha antiga
       this.prisma.user.update({
         where: { id: user.id },
-        data: { passwordHash, tokenVersion: { increment: 1 } },
+        data: {
+          passwordHash,
+          senhaProvisoria: false,
+          tokenVersion: { increment: 1 },
+        },
       }),
       // Queima este link e qualquer outro pedido de troca ainda aberto
       this.prisma.passwordResetToken.updateMany({
@@ -272,9 +276,43 @@ export class AuthService {
     storeOwner?: boolean;
     permissions?: string[];
   }) {
-    if (user.role !== 'STORE_ADMIN') return {};
+    if (user.role !== 'STORE_ADMIN' && user.role !== 'SUPER_ADMIN') return {};
     const dono = user.storeOwner !== false;
     return { dono, permissoes: dono ? null : (user.permissions ?? []) };
+  }
+
+  /**
+   * Troca de senha com a sessão aberta (sem e-mail): obrigatória para quem
+   * entrou com senha provisória, e disponível para qualquer usuário do painel.
+   * Devolve uma sessão nova, porque a troca derruba as antigas.
+   */
+  async trocarSenha(userId: string, atual: string, nova: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { store: true },
+    });
+    const ok = await comparePasswordConstantTime(atual, user?.passwordHash);
+    if (!user || !ok) {
+      throw new BadRequestException('A senha atual não confere.');
+    }
+    if (atual === nova) {
+      throw new BadRequestException(
+        'A senha nova precisa ser diferente da atual.',
+      );
+    }
+    const atualizado = await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash: await bcrypt.hash(nova, 10),
+        senhaProvisoria: false,
+        // Derruba qualquer outra sessão aberta com a senha antiga
+        tokenVersion: { increment: 1 },
+      },
+      include: { store: true },
+    });
+    const soAtivacao =
+      this.doisFatores.exigido(atualizado.role) && !atualizado.totpEnabledAt;
+    return this.sessao(atualizado, soAtivacao);
   }
 
   async me(userId: string, soAtivacao = false) {
@@ -293,6 +331,7 @@ export class AuthService {
         obrigatorio: this.doisFatores.exigido(user.role),
       },
       ...(soAtivacao ? { ativarDoisFatores: true } : {}),
+      ...(user.senhaProvisoria ? { trocarSenha: true } : {}),
       id: user.id,
       email: user.email,
       name: user.name,

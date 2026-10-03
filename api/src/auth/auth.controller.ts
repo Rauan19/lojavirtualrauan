@@ -16,6 +16,7 @@ import {
   DesativarDoisFatoresDto,
   LoginDto,
   SegundaEtapaDto,
+  TrocarSenhaDto,
 } from './dto/login.dto';
 import { DoisFatoresService } from './dois-fatores.service';
 import {
@@ -56,6 +57,18 @@ export class AuthController {
   @PermitirSemSegundoFator()
   me(@CurrentUser() user: AuthUser) {
     return this.authService.me(user.id, Boolean(user.mfaSetupOnly));
+  }
+
+  /** Troca de senha logado (obrigatória para quem tem senha provisória). */
+  @Post('trocar-senha')
+  @UseGuards(JwtAuthGuard)
+  @PermitirSemSegundoFator()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  trocarSenha(@CurrentUser() user: AuthUser, @Body() dto: TrocarSenhaDto) {
+    if (user.role === Role.CUSTOMER) {
+      throw new ForbiddenException();
+    }
+    return this.authService.trocarSenha(user.id, dto.atual, dto.nova);
   }
 
   // ---------- Verificação em duas etapas ----------

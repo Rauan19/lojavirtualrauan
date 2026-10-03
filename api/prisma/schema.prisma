@@ -277,8 +277,13 @@ model User {
   tokenVersion Int      @default(0)
   /// Dono da loja (acesso total). Funcionário convidado = false
   storeOwner   Boolean  @default(true)
-  /// Áreas do painel que o funcionário acessa (pedidos, produtos, clientes, marketing, configuracoes)
+  /// Áreas que o funcionário acessa. Loja: pedidos, produtos, clientes,
+  /// marketing, configuracoes. Super Admin colaborador (storeOwner=false):
+  /// lojas, planos, comissoes, templates (ver src/plataforma-equipe/areas.ts)
   permissions  String[] @default([])
+  /// Senha definida por outra pessoa (o dono da plataforma ao criar o
+  /// colaborador): o painel só abre depois de trocar
+  senhaProvisoria Boolean @default(false)
 
   /// Verificação em duas etapas (TOTP). Chaves cifradas como os tokens das lojas.
   totpSecret          String?
@@ -326,6 +331,25 @@ model AccessLog {
   @@index([createdAt])
   @@index([storeId, createdAt])
   @@index([customerId, createdAt])
+}
+
+/*
+ * O que a equipe do Super Admin fez: uma linha por alteração (POST, PATCH,
+ * PUT, DELETE), com quem fez e em que rota. O corpo não é guardado: pode
+ * ter senha, token de gateway ou dado pessoal.
+ */
+model PlatformAuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  /** Guardado à parte: o registro continua legível se o usuário for removido */
+  userEmail String
+  method    String
+  path      String
+  status    Int
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
 }
 
 model Customer {

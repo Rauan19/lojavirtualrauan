@@ -82,6 +82,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         tokenVersion: true,
         storeOwner: true,
         permissions: true,
+        senhaProvisoria: true,
       },
     });
     if (!user || !user.active || user.tokenVersion !== tokenVersion) {
@@ -97,6 +98,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       ...(user.role === Role.STORE_ADMIN && !user.storeOwner
         ? { funcionario: { permissoes: user.permissions } }
         : {}),
+      ...(user.role === Role.SUPER_ADMIN && !user.storeOwner
+        ? { colaboradorPlataforma: { permissoes: user.permissions } }
+        : {}),
+      ...(user.senhaProvisoria ? { trocarSenha: true } : {}),
     };
   }
 }

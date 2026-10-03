@@ -19,6 +19,13 @@ export type AuthUser = {
   mfaSetupOnly?: boolean;
   /** Painel da loja: funcionário convidado (não é o dono) e suas áreas */
   funcionario?: { permissoes: string[] };
+  /** Super Admin: colaborador da equipe da plataforma (não é o dono) */
+  colaboradorPlataforma?: { permissoes: string[] };
+  /**
+   * Senha provisória (definida pelo dono ao criar o colaborador): só abre
+   * as rotas de PermitirSemSegundoFator até trocar.
+   */
+  trocarSenha?: boolean;
 };
 
 export const CurrentUser = createParamDecorator(
