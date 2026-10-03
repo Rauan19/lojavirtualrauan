@@ -1,0 +1,12 @@
+{
+  "name": "vendira",
+  "private": true,
+  "description": "Raiz do monorepo: só as ferramentas de commit (Husky + lint-staged). Cada app tem o seu package.json em api/ e web/.",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "9.1.7",
+    "lint-staged": "17.6.0"
+  }
+}
