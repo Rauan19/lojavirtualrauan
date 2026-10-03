@@ -257,6 +257,7 @@ export function MpPaymentBrick({
     : '';
 
   useEffect(() => {
+    const hostDoEfeito = hostRef.current;
     let cancelled = false;
     let controller: { unmount: () => void } | null = null;
     let readyTimer: ReturnType<typeof setTimeout> | null = null;
@@ -449,8 +450,11 @@ export function MpPaymentBrick({
           window.__mpBrickController = null;
         }
       }
-      if (hostRef.current) hostRef.current.innerHTML = '';
+      if (hostDoEfeito) hostDoEfeito.innerHTML = '';
     };
+    // payerAddress entra pelo addressKey: o objeto muda a cada render e
+    // remontaria o Brick (o cliente perderia o que digitou no cartão)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [publicKey, amount, payerEmail, payerName, addressKey, retryKey, metodo]);
 
   return (

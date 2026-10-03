@@ -78,10 +78,7 @@ describe('Mensalidade por Pix (e2e)', () => {
      * O Mercado Pago é dublê: o que interessa testar é o que a aplicação
      * manda para ele e o que grava com a resposta, não a API deles.
      */
-    globalThis.fetch = (async (
-      input: RequestInfo | URL,
-      init?: RequestInit,
-    ) => {
+    globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       if (url.includes('api.mercadopago.com')) {
         const body = init?.body ? JSON.parse(String(init.body)) : {};
@@ -106,7 +103,7 @@ describe('Mensalidade por Pix (e2e)', () => {
         return new Response(JSON.stringify({}), { status: 200 });
       }
       return fetchOriginal(input, init);
-    }) as typeof globalThis.fetch;
+    };
 
     seed = await seedStore(prisma);
     adminToken = await signAdminToken(app, seed.admin);
@@ -204,13 +201,13 @@ describe('Mensalidade por Pix (e2e)', () => {
     });
 
     it('falha do gateway não deixa fatura órfã para trás', async () => {
-      globalThis.fetch = (async (input: RequestInfo | URL) => {
+      globalThis.fetch = async (input: RequestInfo | URL) => {
         const url = String(input);
         if (url.endsWith('/v1/payments')) {
           return new Response('erro do gateway', { status: 500 });
         }
         return new Response(JSON.stringify({}), { status: 200 });
-      }) as typeof globalThis.fetch;
+      };
 
       await assinarPixHttp().expect(400);
 
@@ -376,7 +373,7 @@ describe('Mensalidade por Pix (e2e)', () => {
       });
 
       // o webhook do MP responde o pagamento apontando para a fatura
-      globalThis.fetch = (async (input: RequestInfo | URL) => {
+      globalThis.fetch = async (input: RequestInfo | URL) => {
         const url = String(input);
         if (url.includes('/v1/payments/')) {
           return new Response(
@@ -389,7 +386,7 @@ describe('Mensalidade por Pix (e2e)', () => {
           );
         }
         return new Response(JSON.stringify({}), { status: 200 });
-      }) as typeof globalThis.fetch;
+      };
 
       await billing.handleWebhook({ type: 'payment', data: { id: '987654' } });
 
@@ -475,7 +472,7 @@ describe('Mensalidade por Pix (e2e)', () => {
       });
       enviados = [];
 
-      globalThis.fetch = (async (input: RequestInfo | URL) => {
+      globalThis.fetch = async (input: RequestInfo | URL) => {
         if (String(input).includes('/v1/payments/')) {
           return new Response(
             JSON.stringify({
@@ -487,7 +484,7 @@ describe('Mensalidade por Pix (e2e)', () => {
           );
         }
         return new Response(JSON.stringify({}), { status: 200 });
-      }) as typeof globalThis.fetch;
+      };
 
       await billing.handleWebhook({ type: 'payment', data: { id: '555' } });
       await esperarEmail('confirmada');

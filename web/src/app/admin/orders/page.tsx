@@ -344,6 +344,8 @@ export default function AdminOrdersPage() {
       setError(err instanceof Error ? err.message : 'Erro'),
     );
     loadPrinter().catch(() => undefined);
+    // A impressora é lida uma vez; recarregar só a lista quando o filtro muda
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [load]);
 
   const allSelected = useMemo(

@@ -80,6 +80,8 @@ export default function AdminCategoriesPage() {
     load().catch((err) =>
       setError(err instanceof Error ? err.message : 'Erro'),
     );
+    // Carrega uma vez, ao abrir a página
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

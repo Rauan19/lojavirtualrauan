@@ -129,7 +129,7 @@ export class RequestRefundDto {
    * Motivo estruturado. Define se o produto precisa voltar e se o lojista
    * pode recusar — ver refund-rules.ts.
    */
-  @IsIn(REFUND_REASONS as unknown as string[])
+  @IsIn(REFUND_REASONS)
   reasonType!: string;
 
   @IsOptional()

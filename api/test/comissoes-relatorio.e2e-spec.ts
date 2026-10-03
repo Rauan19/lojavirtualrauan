@@ -116,7 +116,7 @@ describe('Comissões: relatório, termos e liberação (e2e)', () => {
     expect(res.headers['content-disposition']).toContain(
       'comissoes-2026-10.csv',
     );
-    const linhas = res.text.replace(/^﻿/, '').split('\r\n');
+    const linhas = res.text.replace(/^\uFEFF/, '').split('\r\n');
     expect(linhas).toHaveLength(2);
     expect(linhas[1]).toContain('"Loja; da ""Ana"""');
     expect(linhas[1]).toContain('12345678000190');

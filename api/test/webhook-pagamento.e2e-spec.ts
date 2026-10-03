@@ -49,10 +49,7 @@ describe('Webhook de pagamento (e2e)', () => {
     pagamentosMp = {};
     consultasMp = [];
 
-    globalThis.fetch = (async (
-      input: RequestInfo | URL,
-      init?: RequestInit,
-    ) => {
+    globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       const consulta = url.match(/\/v1\/payments\/([^/?]+)/);
       if (consulta) {
@@ -68,7 +65,7 @@ describe('Webhook de pagamento (e2e)', () => {
         return new Response(JSON.stringify({}), { status: 200 });
       }
       return fetchOriginal(input, init);
-    }) as typeof globalThis.fetch;
+    };
 
     seed = await seedStore(prisma, { stock: 5 });
     // sem token de MP a loja nem é considerada na resolução do webhook

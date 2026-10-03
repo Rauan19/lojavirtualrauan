@@ -9,7 +9,7 @@ self.addEventListener('push', (event) => {
   let aviso = {};
   try {
     aviso = event.data ? event.data.json() : {};
-  } catch (e) {
+  } catch {
     aviso = { title: 'Minha loja', body: event.data ? event.data.text() : '' };
   }
   const title = aviso.title || 'Minha loja';

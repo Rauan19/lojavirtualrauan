@@ -81,21 +81,21 @@ describe('exigência de peso e dimensões no cadastro', () => {
       const { service, created } = serviceFor(modo);
       const { weightKg, widthCm, heightCm, lengthCm, ...semMedida } = COMPLETO;
 
-      await service.createProduct('loja', semMedida as never);
+      await service.createProduct('loja', semMedida);
       expect(created).toHaveBeenCalled();
     },
   );
 
   it('aceita criação com todas as medidas', async () => {
     const { service, created } = serviceFor('melhor_envio');
-    await service.createProduct('loja', COMPLETO as never);
+    await service.createProduct('loja', COMPLETO);
     expect(created).toHaveBeenCalled();
   });
 
   it('medida zerada conta como ausente', async () => {
     const { service } = serviceFor('melhor_envio');
     await expect(
-      service.createProduct('loja', { ...COMPLETO, weightKg: 0 } as never),
+      service.createProduct('loja', { ...COMPLETO, weightKg: 0 }),
     ).rejects.toThrow(/peso/);
   });
 });
@@ -105,14 +105,14 @@ describe('edição parcial', () => {
 
   it('deixa mexer só no preço sem redigitar o pacote', async () => {
     const { service, prisma } = serviceFor('melhor_envio', SALVO);
-    await service.updateProduct('loja', 'p1', { price: 199 } as never);
+    await service.updateProduct('loja', 'p1', { price: 199 });
     expect(prisma.$transaction).toHaveBeenCalled();
   });
 
   it('barra quem apaga a medida de um produto já salvo', async () => {
     const { service, prisma } = serviceFor('melhor_envio', SALVO);
     await expect(
-      service.updateProduct('loja', 'p1', { weightKg: null } as never),
+      service.updateProduct('loja', 'p1', { weightKg: null }),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(prisma.$transaction).not.toHaveBeenCalled();
   });
@@ -125,7 +125,7 @@ describe('edição parcial', () => {
       lengthCm: null,
     });
     await expect(
-      service.updateProduct('loja', 'p1', { price: 199 } as never),
+      service.updateProduct('loja', 'p1', { price: 199 }),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 });

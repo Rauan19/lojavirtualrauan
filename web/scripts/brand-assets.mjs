@@ -13,7 +13,7 @@
  * Trocou a logo? Substitui a arte de entrada e roda de novo.
  */
 
-import { mkdirSync, statSync, writeFileSync } from 'node:fs';
+import { statSync, writeFileSync } from 'node:fs';
 import sharp from 'sharp';
 
 const ORIGEM = 'brand-originais/vendira.png';

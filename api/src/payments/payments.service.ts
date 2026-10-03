@@ -1077,7 +1077,7 @@ export class PaymentsService {
       throw new BadRequestException('Pedido já reembolsado');
     }
 
-    const gateway: 'mercadopago' = 'mercadopago';
+    const gateway = 'mercadopago' as const;
     let mpRefundId: string | null = null;
     let gatewayMessage = '';
 

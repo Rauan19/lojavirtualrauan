@@ -39,7 +39,7 @@ const dadosDoUpdate = (update: jest.Mock) =>
 describe('trocar o ambiente do Melhor Envio', () => {
   it('desconecta a conta ao sair do sandbox', async () => {
     const { service, update } = build(true);
-    await service.updateShipping('loja-1', { freteSandbox: false } as never);
+    await service.updateShipping('loja-1', { freteSandbox: false });
 
     expect(dadosDoUpdate(update)).toMatchObject({
       freteToken: null,
@@ -52,7 +52,7 @@ describe('trocar o ambiente do Melhor Envio', () => {
 
   it('desconecta também ao entrar no sandbox', async () => {
     const { service, update } = build(false);
-    await service.updateShipping('loja-1', { freteSandbox: true } as never);
+    await service.updateShipping('loja-1', { freteSandbox: true });
 
     expect(dadosDoUpdate(update)).toMatchObject({ freteRefreshToken: null });
   });
@@ -62,7 +62,7 @@ describe('trocar o ambiente do Melhor Envio', () => {
     await service.updateShipping('loja-1', {
       freteSandbox: true,
       freteEmailContato: 'novo@loja.com',
-    } as never);
+    });
 
     const data = dadosDoUpdate(update);
     expect(data).not.toHaveProperty('freteRefreshToken');
@@ -74,7 +74,7 @@ describe('trocar o ambiente do Melhor Envio', () => {
     await service.updateShipping('loja-1', {
       freteSandbox: false,
       freteToken: 'token-de-producao',
-    } as never);
+    });
 
     const data = dadosDoUpdate(update);
     expect(data.freteToken).toBe('cifrado:token-de-producao');

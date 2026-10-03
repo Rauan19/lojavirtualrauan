@@ -4,7 +4,6 @@ import { FormEvent, useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useEscapeKey, useUnsavedWarning } from '@/lib/modal-guards';
 import { useConfirm } from '@/components/ConfirmDialog';
-import { BRAND } from '@/lib/brand';
 import { api, mediaUrl } from '@/lib/api';
 import { getToken, getUser } from '@/lib/auth';
 import { formatPhoneBr } from '@/lib/contact';

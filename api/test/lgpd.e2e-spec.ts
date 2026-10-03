@@ -1,5 +1,4 @@
 import { INestApplication } from '@nestjs/common';
-import { OrderStatus } from '@prisma/client';
 import request from 'supertest';
 import { PrismaService } from '../src/prisma/prisma.service';
 import {

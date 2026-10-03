@@ -42,10 +42,7 @@ describe('Desconto no Pix (e2e)', () => {
     await resetDb(prisma);
     enviadoAoMp = [];
     pagamentosMp = {};
-    globalThis.fetch = (async (
-      input: RequestInfo | URL,
-      init?: RequestInit,
-    ) => {
+    globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       if (url.endsWith('/v1/payments') && init?.method === 'POST') {
         const corpo = JSON.parse(String(init.body)) as Record<string, unknown>;
@@ -72,7 +69,7 @@ describe('Desconto no Pix (e2e)', () => {
         return new Response(JSON.stringify({}), { status: 200 });
       }
       return fetchOriginal(input, init);
-    }) as typeof globalThis.fetch;
+    };
 
     seed = await seedStore(prisma, {
       stock: 5,

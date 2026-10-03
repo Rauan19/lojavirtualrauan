@@ -35,7 +35,7 @@ describe('E-mails transacionais (e2e)', () => {
     // Sem SMTP nos testes: intercepta o envio e guarda o que sairia
     const mail = app.get(MailService);
     jest.spyOn(mail, 'send').mockImplementation(async (input) => {
-      sent.push(input as SentMail);
+      sent.push(input);
       return { sent: true };
     });
   });
@@ -148,7 +148,7 @@ describe('E-mails transacionais (e2e)', () => {
     await aguardarEnvio();
 
     spy.mockImplementation(async (input) => {
-      sent.push(input as SentMail);
+      sent.push(input);
       return { sent: true };
     });
 

@@ -353,20 +353,18 @@ function CheckoutInner({ slug }: { slug: string }) {
     }
   }
 
+  // Composição do carrinho (peso/qtd): muda o frete
+  const composicaoCarrinho = cart.items
+    .map((i) => `${i.productId}:${i.variantId || ''}:${i.quantity}`)
+    .join('|');
+
   useEffect(() => {
     if (step >= 3 && activeZip) {
       void quoteShipping(activeZip);
     }
-    // Recotar quando muda CEP, valor ou composição do carrinho (peso/qtd)
+    // Recotar quando muda CEP, valor ou composição do carrinho
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    step,
-    activeZip,
-    cart.subtotal,
-    cart.items
-      .map((i) => `${i.productId}:${i.variantId || ''}:${i.quantity}`)
-      .join('|'),
-  ]);
+  }, [step, activeZip, cart.subtotal, composicaoCarrinho]);
 
   async function lookupCep(raw: string) {
     const digits = raw.replace(/\D/g, '');

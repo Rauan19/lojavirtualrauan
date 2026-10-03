@@ -547,7 +547,6 @@ export function AdminPlanosInner() {
       setMetodo('PIX');
       void carregarPix();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store?.billingMethod]);
   const plans = data?.plans || [];
   const selected = plans.find((p) => p.id === selectedId) || null;

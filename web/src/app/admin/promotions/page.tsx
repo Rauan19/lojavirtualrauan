@@ -60,6 +60,8 @@ export default function AdminPromotionsPage() {
     load().catch((err) =>
       setError(err instanceof Error ? err.message : 'Erro'),
     );
+    // Carrega uma vez, ao abrir a página
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -67,6 +69,8 @@ export default function AdminPromotionsPage() {
     if (!p) return;
     setCompareAt(p.compareAt || p.price);
     if (!promoPrice) setPromoPrice('');
+    // Só ao trocar de produto: digitar o preço não pode refazer isto
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId, products]);
 
   async function onCreate(e: FormEvent) {

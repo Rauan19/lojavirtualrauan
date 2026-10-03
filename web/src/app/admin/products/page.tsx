@@ -481,7 +481,6 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     setPage(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedQ, filterCategoryId, filterActive]);
 
   useEffect(() => {

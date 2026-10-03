@@ -50,13 +50,13 @@ describe('Diagnóstico do webhook (e2e)', () => {
       .set('Authorization', `Bearer ${superToken}`);
 
   function urlResponde(ok: boolean) {
-    globalThis.fetch = (async (input: RequestInfo | URL) => {
+    globalThis.fetch = async (input: RequestInfo | URL) => {
       if (String(input).includes('/api/public/health')) {
         if (!ok) throw new Error('connect ECONNREFUSED');
         return new Response(JSON.stringify({ ok: true }), { status: 200 });
       }
       return new Response(JSON.stringify({}), { status: 200 });
-    }) as typeof globalThis.fetch;
+    };
   }
 
   it('aponta a URL pública quando ela responde', async () => {
@@ -96,10 +96,10 @@ describe('Diagnóstico do webhook (e2e)', () => {
   it('acusa localhost sem nem tentar alcançar', async () => {
     process.env.PUBLIC_URL = 'http://localhost:3000';
     let tentou = false;
-    globalThis.fetch = (async (input: RequestInfo | URL) => {
+    globalThis.fetch = async (input: RequestInfo | URL) => {
       if (String(input).includes('/api/public/health')) tentou = true;
       return new Response(JSON.stringify({}), { status: 200 });
-    }) as typeof globalThis.fetch;
+    };
 
     const res = await checar().expect(200);
 
