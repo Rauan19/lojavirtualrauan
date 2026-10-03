@@ -29,6 +29,12 @@ export function intervaloDoMes(mes?: string): {
   return { mes: `${ano}-${String(m).padStart(2, '0')}`, inicio, fim };
 }
 
+/** "2026-01" → "2025-12". */
+export function mesAnterior(mes: string): string {
+  const [ano, m] = mes.split('-').map(Number);
+  return m === 1 ? `${ano - 1}-12` : `${ano}-${String(m - 1).padStart(2, '0')}`;
+}
+
 /** Uma célula de CSV: aspas quando precisa e sem fórmula (CSV injection). */
 export function celulaCsv(valor: string | number | null | undefined): string {
   let s = valor == null ? '' : String(valor);

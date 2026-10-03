@@ -43,8 +43,8 @@ const REGRAS: [RegExp, Acesso, string?][] = [
   [/^\/stores\/billing$/, ['planos']],
 
   // Comissões do split
-  [/^\/platform-fee\/(relatorio|relatorio\.csv)$/, ['comissoes']],
-  [/^\/platform-fee\/(lojas|divergencias)\//, ['comissoes']],
+  [/^\/platform-fee\/relatorio(\.csv|\/lojas)?$/, ['comissoes']],
+  [/^\/platform-fee\/(lojas\/|divergencias(\/|$))/, ['comissoes']],
 
   // Templates prontos da vitrine
   [/^\/super\/templates(\/|$)/, ['templates']],

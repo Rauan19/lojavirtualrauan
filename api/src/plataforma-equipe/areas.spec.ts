@@ -54,6 +54,19 @@ describe('áreas do Super Admin (colaborador)', () => {
     );
   });
 
+  it('comissões: resumo, lojas paginadas, divergências e CSV', () => {
+    const c = ['comissoes'];
+    for (const url of [
+      '/api/platform-fee/relatorio?mes=2026-10',
+      '/api/platform-fee/relatorio/lojas?pagina=2',
+      '/api/platform-fee/relatorio.csv',
+      '/api/platform-fee/divergencias?pagina=1',
+    ]) {
+      expect(colaboradorPode(c, 'GET', url)).toBe(true);
+      expect(colaboradorPode(['lojas'], 'GET', url)).toBe(false);
+    }
+  });
+
   it('Mercado Pago da plataforma, equipe e rota desconhecida: só o dono', () => {
     const todas = ['lojas', 'planos', 'comissoes', 'templates'];
     expect(

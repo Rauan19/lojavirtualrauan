@@ -10,7 +10,18 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
-import { IsBoolean, IsOptional, ValidateIf } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 import type { Response } from 'express';
 import { AllowPastDue } from '../common/decorators/allow-past-due.decorator';
 import { CurrentStore } from '../common/decorators/current-store.decorator';
@@ -19,7 +30,13 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { TenantGuard } from '../common/guards/tenant.guard';
-import { ComissoesService } from './comissoes.service';
+import {
+  ComissoesService,
+  FILTROS_LOJAS,
+  ORDENS_LOJAS,
+  type FiltroLojas,
+  type OrdemLojas,
+} from './comissoes.service';
 
 class LiberacaoDto {
   /** true = ligada, false = desligada, null = segue a chave geral */
@@ -27,6 +44,40 @@ class LiberacaoDto {
   @ValidateIf((_o, v) => v !== null)
   @IsBoolean()
   platformFeeEnabled!: boolean | null;
+}
+
+class PaginaDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  pagina?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  porPagina?: number;
+}
+
+class LojasDoMesDto extends PaginaDto {
+  @IsOptional()
+  @IsString()
+  mes?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  busca?: string;
+
+  @IsOptional()
+  @IsIn(FILTROS_LOJAS)
+  filtro?: FiltroLojas;
+
+  @IsOptional()
+  @IsIn(ORDENS_LOJAS)
+  ordem?: OrdemLojas;
 }
 
 @Controller('platform-fee')
@@ -47,6 +98,21 @@ export class ComissoesController {
   @Roles(Role.SUPER_ADMIN)
   relatorio(@Query('mes') mes?: string) {
     return this.comissoes.relatorio(mes);
+  }
+
+  /** Lojas do mês, paginadas, com busca, filtro e ordem no servidor. */
+  @Get('relatorio/lojas')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  lojasDoMes(@Query() q: LojasDoMesDto) {
+    return this.comissoes.lojasDoMes(q.mes, q);
+  }
+
+  @Get('divergencias')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  divergencias(@Query() q: PaginaDto) {
+    return this.comissoes.divergencias(q.pagina, q.porPagina);
   }
 
   @Get('relatorio.csv')
