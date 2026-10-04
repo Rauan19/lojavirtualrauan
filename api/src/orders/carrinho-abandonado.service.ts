@@ -30,6 +30,16 @@ const LOTE = 100;
  * expirou. Um e-mail só, com um link que devolve os itens à sacola; e uma
  * lista no painel para o lojista chamar no WhatsApp.
  */
+export const SITUACOES_CARRINHO = [
+  'todos',
+  'pendentes',
+  'recuperados',
+  'sem-lembrete',
+] as const;
+export type SituacaoCarrinho = (typeof SITUACOES_CARRINHO)[number];
+/** Períodos do painel, em dias */
+export const PERIODOS_CARRINHO = [7, 30, 90] as const;
+
 @Injectable()
 export class CarrinhoAbandonadoService
   implements OnModuleInit, OnModuleDestroy
@@ -248,19 +258,37 @@ export class CarrinhoAbandonadoService
 
   // ---------- painel do lojista ----------
 
-  async listar(storeId: string) {
+  /**
+   * Painel: carrinhos abandonados do período, com filtro, busca e página.
+   *
+   * Duas consultas leves para o período inteiro (os carrinhos e as compras
+   * pagas desses clientes depois), em vez de uma consulta por carrinho; os
+   * itens só são lidos para a página que vai para a tela.
+   */
+  async listar(
+    storeId: string,
+    opcoes: {
+      dias?: number;
+      situacao?: SituacaoCarrinho;
+      busca?: string;
+      pagina?: number;
+      porPagina?: number;
+    } = {},
+  ) {
+    const dias = PERIODOS_CARRINHO.includes(opcoes.dias as never)
+      ? (opcoes.dias as number)
+      : 30;
+    const situacao = opcoes.situacao ?? 'todos';
+    const porPagina = Math.min(Math.max(opcoes.porPagina || 20, 1), 100);
+    const desde = new Date(Date.now() - dias * 24 * 60 * 60 * 1000);
+
     const [store, pedidos] = await Promise.all([
       this.prisma.store.findUniqueOrThrow({
         where: { id: storeId },
         select: { slug: true, customDomain: true, abandonedCartEmail: true },
       }),
       this.prisma.order.findMany({
-        where: {
-          storeId,
-          expiredUnpaidAt: {
-            gt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-          },
-        },
+        where: { storeId, expiredUnpaidAt: { gt: desde } },
         select: {
           id: true,
           orderNumber: true,
@@ -272,49 +300,146 @@ export class CarrinhoAbandonadoService
           customerEmail: true,
           customerPhone: true,
           total: true,
-          items: {
-            select: { productName: true, variantLabel: true, quantity: true },
-          },
         },
-        orderBy: { expiredUnpaidAt: 'desc' },
-        take: 200,
+        orderBy: [{ expiredUnpaidAt: 'desc' }, { id: 'desc' }],
       }),
     ]);
 
-    const linhas = await Promise.all(
-      pedidos.map(async (p) => {
-        const voltou = await this.voltouEComprou(
-          storeId,
-          p.customerId,
-          p.createdAt,
-        );
-        return {
-          id: p.id,
-          orderNumber: p.orderNumber,
-          abandonadoEm: p.expiredUnpaidAt,
-          emailEnviadoEm: p.recoveryEmailSentAt,
-          cliente: p.customerName,
-          email: p.customerEmail,
-          telefone: p.customerPhone,
-          total: Number(p.total),
-          itens: p.items.map((i) => ({
-            nome: i.variantLabel
-              ? `${i.productName} (${i.variantLabel})`
-              : i.productName,
-            quantidade: i.quantity,
-          })),
-          recuperadoNoPedido: voltou?.orderNumber ?? null,
-          link: this.link(store, p.id),
-        };
-      }),
+    // Compras pagas desses clientes depois do carrinho mais antigo: uma
+    // consulta só, e o "voltou e comprou" de cada carrinho sai daqui
+    const clientes = [
+      ...new Set(pedidos.map((p) => p.customerId).filter(Boolean)),
+    ] as string[];
+    const maisAntigo = pedidos.reduce<Date | null>(
+      (min, p) => (!min || p.createdAt < min ? p.createdAt : min),
+      null,
+    );
+    const compras =
+      clientes.length && maisAntigo
+        ? await this.prisma.order.findMany({
+            where: {
+              storeId,
+              customerId: { in: clientes },
+              createdAt: { gt: maisAntigo },
+              paymentStatus: {
+                in: [PaymentStatus.APPROVED, PaymentStatus.REFUNDED],
+              },
+            },
+            select: {
+              customerId: true,
+              createdAt: true,
+              orderNumber: true,
+              total: true,
+            },
+            orderBy: { createdAt: 'asc' },
+          })
+        : [];
+    const porCliente = new Map<string, typeof compras>();
+    for (const c of compras) {
+      if (!c.customerId) continue;
+      const lista = porCliente.get(c.customerId) ?? [];
+      lista.push(c);
+      porCliente.set(c.customerId, lista);
+    }
+
+    const linhas = pedidos.map((p) => {
+      const voltou = p.customerId
+        ? (porCliente.get(p.customerId) ?? []).find(
+            (c) => c.createdAt > p.createdAt,
+          )
+        : undefined;
+      return { p, voltou };
+    });
+
+    const pendentes = linhas.filter((l) => !l.voltou);
+    const recuperadas = linhas.filter((l) => l.voltou);
+    const resumo = {
+      total: linhas.length,
+      recuperados: recuperadas.length,
+      taxa: linhas.length
+        ? Math.round((recuperadas.length / linhas.length) * 100)
+        : 0,
+      valorEmAberto: pendentes.reduce((s, l) => s + Number(l.p.total), 0),
+      valorRecuperado: recuperadas.reduce(
+        (s, l) => s + Number(l.voltou?.total ?? 0),
+        0,
+      ),
+    };
+    const contagens = {
+      todos: linhas.length,
+      pendentes: pendentes.length,
+      recuperados: recuperadas.length,
+      semLembrete: pendentes.filter((l) => !l.p.recoveryEmailSentAt).length,
+    };
+
+    const termo = opcoes.busca?.trim().toLowerCase() ?? '';
+    const digitos = termo.replace(/\D/g, '');
+    const filtradas = linhas.filter(({ p, voltou }) => {
+      if (situacao === 'pendentes' && voltou) return false;
+      if (situacao === 'recuperados' && !voltou) return false;
+      if (situacao === 'sem-lembrete' && (voltou || p.recoveryEmailSentAt))
+        return false;
+      if (!termo) return true;
+      return (
+        p.customerName.toLowerCase().includes(termo) ||
+        p.customerEmail.toLowerCase().includes(termo) ||
+        (digitos.length >= 3 &&
+          ((p.customerPhone || '').replace(/\D/g, '').includes(digitos) ||
+            p.orderNumber.includes(digitos)))
+      );
+    });
+
+    const total = filtradas.length;
+    const totalPaginas = Math.max(1, Math.ceil(total / porPagina));
+    const pagina = Math.min(Math.max(opcoes.pagina || 1, 1), totalPaginas);
+    const daPagina = filtradas.slice(
+      (pagina - 1) * porPagina,
+      pagina * porPagina,
     );
 
-    const recuperados = linhas.filter((l) => l.recuperadoNoPedido).length;
+    const itens = await this.prisma.orderItem.findMany({
+      where: { orderId: { in: daPagina.map((l) => l.p.id) } },
+      select: {
+        orderId: true,
+        productName: true,
+        variantLabel: true,
+        quantity: true,
+      },
+    });
+    const itensDo = new Map<string, { nome: string; quantidade: number }[]>();
+    for (const i of itens) {
+      const lista = itensDo.get(i.orderId) ?? [];
+      lista.push({
+        nome: i.variantLabel
+          ? `${i.productName} (${i.variantLabel})`
+          : i.productName,
+        quantidade: i.quantity,
+      });
+      itensDo.set(i.orderId, lista);
+    }
+
     return {
       emailAutomatico: store.abandonedCartEmail,
-      total: linhas.length,
-      recuperados,
-      carrinhos: linhas,
+      dias,
+      resumo,
+      contagens,
+      // compatível com quem lia os números soltos
+      total: resumo.total,
+      recuperados: resumo.recuperados,
+      carrinhos: daPagina.map(({ p, voltou }) => ({
+        id: p.id,
+        orderNumber: p.orderNumber,
+        abandonadoEm: p.expiredUnpaidAt,
+        emailEnviadoEm: p.recoveryEmailSentAt,
+        cliente: p.customerName,
+        email: p.customerEmail,
+        telefone: p.customerPhone,
+        total: Number(p.total),
+        itens: itensDo.get(p.id) ?? [],
+        recuperadoNoPedido: voltou?.orderNumber ?? null,
+        link: this.link(store, p.id),
+      })),
+      paginacao: { total, pagina, porPagina, totalPaginas },
     };
   }
 

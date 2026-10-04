@@ -147,6 +147,89 @@ describe('Carrinho abandonado (e2e)', () => {
     });
   });
 
+  it('painel: período, situação, busca e páginas no servidor', async () => {
+    const agora = Date.now();
+    const hora = 60 * 60 * 1000;
+    // 25 carrinhos nos últimos dias e 1 de 40 dias atrás
+    for (let i = 1; i <= 26; i++) {
+      const dias = i === 26 ? 40 : i % 5;
+      await prisma.order.create({
+        data: {
+          storeId: seed.store.id,
+          orderNumber: `7${String(i).padStart(5, '0')}`,
+          customerName: `Cliente ${String(i).padStart(2, '0')}`,
+          customerEmail: `cliente${i}@teste.local`,
+          customerPhone: `7599900${String(i).padStart(4, '0')}`,
+          // o 1º é do cliente semeado, que depois compra (recuperado)
+          customerId: i === 1 ? seed.customer.id : null,
+          subtotal: 90,
+          total: 100,
+          createdAt: new Date(agora - dias * 24 * hora - 2 * hora),
+          expiredUnpaidAt: new Date(agora - dias * 24 * hora - hora),
+          recoveryEmailSentAt: i % 2 === 0 ? new Date(agora) : null,
+        },
+      });
+    }
+    await prisma.order.create({
+      data: {
+        storeId: seed.store.id,
+        customerId: seed.customer.id,
+        orderNumber: '799999',
+        customerName: 'Cliente 01',
+        customerEmail: 'cliente1@teste.local',
+        subtotal: 150,
+        total: 150,
+        paymentStatus: PaymentStatus.APPROVED,
+      },
+    });
+
+    const get = (q: string) =>
+      request(app.getHttpServer())
+        .get(`/api/admin/carrinhos-abandonados?${q}`)
+        .set('x-store-slug', seed.store.slug)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+    let r = await get('').expect(200);
+    expect(r.body.dias).toBe(30);
+    expect(r.body.resumo).toMatchObject({
+      total: 25,
+      recuperados: 1,
+      taxa: 4,
+      valorEmAberto: 2400,
+      valorRecuperado: 150,
+    });
+    expect(r.body.contagens).toEqual({
+      todos: 25,
+      pendentes: 24,
+      recuperados: 1,
+      semLembrete: 12,
+    });
+    expect(r.body.paginacao).toMatchObject({ total: 25, totalPaginas: 2 });
+    expect(r.body.carrinhos).toHaveLength(20);
+    // a página só traz os itens dela
+    r = await get('porPagina=10&pagina=3').expect(200);
+    expect(r.body.carrinhos).toHaveLength(5);
+
+    r = await get('situacao=recuperados').expect(200);
+    expect(r.body.carrinhos.map((c: { cliente: string }) => c.cliente)).toEqual(
+      ['Cliente 01'],
+    );
+    expect(r.body.carrinhos[0].recuperadoNoPedido).toBe('799999');
+
+    r = await get('situacao=sem-lembrete').expect(200);
+    expect(r.body.paginacao.total).toBe(12);
+
+    // busca por nome, e-mail, telefone ou número do pedido
+    r = await get('busca=cliente%2007').expect(200);
+    expect(r.body.paginacao.total).toBe(1);
+    r = await get('busca=700012').expect(200);
+    expect(r.body.carrinhos[0].orderNumber).toBe('700012');
+
+    r = await get('dias=90').expect(200);
+    expect(r.body.resumo.total).toBe(26);
+    await get('dias=15').expect(400);
+  });
+
   it('lojista desliga o e-mail automático', async () => {
     await request(app.getHttpServer())
       .patch('/api/admin/carrinhos-abandonados/config')

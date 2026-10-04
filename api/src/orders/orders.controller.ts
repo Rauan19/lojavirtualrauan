@@ -25,6 +25,7 @@ import {
   BulkUpdateOrderStatusDto,
   ConfigCarrinhoAbandonadoDto,
   CreateOrderDto,
+  ListarCarrinhosDto,
   OrderQueryDto,
   RejectRefundDto,
   RequestRefundDto,
@@ -55,8 +56,11 @@ export class OrdersController {
   @Get('admin/carrinhos-abandonados')
   @UseGuards(JwtAuthGuard, RolesGuard, TenantGuard)
   @Roles(Role.STORE_ADMIN, Role.SUPER_ADMIN)
-  carrinhosAbandonados(@CurrentStore() store: TenantStore) {
-    return this.carrinhos.listar(store.id);
+  carrinhosAbandonados(
+    @CurrentStore() store: TenantStore,
+    @Query() q: ListarCarrinhosDto,
+  ) {
+    return this.carrinhos.listar(store.id, q);
   }
 
   @Patch('admin/carrinhos-abandonados/config')

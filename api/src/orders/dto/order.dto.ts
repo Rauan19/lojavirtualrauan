@@ -4,14 +4,22 @@ import {
   IsBoolean,
   IsEnum,
   IsIn,
+  IsInt,
   IsNumber,
   IsObject,
   IsOptional,
   IsString,
+  Max,
+  MaxLength,
   Min,
   ValidateNested,
 } from 'class-validator';
 import { REFUND_REASONS } from '../refund-rules';
+import {
+  PERIODOS_CARRINHO,
+  SITUACOES_CARRINHO,
+} from '../carrinho-abandonado.service';
+import type { SituacaoCarrinho } from '../carrinho-abandonado.service';
 import { OrderStatus } from '@prisma/client';
 
 export class OrderItemInputDto {
@@ -169,6 +177,36 @@ export class OrderQueryDto {
   @Type(() => Number)
   @IsNumber()
   limit?: number;
+}
+
+export class ListarCarrinhosDto {
+  /** Período em dias: 7, 30 ou 90 */
+  @IsOptional()
+  @Type(() => Number)
+  @IsIn(PERIODOS_CARRINHO)
+  dias?: number;
+
+  @IsOptional()
+  @IsIn(SITUACOES_CARRINHO)
+  situacao?: SituacaoCarrinho;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  busca?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  pagina?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  porPagina?: number;
 }
 
 export class ConfigCarrinhoAbandonadoDto {
