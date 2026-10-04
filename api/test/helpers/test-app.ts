@@ -38,8 +38,30 @@ export async function createTestApp(): Promise<TestContext> {
   return { app, prisma: app.get(PrismaService) };
 }
 
-/** Limpa tudo entre os testes. Ordem respeita as FKs. */
+/**
+ * Limpa tudo entre os testes. Ordem respeita as FKs.
+ *
+ * O registro de acesso e a auditoria do Super Admin gravam em segundo plano,
+ * depois da resposta: a gravação do teste anterior pode cruzar com este
+ * TRUNCATE e o Postgres derruba um dos dois por deadlock (40P01). Nesse
+ * caso, espera um pouco e tenta de novo.
+ */
 export async function resetDb(prisma: PrismaService) {
+  for (let tentativa = 1; ; tentativa++) {
+    try {
+      await truncarTudo(prisma);
+      return;
+    } catch (e) {
+      const deadlock = String((e as { message?: string })?.message).includes(
+        '40P01',
+      );
+      if (!deadlock || tentativa >= 5) throw e;
+      await new Promise((r) => setTimeout(r, 100 * tentativa));
+    }
+  }
+}
+
+async function truncarTudo(prisma: PrismaService) {
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
       "OrderItem", "Order", "Address", "Customer", "ProductVariant",
