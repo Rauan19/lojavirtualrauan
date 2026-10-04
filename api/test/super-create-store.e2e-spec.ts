@@ -153,4 +153,69 @@ describe('Super Admin cria loja manualmente (e2e)', () => {
     expect(store.status).toBe('ACTIVE');
     expect(Number(store.monthlyFee)).toBe(250);
   });
+
+  describe('reativar loja em atraso', () => {
+    async function lojaEmAtraso() {
+      const seed = await seedStore(prisma);
+      await prisma.store.update({
+        where: { id: seed.store.id },
+        data: {
+          status: 'PAST_DUE',
+          planName: 'plan-seed-mensal',
+          monthlyFee: 49.9,
+          planDueAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+        },
+      });
+      return seed;
+    }
+    const editar = (id: string, body: Record<string, unknown>) =>
+      request(app.getHttpServer())
+        .patch(`/api/stores/${id}`)
+        .set('Authorization', `Bearer ${superToken}`)
+        .send(body);
+
+    it('ativar no plano grátis apaga o vencimento e a loja não volta a bloquear', async () => {
+      const seed = await lojaEmAtraso();
+      // o formulário manda o vencimento antigo junto, como na tela
+      const antigo = (
+        await prisma.store.findUniqueOrThrow({ where: { id: seed.store.id } })
+      ).planDueAt!.toISOString();
+      await editar(seed.store.id, {
+        status: 'ACTIVE',
+        planName: 'plan-seed-comeco',
+        planDueAt: antigo,
+      }).expect(200);
+
+      const me = await request(app.getHttpServer())
+        .get('/api/stores/me')
+        .set('x-store-slug', seed.store.slug)
+        .set('Authorization', `Bearer ${await signAdminToken(app, seed.admin)}`)
+        .expect(200);
+      expect(me.body.status).toBe('ACTIVE');
+      const loja = await prisma.store.findUniqueOrThrow({
+        where: { id: seed.store.id },
+      });
+      expect(loja.planDueAt).toBeNull();
+      expect(Number(loja.monthlyFee)).toBe(0);
+    });
+
+    it('ativar plano pago com vencimento passado é recusado com o motivo', async () => {
+      const seed = await lojaEmAtraso();
+      const r = await editar(seed.store.id, { status: 'ACTIVE' }).expect(400);
+      expect(r.body.message).toMatch(/já passou/);
+
+      // com vencimento novo, ativa e continua ativa
+      const futuro = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      await editar(seed.store.id, {
+        status: 'ACTIVE',
+        planDueAt: futuro.toISOString(),
+      }).expect(200);
+      const me = await request(app.getHttpServer())
+        .get('/api/stores/me')
+        .set('x-store-slug', seed.store.slug)
+        .set('Authorization', `Bearer ${await signAdminToken(app, seed.admin)}`)
+        .expect(200);
+      expect(me.body.status).toBe('ACTIVE');
+    });
+  });
 });

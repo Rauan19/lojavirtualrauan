@@ -444,6 +444,14 @@ export class StoresService {
       if (dto.sellerPhone !== undefined) {
         data.sellerPhone = dto.sellerPhone?.trim() || null;
       }
+      Object.assign(
+        data,
+        await this.vencimentoAoEditar(store, {
+          status: dto.status,
+          planName: dto.planName,
+          planDueAt: dto.planDueAt,
+        }),
+      );
 
       const updated = await tx.store.update({
         where: { id: storeId },
@@ -904,14 +912,71 @@ export class StoresService {
   }
 
   async updateStatus(storeId: string, dto: UpdateStoreStatusDto) {
+    const store = await this.prisma.store.findUnique({
+      where: { id: storeId },
+      select: { status: true, planName: true, planDueAt: true },
+    });
+    if (!store) throw new NotFoundException('Loja não encontrada');
     return this.prisma.store.update({
       where: { id: storeId },
       data: {
         status: dto.status,
         planName: dto.planName,
         ...(dto.planDueAt ? { planDueAt: new Date(dto.planDueAt) } : {}),
+        ...(await this.vencimentoAoEditar(store, {
+          status: dto.status,
+          planName: dto.planName,
+          planDueAt: dto.planDueAt || undefined,
+        })),
       },
     });
+  }
+
+  /**
+   * Vencimento coerente quando o Super Admin muda plano ou status.
+   *
+   * - Plano grátis não vence: o vencimento é apagado e a mensalidade zera
+   *   (igual a quando o lojista escolhe o grátis). Sem isso, a data antiga
+   *   continuava no passado e a loja voltava a "em atraso" na próxima
+   *   leitura (enforcePlanDue).
+   * - Ativar uma loja paga com o vencimento já passado é recusado com o
+   *   motivo, em vez de salvar e a loja bloquear de novo sozinha.
+   */
+  private async vencimentoAoEditar(
+    atual: {
+      status: StoreStatus;
+      planName: string;
+      planDueAt: Date | null;
+    },
+    mudanca: {
+      status?: StoreStatus;
+      planName?: string;
+      /** undefined = não mexeu; null/'' = apagou */
+      planDueAt?: string | null;
+    },
+  ): Promise<{ planDueAt?: Date | null; monthlyFee?: Prisma.Decimal }> {
+    const plano = mudanca.planName ?? atual.planName;
+    const gratis = (await this.billingService.listPlans()).some(
+      (p) => p.id === plano && p.amount <= 0,
+    );
+    if (gratis) {
+      return { planDueAt: null, monthlyFee: new Prisma.Decimal(0) };
+    }
+
+    const status = mudanca.status ?? atual.status;
+    const vencimento =
+      mudanca.planDueAt === undefined
+        ? atual.planDueAt
+        : mudanca.planDueAt
+          ? new Date(mudanca.planDueAt)
+          : null;
+    const ativa = status === StoreStatus.ACTIVE || status === StoreStatus.TRIAL;
+    if (ativa && vencimento && vencimento.getTime() <= Date.now()) {
+      throw new BadRequestException(
+        `O vencimento (${vencimento.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}) já passou: a loja voltaria a ficar em atraso na hora. Coloque um vencimento novo, deixe sem vencimento ou mude para o plano grátis.`,
+      );
+    }
+    return {};
   }
 
   async updateMercadoPago(storeId: string, dto: UpdateMercadoPagoDto) {
