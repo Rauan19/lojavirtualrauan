@@ -996,14 +996,11 @@ export class StoresService {
     if (dto.mpPublicKey?.trim()) {
       data.mpPublicKey = dto.mpPublicKey.trim();
     }
+    // O pagamento é sempre o Brick na loja (cartão e Pix sem sair da
+    // vitrine): o lojista não escolhe. Painel antigo que ainda mande o campo
+    // não troca nada.
     if (dto.checkoutMode !== undefined) {
-      const mode = dto.checkoutMode.trim();
-      if (!['pro', 'personalized'].includes(mode)) {
-        throw new BadRequestException(
-          'checkoutMode inválido (use pro ou personalized)',
-        );
-      }
-      data.checkoutMode = mode;
+      data.checkoutMode = 'personalized';
     }
     if (dto.pixDiscountPercent !== undefined) {
       data.pixDiscountPercent = new Prisma.Decimal(dto.pixDiscountPercent);

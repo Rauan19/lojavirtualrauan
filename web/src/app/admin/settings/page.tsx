@@ -285,14 +285,14 @@ const POLITICAS = [
 ];
 
 const PAGAMENTO_MODAL_TITULO: Record<string, string> = {
-  modelo: 'Modelo de checkout',
+  modelo: 'Desconto no Pix',
   credenciais: 'Credenciais do Mercado Pago',
   webhook: 'Webhook de pagamento',
 };
 
 const PAGAMENTO_MODAL_HINT: Record<string, string> = {
   modelo:
-    'Onde o cliente digita o cartão: dentro da sua loja ou no site do Mercado Pago.',
+    'O cliente paga com cartão ou Pix na própria loja, sem sair da vitrine.',
   credenciais:
     'Da sua conta, não da plataforma — é para ela que o dinheiro das vendas vai.',
   webhook: 'A URL que o Mercado Pago chama para avisar que um pagamento mudou.',
@@ -1540,7 +1540,6 @@ export default function AdminSettingsPage() {
             ? { mpAccessToken: mpAccessToken.trim() }
             : {}),
           ...(mpPublicKey.trim() ? { mpPublicKey: mpPublicKey.trim() } : {}),
-          checkoutMode: store.checkoutMode || 'personalized',
           pixDiscountPercent:
             Number(String(store.pixDiscountPercent ?? '0').replace(',', '.')) ||
             0,
@@ -3265,16 +3264,12 @@ export default function AdminSettingsPage() {
                 <SettingsRow
                   icon={<IconCheckout />}
                   iconTile="checkout"
-                  title="Tela de pagamento do cliente"
-                  value={
-                    store.checkoutMode === 'pro'
-                      ? 'Checkout Pro · cliente vai para o site do Mercado Pago'
-                      : `Brick na loja · cliente paga sem sair da vitrine${
-                          Number(store.pixDiscountPercent || 0) > 0
-                            ? ` · ${String(Number(store.pixDiscountPercent)).replace('.', ',')}% de desconto no Pix`
-                            : ''
-                        }`
-                  }
+                  title="Pagamento na loja"
+                  value={`Cartão e Pix sem sair da vitrine${
+                    Number(store.pixDiscountPercent || 0) > 0
+                      ? ` · ${String(Number(store.pixDiscountPercent)).replace('.', ',')}% de desconto no Pix`
+                      : ' · sem desconto no Pix'
+                  }`}
                   onEdit={() => setPagamentoModal('modelo')}
                 />
 
@@ -3307,64 +3302,7 @@ export default function AdminSettingsPage() {
                     <div className="grid min-h-0 flex-1 gap-x-4 gap-y-4 overflow-y-auto px-4 py-4">
                       {pagamentoModal === 'modelo' ? (
                         <>
-                          <div className="grid gap-2 sm:grid-cols-2">
-                            <label
-                              className={`cursor-pointer border px-3 py-3 text-sm ${
-                                (store.checkoutMode || 'personalized') !== 'pro'
-                                  ? 'border-accent bg-[#fff8f9]'
-                                  : 'border-line'
-                              }`}
-                            >
-                              <input
-                                type="radio"
-                                className="mr-2"
-                                name="checkoutMode"
-                                checked={
-                                  (store.checkoutMode || 'personalized') !==
-                                  'pro'
-                                }
-                                onChange={() =>
-                                  setStore({
-                                    ...store,
-                                    checkoutMode: 'personalized',
-                                  })
-                                }
-                              />
-                              <span className="font-semibold">
-                                Brick na loja
-                              </span>
-                              <p className="mt-1 text-[11px] leading-relaxed text-muted">
-                                Cartão e Pix na própria loja. O cliente não sai
-                                da sua vitrine — costuma converter melhor.
-                              </p>
-                            </label>
-                            <label
-                              className={`cursor-pointer border px-3 py-3 text-sm ${
-                                store.checkoutMode === 'pro'
-                                  ? 'border-accent bg-[#fff8f9]'
-                                  : 'border-line'
-                              }`}
-                            >
-                              <input
-                                type="radio"
-                                className="mr-2"
-                                name="checkoutMode"
-                                checked={store.checkoutMode === 'pro'}
-                                onChange={() =>
-                                  setStore({ ...store, checkoutMode: 'pro' })
-                                }
-                              />
-                              <span className="font-semibold">
-                                Checkout Pro
-                              </span>
-                              <p className="mt-1 text-[11px] leading-relaxed text-muted">
-                                Redireciona para a página do Mercado Pago e
-                                volta depois do pagamento.
-                              </p>
-                            </label>
-                          </div>
-
-                          <div className="border-t border-line pt-4">
+                          <div>
                             <label className="label" htmlFor="pix-desconto">
                               Desconto no Pix (%)
                             </label>
@@ -3374,7 +3312,6 @@ export default function AdminSettingsPage() {
                                 className="field w-28"
                                 inputMode="decimal"
                                 placeholder="Ex.: 5"
-                                disabled={store.checkoutMode === 'pro'}
                                 value={String(
                                   store.pixDiscountPercent ?? '',
                                 ).replace(/\.00$/, '')}
@@ -3386,9 +3323,10 @@ export default function AdminSettingsPage() {
                                 }
                               />
                               <p className="min-w-0 flex-1 text-[12px] leading-relaxed text-muted">
-                                {store.checkoutMode === 'pro'
-                                  ? 'Disponível só com o pagamento na loja (Brick): na página do Mercado Pago o preço é um só.'
-                                  : 'Vale sobre os produtos (o frete não entra). A vitrine mostra "R$ X no Pix" e o cliente escolhe Pix ou cartão antes de pagar. Vazio ou 0 = sem desconto.'}
+                                Vale sobre os produtos (o frete não entra). A
+                                vitrine mostra &quot;R$ X no Pix&quot; e o
+                                cliente escolhe Pix ou cartão antes de pagar.
+                                Vazio ou 0 = sem desconto.
                               </p>
                             </div>
                           </div>
