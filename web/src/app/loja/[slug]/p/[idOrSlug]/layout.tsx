@@ -149,7 +149,6 @@ export default async function ProductLayout({
     <>
       <script
         type="application/ld+json"
-         
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c'),
         }}

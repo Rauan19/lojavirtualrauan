@@ -140,7 +140,6 @@ export default async function HomePage() {
     <main className="landing min-h-screen bg-[#f7f8fa] text-ink">
       <script
         type="application/ld+json"
-         
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(identityJsonLd).replace(/</g, '\\u003c'),
         }}
@@ -154,7 +153,6 @@ export default async function HomePage() {
       />
       <script
         type="application/ld+json"
-         
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c'),
         }}
