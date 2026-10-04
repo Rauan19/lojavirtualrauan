@@ -8,10 +8,13 @@ function onlyDigits(value: string) {
  * Vem do ambiente para não subir com número de exemplo. Defina em `.env.local`:
  *   NEXT_PUBLIC_CONTACT_WHATSAPP="5511988887777"
  *   NEXT_PUBLIC_CONTACT_EMAIL="contato@seudominio.com.br"
+ *   NEXT_PUBLIC_SUPPORT_HOURS="Seg a sex, das 9h às 18h"   (opcional)
  */
 export const CONTACT = {
   whatsapp: onlyDigits(process.env.NEXT_PUBLIC_CONTACT_WHATSAPP || ''),
   email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || '',
+  /** Horário do suporte, mostrado no painel. Vazio = não mostra. */
+  horario: process.env.NEXT_PUBLIC_SUPPORT_HOURS || '',
 };
 
 /** Sem número configurado não adianta renderizar botão de WhatsApp. */
